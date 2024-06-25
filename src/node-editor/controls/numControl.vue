@@ -1,10 +1,10 @@
 <template>
-<input type="number" :readonly="readonly" :value="value" @input="change($event)" @dblclick.stop="" @pointerdown.stop="" @pointermove.stop=""/>
+<input :placeholder="placeholder" type="number" :readonly="readonly" :value="value" @input="change($event)" @dblclick.stop="" @pointerdown.stop="" @pointermove.stop=""/>
 </template>
 
 <script>
 export default {
-  props: ["readonly", "emitter", "ikey", "getData", "putData"],
+  props: ["readonly", "placeholder", "emitter", "ikey", "getData", "putData"],
 
   data() {
     return {
@@ -19,7 +19,7 @@ export default {
     },
     update() {
       if (this.ikey)
-        this.putData(this.ikey, this.value)
+        this.putData(this.ikey, this.value, this.placeholder)
       this.emitter.trigger('process');
     }
   },

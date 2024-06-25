@@ -10,9 +10,9 @@ export class RoomComponent extends Rete.Component {
   builder(node) {
     let out1 = new Rete.Output("shape", "Shape", ShapeSocket);
 
-    node.addControl(new NumControl(this.editor, "length"));
-    node.addControl(new NumControl(this.editor, "width"));
-    node.addControl(new NumControl(this.editor, "height"));
+    node.addControl(new NumControl(this.editor, "length", "Length"));
+    node.addControl(new NumControl(this.editor, "width", "Width"));
+    node.addControl(new NumControl(this.editor, "height", "Height"));
 
     node.addOutput(out1);
   }

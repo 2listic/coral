@@ -3,14 +3,16 @@ import { NumControl } from "../controls/numControl.js";
 import { NumSocket } from "../sockets/sockets";
 
 export class NumComponent extends Rete.Component {
-    constructor(){ super("Number"); }
+  constructor() {
+    super("Number");
+  }
 
-    builder(node) {
-        var out1 = new Rete.Output('num', "Number", NumSocket);
-        return node.addControl(new NumControl(this.editor, 'numm')).addOutput(out1);
-    }
+  builder(node) {
+    var out1 = new Rete.Output("num", "Number", NumSocket);
+    return node.addControl(new NumControl(this.editor, "numm")).addOutput(out1);
+  }
 
-    worker(node, inputs, outputs) {
-        outputs['num'] = node.data.numm;
-    }
+  worker(node, inputs, outputs) {
+    outputs["num"] = node.data.numm;
+  }
 }
