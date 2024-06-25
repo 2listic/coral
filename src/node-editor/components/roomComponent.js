@@ -18,9 +18,9 @@ export class RoomComponent extends Rete.Component {
   }
 
   worker(node, inputs, outputs) {
-    const length = node.data.length || 10;
-    const width = node.data.width || 10;
-    const height = node.data.height || 3;
+    const length = node.data.length || 1;
+    const width = node.data.width || 1;
+    const height = node.data.height || 1;
 
     outputs["shape"] = { length, width, height };
   }
