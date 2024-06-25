@@ -16,3 +16,9 @@ docker run --detach --rm -it -p 8080:8080 coral-editor
 ```
 http://localhost:8080/
 ```
+
+## To develop just the application
+```
+npm install && npm run serve
+```
+
