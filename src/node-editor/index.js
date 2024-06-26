@@ -50,16 +50,21 @@ export default async function (container) {
   let inputNode = await components[2].createNode({ temp: 25 });
   let simulationNode = await components[3].createNode();
   let outputNode = await components[4].createNode();
-  let roomNode = await components[5].createNode();
+  let roomNode = await components[5].createNode({
+    length: 10,
+    width: 10,
+    height: 0,
+  });
 
   inputNode.position = [80, 200];
   simulationNode.position = [400, 200];
   outputNode.position = [720, 200];
-  roomNode.position = [60, 200];
+  roomNode.position = [100, 400];
 
   editor.addNode(inputNode);
   editor.addNode(simulationNode);
   editor.addNode(outputNode);
+  editor.addNode(roomNode);
 
   editor.connect(
     inputNode.outputs.get("temp"),
@@ -68,6 +73,10 @@ export default async function (container) {
   editor.connect(
     simulationNode.outputs.get("result"),
     outputNode.inputs.get("result")
+  );
+  editor.connect(
+    roomNode.outputs.get("shape"),
+    simulationNode.inputs.get("shape")
   );
 
   editor.on(
