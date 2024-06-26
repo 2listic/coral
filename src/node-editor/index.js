@@ -53,7 +53,7 @@ export default async function (container) {
   let roomNode = await components[5].createNode({
     length: 10,
     width: 10,
-    height: 0,
+    height: 10,
   });
 
   inputNode.position = [80, 200];

@@ -24,13 +24,20 @@ export class InputComponent extends Rete.Component {
   }
 
   generateRandomTemperature() {
-    return Math.random() * 10 + 20; // Generates a number between 20 and 30
+    let res = 0;
+    let n = Math.random();
+    if (n < 0.5) {
+      res = n * 10 + 20;
+    } else {
+      res = n * 5 + 30;
+    }
+    return res;
   }
 
   startTemperatureSimulation(node) {
     this.interval = setInterval(() => {
       node.data.temp = this.generateRandomTemperature();
       this.editor.trigger("process");
-    }, 10000); // Updates every 10 seconds
+    }, 1000); // Updates every second
   }
 }
