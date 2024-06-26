@@ -1,13 +1,13 @@
-FROM ubuntu:24.04
+FROM dealii/dealii:v9.5.1-jammy
 
-RUN apt-get update && apt-get install -y \
+RUN sudo apt update && sudo apt install -y \
     curl \
     gnupg \
     build-essential
 
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+RUN  curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash -
 
-RUN apt-get install -y nodejs
+RUN  sudo apt install -y nodejs
 
 RUN node -v && npm -v
 
@@ -15,18 +15,10 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN npm install
-
-RUN apt update && apt install libdeal.ii-dev libdeal.ii-doc -y
-
 WORKDIR /usr/src/app
 
-COPY package*.json ./
-
-RUN npm install
-
-COPY . .
+RUN sudo npm install
 
 EXPOSE 8080
 
-CMD ["npm", "run", "serve"]
+CMD ["sudo","npm", "run", "serve"]
