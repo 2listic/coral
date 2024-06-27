@@ -1,5 +1,6 @@
 import Rete from "rete";
 import { NumSocket } from "../sockets/sockets";
+import { NumControl } from "../controls/numControl.js";
 
 export class InputComponent extends Rete.Component {
   constructor() {
@@ -10,10 +11,15 @@ export class InputComponent extends Rete.Component {
   builder(node) {
     let out1 = new Rete.Output("temp", "Temperature", NumSocket);
 
+    // Adding two numerical inputs for min and max temperature
+    let minTempControl = new NumControl(this.editor, "minTemp", "Min Temp");
+    let maxTempControl = new NumControl(this.editor, "maxTemp", "Max Temp");
+
+    node.addControl(minTempControl);
+    node.addControl(maxTempControl);
     node.addOutput(out1);
 
-    // Initialize temperature data
-    node.data.temp = this.generateRandomTemperature();
+    node.data.temp = this.generateRandomTemperature(node);
   }
 
   worker(node, inputs, outputs) {
@@ -23,20 +29,15 @@ export class InputComponent extends Rete.Component {
     outputs["temp"] = node.data.temp;
   }
 
-  generateRandomTemperature() {
-    let res = 0;
-    let n = Math.random();
-    if (n < 0.5) {
-      res = n * 10 + 20;
-    } else {
-      res = n * 5 + 30;
-    }
-    return res;
+  generateRandomTemperature(node) {
+    let minTemp = node.data.minTemp;
+    let maxTemp = node.data.maxTemp;
+    return Math.random() * (maxTemp - minTemp) + minTemp;
   }
 
   startTemperatureSimulation(node) {
     this.interval = setInterval(() => {
-      node.data.temp = this.generateRandomTemperature();
+      node.data.temp = this.generateRandomTemperature(node);
       this.editor.trigger("process");
     }, 1000); // Updates every second
   }

@@ -2,26 +2,39 @@ import Rete from "rete";
 import { NumSocket } from "../sockets/sockets";
 import { ShapeSocket } from "../sockets/sockets";
 import { GridSocket } from "../sockets/sockets";
+
 export class SimulationComponent extends Rete.Component {
   constructor() {
     super("Simulation");
   }
+
   builder(node) {
-    let inp1 = new Rete.Input("temp", "Temperature", NumSocket);
-    let inp2 = new Rete.Input("shape", "Shape", ShapeSocket);
+    let inp1 = new Rete.Input("tempNearCooler", "Temp Near Cooler", NumSocket);
+    let inp2 = new Rete.Input("tempFurthest", "Temp Furthest", NumSocket);
+    let inp3 = new Rete.Input("shape", "Shape", ShapeSocket);
     let out1 = new Rete.Output("result", "Result", GridSocket);
+
     node.addInput(inp1);
     node.addInput(inp2);
+    node.addInput(inp3);
     node.addOutput(out1);
   }
+
   worker(node, inputs, outputs) {
-    let temp = inputs["temp"].length ? inputs["temp"][0] : node.data.temp;
+    let tempNearCooler = inputs["tempNearCooler"].length
+      ? inputs["tempNearCooler"][0]
+      : node.data.tempNearCooler;
+    let tempFurthest = inputs["tempFurthest"].length
+      ? inputs["tempFurthest"][0]
+      : node.data.tempFurthest;
     let shape = inputs["shape"].length ? inputs["shape"][0] : node.data.shape;
-    let result = simulateHVAC(temp, shape);
+
+    let result = simulateHVAC(tempNearCooler, tempFurthest, shape);
     outputs["result"] = result;
   }
 }
-function simulateHVAC(temp, shape) {
+
+function simulateHVAC(tempNearCooler, tempFurthest, shape) {
   const rows = shape.length;
   const cols = shape.width;
   const levels = shape.height;
@@ -38,15 +51,22 @@ function simulateHVAC(temp, shape) {
             Math.pow(y - cols / 2, 2) +
             Math.pow(z - levels / 2, 2)
         );
-        // Add time-based variation
-        let variation = Math.sin(Date.now() + x * 0.5 + y * 0.3 + z * 0.2) * 2;
-        let temperature = temp - distanceToCenter * 0.5 + variation;
-        column.push(temperature);
+
+        // Linear interpolation between tempNearCooler and tempFurthest
+        let interpolationFactor = z / (levels - 1);
+        let temperature =
+          tempNearCooler * (1 - interpolationFactor) +
+          tempFurthest * interpolationFactor;
+
+        // Cooling effect stronger near the ceiling (z = levels - 1)
+        let distanceToCeiling = levels - 1 - z;
+        let coolingEffect = Math.max(0, temperature - distanceToCeiling * 2);
+
+        column.push(coolingEffect - distanceToCenter * 0.1);
       }
       plane.push(column);
     }
     temperatureGrid.push(plane);
   }
-
   return temperatureGrid;
 }

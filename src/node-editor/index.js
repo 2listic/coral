@@ -9,6 +9,9 @@ import { InputComponent } from "./components/inputComponent";
 import { SimulationComponent } from "./components/simulationComponent";
 import { OutputComponent } from "./components/outputComponents";
 import { RoomComponent } from "./components/roomComponent";
+import { ControllerComponent } from "./components/controlComponent";
+import { DeviceComponent } from "./components/deviceComponent";
+
 export default async function (container) {
   var components = [
     new NumComponent(),
@@ -17,6 +20,8 @@ export default async function (container) {
     new SimulationComponent(),
     new OutputComponent(),
     new RoomComponent(),
+    new ControllerComponent(),
+    new DeviceComponent(),
   ];
 
   var editor = new Rete.NodeEditor("hvac@0.1.0", container);
@@ -47,7 +52,14 @@ export default async function (container) {
   // editor.connect(n1.outputs.get("num"), add.inputs.get("num1"));
   // editor.connect(n2.outputs.get("num"), add.inputs.get("num2"));
 
-  let inputNode = await components[2].createNode({ temp: 25 });
+  let inputNodeMin = await components[2].createNode({
+    minTemp: 18,
+    maxTemp: 25,
+  });
+  let inputNodeMax = await components[2].createNode({
+    minTemp: 30,
+    maxTemp: 45,
+  });
   let simulationNode = await components[3].createNode();
   let outputNode = await components[4].createNode();
   let roomNode = await components[5].createNode({
@@ -55,20 +67,32 @@ export default async function (container) {
     width: 10,
     height: 10,
   });
+  let controllerNode = await components[6].createNode({ threshold: 23 });
+  let deviceNode = await components[7].createNode();
 
-  inputNode.position = [80, 200];
+  inputNodeMax.position = [80, 200];
+  inputNodeMin.position = [20, 30];
   simulationNode.position = [400, 200];
   outputNode.position = [720, 200];
   roomNode.position = [100, 400];
+  controllerNode.position = [400, -100];
+  deviceNode.position = [600, -100];
 
-  editor.addNode(inputNode);
+  editor.addNode(inputNodeMax);
+  editor.addNode(inputNodeMin);
   editor.addNode(simulationNode);
   editor.addNode(outputNode);
   editor.addNode(roomNode);
+  editor.addNode(controllerNode);
+  editor.addNode(deviceNode);
 
   editor.connect(
-    inputNode.outputs.get("temp"),
-    simulationNode.inputs.get("temp")
+    inputNodeMin.outputs.get("temp"),
+    simulationNode.inputs.get("tempNearCooler")
+  );
+  editor.connect(
+    inputNodeMax.outputs.get("temp"),
+    simulationNode.inputs.get("tempFurthest")
   );
   editor.connect(
     simulationNode.outputs.get("result"),
@@ -77,6 +101,14 @@ export default async function (container) {
   editor.connect(
     roomNode.outputs.get("shape"),
     simulationNode.inputs.get("shape")
+  );
+  editor.connect(
+    simulationNode.outputs.get("result"),
+    controllerNode.inputs.get("grid")
+  );
+  editor.connect(
+    controllerNode.outputs.get("result"),
+    deviceNode.inputs.get("bool")
   );
 
   editor.on(

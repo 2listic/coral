@@ -68,7 +68,7 @@ export class OutputComponent extends Rete.Component {
           const normalizedTemp = (temp - minTemp) / (maxTemp - minTemp);
           const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
           const material = new THREE.MeshBasicMaterial({
-            color: new THREE.Color(normalizedTemp, 0, 1 - normalizedTemp),
+            color: new THREE.Color(1 - normalizedTemp, 0, normalizedTemp),
             opacity: 0.7,
             transparent: true,
           });
