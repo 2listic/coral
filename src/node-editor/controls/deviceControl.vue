@@ -1,30 +1,43 @@
 <template>
-  <div :style="{ backgroundColor: status ? 'green' : 'red', color: 'white', padding: '1px', textAlign: 'center' }">
-    <img :src="imageSrc" alt="Device Image" style="width: 50px; height: 50px;">
-    <div>{{ status ? 'ON' : 'OFF' }}</div>
+  <div :style="{ backgroundColor: currentStatus ? 'green' : 'red', color: 'white', padding: '1px', textAlign: 'center' }">
+    <img :src="imageSrc" alt="Device Image" style="width: 100px; height: 100px;">
+    <div>{{ currentStatus ? 'ON' : 'OFF' }}</div>
   </div>
 </template>
 
 <script>
 export default {
-  props: ['readonly', 'ikey', 'getData', 'emitter', 'putData'],
+  props: ['readonly', 'ikey', 'getData', 'putData', 'status'],
   data() {
     return {
-      status: this.status,
-      imageSrc: 'cooler.jpeg'
+      imageSrc: 'cooler.jpg', 
+      currentStatus: this.status
     };
   },
+  watch: {
+    status(newVal) {
+      this.currentStatus = newVal;
+    }
+  },
   mounted() {
-    this.status = this.getData(this.ikey) || false;
-    this.$watch(
-      () => this.getData(this.ikey),
-      (value) => {
-        this.status = value;
-      }
-    );
+    // If you want to dynamically set the image source
+    const storedSrc = this.getData(this.ikey);
+    if (storedSrc) {
+      this.imageSrc = storedSrc;
+    }
+  },
+  methods: {
+    setImageSrc(src) {
+      this.imageSrc = src;
+      this.putData(this.ikey, src);
+    }
   }
 };
 </script>
 
 <style scoped>
+.image-control img {
+  display: block;
+  margin: 0 auto;
+}
 </style>

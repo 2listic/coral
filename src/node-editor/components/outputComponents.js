@@ -120,6 +120,22 @@ export class OutputComponent extends Rete.Component {
     directionalLight.position.set(10, 10, 10);
     this.scene.add(directionalLight);
 
+    // Handle full-screen functionality
+    canvas.addEventListener("dblclick", () => {
+      if (!document.fullscreenElement) {
+        canvas.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Handle Escape key to exit full-screen mode
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && document.fullscreenElement) {
+        document.exitFullscreen();
+      }
+    });
+
     // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);

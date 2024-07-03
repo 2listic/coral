@@ -1,14 +1,18 @@
 import Rete from "rete";
-import VueDeviceControl from "../controls/deviceControl.vue";
+import DeviceControlComponent from "../controls/deviceControl.vue";
 
 export class DeviceControl extends Rete.Control {
-  constructor(emitter, key, readonly) {
+  constructor(emitter, key) {
     super(key);
-    this.component = VueDeviceControl;
-    this.props = { emitter, ikey: key, readonly };
+    this.component = DeviceControlComponent;
+    this.props = { emitter, ikey: key, readonly: false, status: false };
   }
 
-  setValue(val) {
-    this.vueContext.value = val;
+  setImageSrc(src) {
+    this.vueContext.setImageSrc(src);
+  }
+
+  setStatus(status) {
+    this.vueContext.currentStatus = status; // Update to use data property
   }
 }
