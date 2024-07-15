@@ -27,16 +27,25 @@ namespace coral
   /**
    * Provide a string that can be used as a hash for a type.
    */
+  std::string
+  hash(const std::type_info &type)
+  {
+    std::stringstream ss;
+    ss << std::hex << std::type_index(type).hash_code();
+    return ss.str();
+  }
+
+  /**
+   * Provide a string that can be used as a hash for a type.
+   */
   template <typename T>
   std::string
   hash()
   {
     std::shared_ptr<T> ptr;
-    auto               hash_code = std::type_index(typeid(ptr)).hash_code();
-    std::stringstream  ss;
-    ss << std::hex << hash_code;
-    return ss.str();
+    return hash(typeid(ptr));
   }
+
 
   /**
    * Store all std::functions that need to be used to build a NodeObject, and
@@ -109,6 +118,10 @@ namespace coral
           *this = NodeObject(std::make_shared<std::string>(hash_str));
         }
     }
+
+    NodeObject(const char *hash_str)
+      : NodeObject(std::string(hash_str))
+    {}
 
 
     /**
@@ -352,6 +365,8 @@ namespace coral
             (obj.*ptr)(
               *std::any_cast<std::shared_ptr<typename std::remove_cv<
                 typename std::remove_reference<Args>::type>::type>>(args)...);
+            std::cout << "Executing method " << coral::hash(typeid(ptr))
+                      << std::endl;
             return std::any(ptr);
           };
         }
@@ -378,6 +393,8 @@ namespace coral
             ret = (obj.*ptr)(
               *std::any_cast<std::shared_ptr<typename std::remove_cv<
                 typename std::remove_reference<Args>::type>::type>>(args)...);
+            std::cout << "Executing method " << coral::hash(typeid(ptr))
+                      << std::endl;
             return std::any(ptr);
           };
         }
@@ -510,8 +527,7 @@ namespace coral
         {
           // The object is initialized. Check if this is consistent with the
           // initializer, and return its hash.
-          const auto object_hash =
-            std::to_string(std::type_index(object.type()).hash_code());
+          const auto object_hash = coral::hash(object.type());
           const auto stored_hash =
             std::string(initializer.json_serializer.at("type_hash"));
           AssertThrow(object_hash == stored_hash,
