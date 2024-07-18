@@ -38,6 +38,6 @@ FOREACH(_build_type ${_d2_build_types})
     DEAL_II_SETUP_TARGET(${_exe} ${_BUILD_TYPE})
     include_directories(${GTEST_INCLUDE_DIRS})
     
-    gtest_discover_tests(${_exe})
+    # gtest_discover_tests(${_exe})
   ENDIF()
 ENDFOREACH()

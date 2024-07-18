@@ -85,7 +85,7 @@ FOREACH(_build_type ${_d2_build_types})
 
     ADD_LIBRARY(${_lib} SHARED ${_files})
     DEAL_II_SETUP_TARGET(${_lib} ${_BUILD_TYPE})
-    # SET(TEST_LIBRARIES_${_BUILD_TYPE} ${_lib})
+    SET(TEST_LIBRARIES_${_BUILD_TYPE} ${_lib})
 
     # Setup one executable per dimension/per build type
     # FOREACH(_dim 1 2 3)

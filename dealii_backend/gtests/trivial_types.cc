@@ -51,3 +51,20 @@ TEST(TrivialTypes, Point)
   std::string s = j.at("type_hash");
   ASSERT_EQ(s, coral::hash<type>());
 }
+
+
+TEST(TrivialTypes, Unregistered)
+{
+  // Check we throw an assert if we try to get an unregistered type
+  ASSERT_THROW(NodeObject((float)42.0), dealii::ExceptionBase);
+}
+
+
+TEST(TrivialTypes, CopyType)
+{
+  NodeObject::register_elementary_type<int>();
+  NodeObject obj  = 42;
+  NodeObject obj2 = obj;
+  ASSERT_EQ(42, obj2.get<int>());
+  ASSERT_EQ(42, obj2.get<const int>());
+}

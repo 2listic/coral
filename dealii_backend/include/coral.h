@@ -1,6 +1,8 @@
 #ifndef CORAL_H
 #define CORAL_H
 
+#include <deal.II/base/mutable_bind.h>
+
 #include <boost/core/type_name.hpp>
 
 #include <any>
@@ -24,10 +26,12 @@ namespace coral
   // forward declarations
   class NodeObject;
 
+  using NodeObjectPtr = std::shared_ptr<NodeObject>;
+
   /**
    * Provide a string that can be used as a hash for a type.
    */
-  std::string
+  inline std::string
   hash(const std::type_info &type)
   {
     std::stringstream ss;
@@ -39,13 +43,70 @@ namespace coral
    * Provide a string that can be used as a hash for a type.
    */
   template <typename T>
-  std::string
+  inline std::string
   hash()
   {
     std::shared_ptr<T> ptr;
     return hash(typeid(ptr));
   }
 
+  /**
+   * Provide a string that can be used as a hash for a type.
+   */
+  template <typename T>
+  inline std::string
+  hash(const T && /*unused*/)
+  {
+    std::shared_ptr<T> ptr;
+    return hash(typeid(ptr));
+  }
+
+  template <typename... Args>
+  NodeObjectPtr
+  make_node(Args &&...args)
+  {
+    return std::make_shared<NodeObject>(args...);
+  }
+
+
+  template <typename T>
+  NodeObjectPtr
+  make_node()
+  {
+    return std::make_shared<NodeObject>(hash<T>());
+  }
+
+  /**
+   * Implementation of cast_args function.
+   */
+  template <typename... Args, std::size_t... Is>
+  inline std::tuple<
+    std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
+  cast_args_impl(const std::vector<std::shared_ptr<NodeObject>> &args,
+                 std::index_sequence<Is...>)
+  {
+    try
+      {
+        return std::make_tuple(
+          std::any_cast<std::shared_ptr<
+            std::remove_const_t<std::remove_reference_t<Args>>>>(*args[Is])...);
+      }
+    catch (const std::bad_any_cast &e)
+      {
+        AssertThrow(false, dealii::ExcMessage(e.what()));
+      }
+  }
+
+  /**
+   * Cast a vector of NodeObject arguments to a tuple of shared pointers.
+   */
+  template <typename... Args>
+  inline std::tuple<
+    std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
+  cast_args(const std::vector<std::shared_ptr<NodeObject>> &args)
+  {
+    return cast_args_impl<Args...>(args, std::index_sequence_for<Args...>{});
+  }
 
   /**
    * Store all std::functions that need to be used to build a NodeObject, and
@@ -57,8 +118,10 @@ namespace coral
      * Build a new NodeObject, given a list of NodeObject elements as arguments
      * to the executor.
      */
-    std::function<std::any(std::vector<NodeObject> args)> executor =
-      [](std::vector<NodeObject>) -> std::any { return std::any(); };
+    std::function<std::any(std::vector<std::shared_ptr<NodeObject>> args)>
+      executor = [](std::vector<std::shared_ptr<NodeObject>>) -> std::any {
+      return std::any();
+    };
 
     /**
      * The json serialization of the object.
@@ -99,7 +162,19 @@ namespace coral
     {
       object        = data;
       auto hash_str = coral::hash<T>();
-      initializer   = initializers.at(hash_str);
+      try
+        {
+          initializer = initializers.at(hash_str);
+        }
+      catch (const std::out_of_range &e)
+        {
+          AssertThrow(false,
+                      dealii::ExcMessage(
+                        "Type " + boost::core::type_name<T>() +
+                        " is not registered. Before using it, you should call "
+                        "one of the NodeObject::register_*<" +
+                        boost::core::type_name<T>() + ">(...) functions."));
+        }
     }
 
     /**
@@ -158,7 +233,7 @@ namespace coral
     {
       bool is_ready = true;
       for (const auto &arg : arguments)
-        if (!arg.ready())
+        if (!arg->ready())
           {
             is_ready = false;
             break;
@@ -168,21 +243,23 @@ namespace coral
                   dealii::ExcMessage(
                     "Arguments are not ready. You can only call "
                     "this function after all arguments are ready."));
-      try
-        {
-          object = initializer.executor(arguments);
-          return object.has_value();
-        }
-      catch (...)
-        {}
-      return false;
+      // try
+      //   {
+      object = initializer.executor(arguments);
+      return object.has_value();
+      //   }
+      // catch (...)
+      //   {
+      //     std::cout << "Error in running executor." << std::endl;
+      //   }
+      // return false;
     }
 
     /**
      * Set the arguments of this node to other nodes.
      */
     void
-    set_args(const std::vector<NodeObject> &args)
+    set_args(const std::vector<std::shared_ptr<NodeObject>> &args)
     {
       AssertThrow(args.size() == initializer.json_serializer["args"].size(),
                   dealii::ExcMessage(
@@ -203,12 +280,9 @@ namespace coral
     {
       auto hash_str = coral::hash<T>();
       if (initializers.find(hash_str) != initializers.end())
-        {
-          AssertThrow(false,
-                      dealii::ExcMessage("NodeObject with type name \"" +
-                                         boost::core::type_name<T>() +
-                                         "\" is already registered."));
-        }
+        // Reset the initializer
+        initializers[hash_str] = {};
+
       auto &initializer                        = initializers[hash_str];
       initializer.json_serializer["type"]      = boost::core::type_name<T>();
       initializer.json_serializer["type_hash"] = hash_str;
@@ -227,7 +301,8 @@ namespace coral
       auto &initializer = register_json_header<T>();
 
       // Now take care of the arguments.
-      std::vector<NodeObject> args = {NodeObject(std::shared_ptr<Args>())...};
+      std::vector<std::shared_ptr<NodeObject>> args = {
+        std::make_shared<NodeObject>(std::shared_ptr<Args>())...};
 
       AssertThrow(args.size() == arg_names.size(),
                   dealii::ExcMessage("Wrong number of arguments."));
@@ -235,9 +310,9 @@ namespace coral
       for (unsigned int i = 0; i < args.size(); ++i)
         {
           initializer.json_serializer["args"][arg_names[i]]["type"] =
-            args[i].type_name();
+            args[i]->type_name();
           initializer.json_serializer["args"][arg_names[i]]["type_hash"] =
-            args[i].hash();
+            args[i]->hash();
         }
       return initializer;
     }
@@ -255,7 +330,8 @@ namespace coral
       initializer.json_serializer["run_type"] = "elementary_constructor";
 
       // Add to the initializer the emtpy executor.
-      initializer.executor = [](std::vector<NodeObject> args) -> std::any {
+      initializer.executor =
+        [](std::vector<std::shared_ptr<NodeObject>> args) -> std::any {
         AssertThrow(args.size() == 0,
                     dealii::ExcMessage("Wrong number of arguments."));
         return std::any(std::make_shared<T>());
@@ -275,7 +351,8 @@ namespace coral
       initializer.json_serializer["run_type"] = "empty_constructor";
 
       // Add to the initializer the emtpy executor.
-      initializer.executor = [](std::vector<NodeObject> args) -> std::any {
+      initializer.executor =
+        [](std::vector<std::shared_ptr<NodeObject>> args) -> std::any {
         AssertThrow(args.size() == 0,
                     dealii::ExcMessage("Wrong number of arguments."));
         return std::any(std::make_shared<T>());
@@ -296,9 +373,16 @@ namespace coral
       initializer.json_serializer["run_type"] = "constructor";
 
       // And the executor.
-      initializer.executor = [](std::vector<NodeObject> args) -> std::any {
-        return std::any(
-          std::make_shared<T>(*std::any_cast<std::shared_ptr<Args>>(args)...));
+      initializer.executor =
+        [](std::vector<std::shared_ptr<NodeObject>> args) -> std::any {
+        AssertThrow(args.size() == sizeof...(Args),
+                    dealii::ExcMessage("Wrong number of arguments."));
+        auto tuple = cast_args<Args...>(args);
+        return std::apply(
+          [](auto &&...unpackedArgs) {
+            return std::any(std::make_shared<T>(*unpackedArgs...));
+          },
+          tuple);
       };
     }
 
@@ -316,12 +400,19 @@ namespace coral
      * A general pointer-to-member-function type.
      */
     template <typename T, typename ReturnType, typename... Args>
+    using MethodType = dealii::Utilities::
+      MutableBind<std::shared_ptr<T>, std::shared_ptr<ReturnType>, Args...>;
+
+    template <typename T, typename ReturnType, typename... Args>
     using MethodPtr = ReturnType (T::*)(Args...);
 
+    template <typename T, typename ReturnType, typename... Args>
+    using ConstMethodPtr = ReturnType (T::*)(Args...) const;
+
     /**
-     * Register a method of a class. This node will have as arguments the
-     * object of the class, possibly the output argument, and the arguments of
-     * the method.
+     * Register a non-const method of a class. This node will have as arguments
+     * the object of the class, possibly the output argument, and the arguments
+     * of the method.
      *
      * The method can be void or return a value, and can have any number of
      * arguments.
@@ -348,25 +439,26 @@ namespace coral
           auto &initializer = register_json_header<
             ThisMethod,
             T,
-            typename std::remove_cv<
-              typename std::remove_reference<Args>::type>::type...>(arg_names);
+            std::remove_cv_t<std::remove_reference_t<Args>>...>(arg_names);
           initializer.json_serializer["run_type"]    = "void_method";
           initializer.json_serializer["method_name"] = method_name;
 
 
-          // Add to the initializer the emtpy executor.
+          // Add the method to the initializer
           initializer.executor =
-            [ptr](std::vector<NodeObject> args) -> std::any {
+            [ptr](std::vector<std::shared_ptr<NodeObject>> args) -> std::any {
             AssertThrow(args.size() == 1 + sizeof...(Args),
                         dealii::ExcMessage("Wrong number of arguments."));
-            auto &obj = args[0].template get<T>();
+            auto &obj = args[0]->get<T>();
             args.erase(args.begin()); // remove the first element
-            // execute the method. This is a void function.
-            (obj.*ptr)(
-              *std::any_cast<std::shared_ptr<typename std::remove_cv<
-                typename std::remove_reference<Args>::type>::type>>(args)...);
-            std::cout << "Executing method " << coral::hash(typeid(ptr))
-                      << std::endl;
+
+            auto tuple = cast_args<Args...>(args);
+
+            std::apply(
+              [&obj, ptr](auto &&...unpackedArgs) {
+                (obj.*ptr)(*unpackedArgs...);
+              },
+              tuple);
             return std::any(ptr);
           };
         }
@@ -376,25 +468,186 @@ namespace coral
             ThisMethod,
             T,
             ReturnType,
-            typename std::remove_cv<
-              typename std::remove_reference<Args>::type>::type...>(arg_names);
+            std::remove_cv_t<std::remove_reference_t<Args>>...>(arg_names);
           initializer.json_serializer["run_type"]    = "method";
           initializer.json_serializer["method_name"] = method_name;
+
           // Add to the initializer the emtpy executor.
           initializer.executor =
-            [ptr](std::vector<NodeObject> args) -> std::any {
+            [ptr](std::vector<std::shared_ptr<NodeObject>> args) -> std::any {
             AssertThrow(args.size() == 2 + sizeof...(Args),
                         dealii::ExcMessage("Wrong number of arguments."));
-            auto &obj = args[0].template get<T>();
-            auto &ret = args[1].template get<ReturnType>();
+            auto &obj = args[0]->get<T>();
+            auto &ret = args[1]->get<ReturnType>();
             args.erase(args.begin()); // remove the class
             args.erase(args.begin()); // remove the return type
-            // execute the method. This is a void function.
-            ret = (obj.*ptr)(
-              *std::any_cast<std::shared_ptr<typename std::remove_cv<
-                typename std::remove_reference<Args>::type>::type>>(args)...);
-            std::cout << "Executing method " << coral::hash(typeid(ptr))
-                      << std::endl;
+
+            auto tuple = cast_args<Args...>(args);
+            ret        = std::apply(
+              [&obj, ptr](auto &&...unpackedArgs) {
+                (obj.*ptr)(*unpackedArgs...);
+              },
+              tuple);
+            return std::any(ptr);
+          };
+        }
+    }
+
+    /**
+     * Register a const method of a class. This node will have as arguments
+     * the object of the class, possibly the output argument, and the arguments
+     * of the method.
+     *
+     * The method can be void or return a value, and can have any number of
+     * arguments, but it must be a const method of the class.
+     *
+     * The first argument of the method is the object of the class, and the
+     * @p arg_names must reflect this, i.e.,
+     * @p arg_names[0] is the name by which we store this function name in the
+     * json serializer, @p arg_names[1] must be the (optional) name we give to
+     * the output argument, and the rest of the arguments are the names of the
+     * arguments of the method.
+     */
+    template <typename T, typename ReturnType, typename... Args>
+    static void
+    register_method(ConstMethodPtr<T, ReturnType, Args...> ptr,
+                    std::vector<std::string>               arg_names)
+    {
+      using ThisMethod              = ConstMethodPtr<T, ReturnType, Args...>;
+      constexpr bool return_is_void = std::is_same_v<ReturnType, void>;
+      auto           method_name    = arg_names[0];
+      arg_names.erase(arg_names.begin());
+
+      if constexpr (return_is_void)
+        {
+          auto &initializer = register_json_header<
+            ThisMethod,
+            T,
+            std::remove_cv_t<std::remove_reference_t<Args>>...>(arg_names);
+          initializer.json_serializer["run_type"]    = "void_const_method";
+          initializer.json_serializer["method_name"] = method_name;
+
+
+          // Add the method to the initializer
+          initializer.executor =
+            [ptr](std::vector<std::shared_ptr<NodeObject>> args) -> std::any {
+            AssertThrow(args.size() == 1 + sizeof...(Args),
+                        dealii::ExcMessage("Wrong number of arguments."));
+            auto &obj = args[0]->get<T>();
+            args.erase(args.begin()); // remove the first element
+
+            auto tuple = cast_args<Args...>(args);
+
+            std::apply(
+              [&obj, ptr](auto &&...unpackedArgs) {
+                (obj.*ptr)(*unpackedArgs...);
+              },
+              tuple);
+            return std::any(ptr);
+          };
+        }
+      else
+        {
+          auto &initializer = register_json_header<
+            ThisMethod,
+            T,
+            ReturnType,
+            std::remove_cv_t<std::remove_reference_t<Args>>...>(arg_names);
+          initializer.json_serializer["run_type"]    = "method";
+          initializer.json_serializer["method_name"] = method_name;
+
+          // Add to the initializer the emtpy executor.
+          initializer.executor =
+            [ptr](std::vector<std::shared_ptr<NodeObject>> args) -> std::any {
+            AssertThrow(args.size() == 2 + sizeof...(Args),
+                        dealii::ExcMessage("Wrong number of arguments."));
+            auto &obj = args[0]->get<T>();
+            auto &ret = args[1]->get<ReturnType>();
+            args.erase(args.begin()); // remove the class
+            args.erase(args.begin()); // remove the return type
+
+            auto tuple = cast_args<Args...>(args);
+            ret        = std::apply(
+              [&obj, ptr](auto &&...unpackedArgs) {
+                (obj.*ptr)(*unpackedArgs...);
+              },
+              tuple);
+            return std::any(ptr);
+          };
+        }
+    }
+
+    /**
+     * Register a free function. This node will have as arguments the
+     * output of the function, and the arguments of the method.
+     *
+     * The function can be void or return a value, and can have any number of
+     * arguments.
+     *
+     * The first argument of the method is the return type of the class, and the
+     * @p arg_names must reflect this if non-void, i.e.,
+     * @p arg_names[0] is the name of the function, while @p arg_names[1] is the
+     * (optional) output node (if non-void) by which we store this
+     * function name, while the rest of the arguments are the names of the
+     * arguments of the method.
+     */
+    template <typename ReturnType, typename... Args>
+    static void
+    register_function(ReturnType (*ptr)(Args...),
+                      std::vector<std::string> arg_names)
+    {
+      using ThisMethod              = decltype(ptr);
+      constexpr bool return_is_void = std::is_same_v<ReturnType, void>;
+      AssertThrow(arg_names.size() > 0,
+                  dealii::ExcMessage("You must provide at least the name of "
+                                     "the function as the first argument."));
+      auto method_name = arg_names[0];
+      arg_names.erase(arg_names.begin());
+
+      if constexpr (return_is_void)
+        {
+          AssertThrow(arg_names.size() == sizeof...(Args),
+                      dealii::ExcMessage("Wrong number of arguments."));
+          auto &initializer = register_json_header<
+            ThisMethod,
+            std::remove_cv_t<std::remove_reference_t<Args>>...>(arg_names);
+          initializer.json_serializer["run_type"]    = "void_function";
+          initializer.json_serializer["method_name"] = method_name;
+
+          // Add the method to the initializer
+          initializer.executor =
+            [ptr](std::vector<std::shared_ptr<NodeObject>> args) -> std::any {
+            AssertThrow(args.size() == sizeof...(Args),
+                        dealii::ExcMessage("Wrong number of arguments."));
+
+            auto tuple = cast_args<Args...>(args);
+
+            std::apply([ptr](auto &&...unpackedArgs) { ptr(*unpackedArgs...); },
+                       tuple);
+            return std::any(ptr);
+          };
+        }
+      else
+        {
+          auto &initializer = register_json_header<
+            ThisMethod,
+            ReturnType,
+            std::remove_cv_t<std::remove_reference_t<Args>>...>(arg_names);
+          initializer.json_serializer["run_type"]    = "function";
+          initializer.json_serializer["method_name"] = method_name;
+
+          // Add the method to the initializer
+          initializer.executor =
+            [ptr](std::vector<std::shared_ptr<NodeObject>> args) -> std::any {
+            AssertThrow(args.size() == 1 + sizeof...(Args),
+                        dealii::ExcMessage("Wrong number of arguments."));
+            auto &ret = args[0]->get<ReturnType>();
+            args.erase(args.begin()); // remove the first element
+
+            auto tuple = cast_args<Args...>(args);
+
+            ret = std::apply(
+              [ptr](auto &&...unpackedArgs) { ptr(*unpackedArgs...); }, tuple);
             return std::any(ptr);
           };
         }
@@ -411,17 +664,19 @@ namespace coral
     get_shared()
     {
       AssertThrow(ready(), dealii::ExcMessage("Object is not ready."));
-      std::shared_ptr<T> ptr;
+      using type = std::remove_cv_t<std::remove_reference_t<T>>;
+      std::shared_ptr<type> ptr;
       try
         {
-          ptr = std::any_cast<std::shared_ptr<T>>(object);
+          ptr = std::any_cast<std::shared_ptr<type>>(object);
         }
       catch (...)
         {
           AssertThrow(false,
                       dealii::ExcMessage(
                         "Cannot cast object to shared pointer of type " +
-                        boost::core::type_name<T>() + " from object of type " +
+                        boost::core::type_name<type>() +
+                        " from object of type " +
                         boost::core::demangle(object.type().name()) + "."));
         }
       return ptr;
@@ -469,15 +724,16 @@ namespace coral
     std::shared_ptr<const T>
     get_shared() const
     {
-      std::shared_ptr<const T> ptr;
+      using type = std::remove_cv_t<std::remove_reference_t<T>>;
+      std::shared_ptr<const type> ptr;
       try
         {
-          ptr = std::any_cast<std::shared_ptr<const T>>(object);
+          ptr = std::any_cast<std::shared_ptr<const type>>(object);
         }
       catch (const std::bad_any_cast &e)
         {
           std::cout << "Cannot cast object to shared pointer of type "
-                    << boost::core::type_name<const T>() << std::endl;
+                    << boost::core::type_name<const type>() << std::endl;
           throw;
         }
       return ptr;
@@ -564,7 +820,7 @@ namespace coral
     /**
      * The arguments of this node to other nodes.
      */
-    std::vector<NodeObject> arguments;
+    std::vector<std::shared_ptr<NodeObject>> arguments;
 
     /**
      * A list of all known types and their initializers.
@@ -572,13 +828,10 @@ namespace coral
     static std::map<std::string, NodeObjectInitializer> initializers;
   };
 
-  std::map<std::string, NodeObjectInitializer> NodeObject::initializers;
-
-
   /**
    * json serialization of a NodeObject.
    */
-  void
+  inline void
   to_json(json &j, const NodeObject &obj)
   {
     j = obj.get_info();
@@ -587,7 +840,7 @@ namespace coral
   /**
    * json deserialization of a NodeObject.
    */
-  void
+  inline void
   from_json(const json &j, NodeObject &obj)
   {
     obj = NodeObject(j.at("type_hash").template get<std::string>());
