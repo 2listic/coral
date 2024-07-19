@@ -2,8 +2,7 @@
 #define CORAL_H
 
 #include <deal.II/base/mutable_bind.h>
-
-#include <boost/core/type_name.hpp>
+#include <deal.II/base/patterns.h>
 
 #include <any>
 #include <fstream>
@@ -18,6 +17,7 @@
 
 #include "json/json.hpp"         // JSON library
 #include "taskflow/taskflow.hpp" // Taskflow library
+#include "type_name.h"
 
 using json = nlohmann::json;
 
@@ -67,7 +67,6 @@ namespace coral
   {
     return std::make_shared<NodeObject>(args...);
   }
-
 
   template <typename T>
   NodeObjectPtr
@@ -124,9 +123,19 @@ namespace coral
     };
 
     /**
+     * For supported types, we can also parse a string to a value.
+     */
+    std::function<std::any(std::string)> parse_string;
+
+    /**
+     * For supported types, we can also output the value as a string.
+     */
+    std::function<std::string(std::any)> to_string;
+
+    /**
      * The json serialization of the object.
      */
-    json json_serializer;
+    mutable json json_serializer;
   };
 
   /**
@@ -219,6 +228,38 @@ namespace coral
     ready() const
     {
       return object.has_value();
+    }
+
+    void
+    parse_string(const std::string &value_str)
+    {
+      if (initializer.parse_string)
+        object = initializer.parse_string(value_str);
+      else
+        {
+          AssertThrow(false,
+                      dealii::ExcMessage(
+                        "No value parser available for this type."));
+        }
+    }
+
+    std::string
+    to_string() const
+    {
+      if (initializer.to_string)
+        {
+          AssertThrow(
+            ready(),
+            dealii::ExcMessage(
+              "Object is not ready. You cannot ask for its value yet."));
+          return initializer.to_string(object);
+        }
+      else
+        {
+          AssertThrow(false,
+                      dealii::ExcMessage(
+                        "No value parser available for this type."));
+        }
     }
 
     /**
@@ -319,8 +360,9 @@ namespace coral
 
     /**
      * Register an elementary type. This is a type that does not require any
-     * arguments to be constructed, it is trivially copyable, and its values can
-     * be deduced from a string using dealii::Patterns::Tools::to_value().
+     * arguments to be constructed, it is trivially copyable, and its values
+     * can be deduced from a string using
+     * dealii::Patterns::Tools::parse_string().
      */
     template <typename T>
     static void
@@ -328,6 +370,8 @@ namespace coral
     {
       auto &initializer                       = register_json_header<T>();
       initializer.json_serializer["run_type"] = "elementary_constructor";
+      initializer.json_serializer["value"] =
+        dealii::Patterns::Tools::to_string(T());
 
       // Add to the initializer the emtpy executor.
       initializer.executor =
@@ -335,6 +379,20 @@ namespace coral
         AssertThrow(args.size() == 0,
                     dealii::ExcMessage("Wrong number of arguments."));
         return std::any(std::make_shared<T>());
+      };
+
+      // Add value parser
+      initializer.parse_string = [](std::string value) -> std::any {
+        auto t = std::make_shared<T>();
+        dealii::Patterns::Tools::to_value(value, *t);
+        return std::any(t);
+      };
+
+
+      // Add value parser
+      initializer.to_string = [](std::any value) -> std::string {
+        const T &t = *std::any_cast<std::shared_ptr<T>>(value);
+        return dealii::Patterns::Tools::to_string(t);
       };
     }
 
@@ -410,9 +468,9 @@ namespace coral
     using ConstMethodPtr = ReturnType (T::*)(Args...) const;
 
     /**
-     * Register a non-const method of a class. This node will have as arguments
-     * the object of the class, possibly the output argument, and the arguments
-     * of the method.
+     * Register a non-const method of a class. This node will have as
+     * arguments the object of the class, possibly the output argument, and
+     * the arguments of the method.
      *
      * The method can be void or return a value, and can have any number of
      * arguments.
@@ -495,8 +553,8 @@ namespace coral
 
     /**
      * Register a const method of a class. This node will have as arguments
-     * the object of the class, possibly the output argument, and the arguments
-     * of the method.
+     * the object of the class, possibly the output argument, and the
+     * arguments of the method.
      *
      * The method can be void or return a value, and can have any number of
      * arguments, but it must be a const method of the class.
@@ -553,7 +611,7 @@ namespace coral
             T,
             ReturnType,
             std::remove_cv_t<std::remove_reference_t<Args>>...>(arg_names);
-          initializer.json_serializer["run_type"]    = "method";
+          initializer.json_serializer["run_type"]    = "const_method";
           initializer.json_serializer["method_name"] = method_name;
 
           // Add to the initializer the emtpy executor.
@@ -584,7 +642,8 @@ namespace coral
      * The function can be void or return a value, and can have any number of
      * arguments.
      *
-     * The first argument of the method is the return type of the class, and the
+     * The first argument of the method is the return type of the class, and
+     * the
      * @p arg_names must reflect this if non-void, i.e.,
      * @p arg_names[0] is the name of the function, while @p arg_names[1] is the
      * (optional) output node (if non-void) by which we store this
@@ -656,8 +715,8 @@ namespace coral
     /**
      * Get a shared pointer of the stored object.
      *
-     * Will throw if the object is not ready, or if the stored object is not of
-     * the requested type.
+     * Will throw if the object is not ready, or if the stored object is not
+     * of the requested type.
      */
     template <typename T>
     std::shared_ptr<T>
@@ -770,7 +829,10 @@ namespace coral
     const json &
     get_info() const
     {
-      return initializer.json_serializer;
+      auto &j = initializer.json_serializer;
+      if (initializer.to_string && object.has_value())
+        j["value"] = initializer.to_string(object);
+      return j;
     }
 
     /**
@@ -812,8 +874,8 @@ namespace coral
     std::any object;
 
     /**
-     * Anything required to build a std::shared_ptr<T> object, and to manipulate
-     * it.
+     * Anything required to build a std::shared_ptr<T> object, and to
+     * manipulate it.
      */
     NodeObjectInitializer initializer;
 
@@ -832,18 +894,32 @@ namespace coral
    * json serialization of a NodeObject.
    */
   inline void
-  to_json(json &j, const NodeObject &obj)
+  to_json(json &j, const NodeObjectPtr &obj)
   {
-    j = obj.get_info();
+    j = obj->get_info();
+    if (obj->ready() && j.contains("value"))
+      {
+        j["value"] = obj->to_string();
+      }
   }
 
   /**
    * json deserialization of a NodeObject.
    */
   inline void
-  from_json(const json &j, NodeObject &obj)
+  from_json(const json &j, NodeObjectPtr &obj)
   {
-    obj = NodeObject(j.at("type_hash").template get<std::string>());
+    AssertThrow(j.contains("type_hash"),
+                dealii::ExcMessage(
+                  "The json does not contain a hash_type entry. Bailing out."));
+    obj = make_node(j.at("type_hash").get<std::string>());
+    if (j["run_type"] == "elementary_constructor" ||
+        j["run_type"] == "empty_constructor")
+      (*obj)();
+    if (j.contains("value"))
+      {
+        obj->parse_string(j.at("value").get<std::string>());
+      }
   }
 } // namespace coral
 #endif

@@ -26,7 +26,7 @@ TEST(dealiiExamples, step01)
      "grid_generator_function_name",
      "grid_generator_function_arguments"});
 
-  NodeObject::register_method<Triangulation<2>, void, const unsigned int>(
+  NodeObject::register_method<Triangulation<2>, void, unsigned int>(
     &Triangulation<2>::refine_global,
     {"dealii::Triangulation<2>::refine_global",
      "triangulation",
