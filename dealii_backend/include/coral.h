@@ -327,7 +327,7 @@ namespace coral
       auto &initializer                        = initializers[hash_str];
       initializer.json_serializer["type"]      = boost::core::type_name<T>();
       initializer.json_serializer["type_hash"] = hash_str;
-      initializer.json_serializer["args"]      = json::object();
+      initializer.json_serializer["args"]      = json::array();
       return initializer;
     }
 
@@ -350,10 +350,9 @@ namespace coral
 
       for (unsigned int i = 0; i < args.size(); ++i)
         {
-          initializer.json_serializer["args"][arg_names[i]]["type"] =
-            args[i]->type_name();
-          initializer.json_serializer["args"][arg_names[i]]["type_hash"] =
-            args[i]->hash();
+          initializer.json_serializer["args"][i]["name"] = arg_names[i];
+          initializer.json_serializer["args"][i]["type"] = args[i]->type_name();
+          initializer.json_serializer["args"][i]["type_hash"] = args[i]->hash();
         }
       return initializer;
     }
