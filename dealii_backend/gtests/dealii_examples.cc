@@ -1,11 +1,7 @@
-#include <deal.II/grid/grid_generator.h>
-#include <deal.II/grid/grid_in.h>
-#include <deal.II/grid/grid_out.h>
-#include <deal.II/grid/tria.h>
-
 #include <gtest/gtest.h>
 
 #include "coral.h"
+#include "register_types.h"
 
 using namespace dealii;
 using namespace coral;
@@ -13,36 +9,8 @@ using namespace coral;
 // Void function test
 TEST(dealiiExamples, step01)
 {
-  NodeObject::register_type<Triangulation<2>>();
-  NodeObject::register_elementary_type<std::string>();
-  NodeObject::register_elementary_type<unsigned int>();
-  NodeObject::register_function<void,
-                                Triangulation<2> &,
-                                const std::string &,
-                                const std::string &>(
-    GridGenerator::generate_from_name_and_arguments<2, 2>,
-    {"dealii::GridGenerator<2>::generate_from_name_and_arguments",
-     "triangulation",
-     "grid_generator_function_name",
-     "grid_generator_function_arguments"});
-
-  NodeObject::register_method<Triangulation<2>, void, unsigned int>(
-    &Triangulation<2>::refine_global,
-    {"dealii::Triangulation<2>::refine_global",
-     "triangulation",
-     "n_refinements"});
-
-  NodeObject::register_derived_type<std::ostream, std::ofstream, std::string>(
-    "file_name");
-
-  NodeObject::register_type<GridOut>();
-  NodeObject::
-    register_method<GridOut, void, const Triangulation<2> &, std::ostream &>(
-      &GridOut::write_vtk<2, 2>,
-      {"dealii::GridOut<2>::write_vtk",
-       "grid_out",
-       "triangulation",
-       "output_file"});
+  register_non_dimensional_types();
+  register_dimensional_types<2, 2>();
 
   auto make_grid =
     make_node(&GridGenerator::generate_from_name_and_arguments<2, 2>);
@@ -73,4 +41,12 @@ TEST(dealiiExamples, step01)
   (*grid_out)();  // Create a new gridout object
   (*out_file)();  // Create a new file
   (*write_vtk)(); // Write the grid to a file
+
+  // Check if the file exists
+  std::ifstream file("grid-1.vtk");
+  ASSERT_TRUE(file.good());
+
+  // Remove the file
+  file.close();
+  std::remove("grid-1.vtk");
 }
