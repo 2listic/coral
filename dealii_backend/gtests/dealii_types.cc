@@ -31,7 +31,8 @@ TEST(dealiiTypes, FE_Q)
 {
   using type = FE_Q<2>;
   NodeObject::register_type<unsigned int>();
-  NodeObject::register_type<type, unsigned int>("fe_degree");
+  NodeObject::register_derived_type<FiniteElement<2>, type, unsigned int>(
+    "fe_degree");
 
   // This builds a FE_Q<2> object
   NodeObjectPtr obj    = make_node<type>();
@@ -41,6 +42,10 @@ TEST(dealiiTypes, FE_Q)
   auto &fe = obj->get<type>();
   ASSERT_EQ(1, fe.degree);
   ASSERT_EQ(4, fe.dofs_per_cell);
+
+  const auto &fe_base = obj->get<FiniteElement<2>>();
+  ASSERT_EQ(1, fe_base.degree);
+  ASSERT_EQ(4, fe_base.dofs_per_cell);
 }
 
 

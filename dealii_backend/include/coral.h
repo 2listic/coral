@@ -28,6 +28,11 @@ namespace coral
 
   using NodeObjectPtr = std::shared_ptr<NodeObject>;
 
+  template <typename... Args>
+  inline std::tuple<
+    std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
+  cast_args(const std::vector<std::shared_ptr<NodeObject>> &args);
+
   /**
    * Provide a string that can be used as a hash for a type.
    */
@@ -46,8 +51,17 @@ namespace coral
   inline std::string
   hash()
   {
-    std::shared_ptr<T> ptr;
+    std::shared_ptr<std::remove_cv_t<std::remove_reference_t<T>>> ptr;
     return hash(typeid(ptr));
+  }
+
+  /**
+   * Provide a string that can be used as a hash for a type.
+   */
+  inline std::string
+  hash(const std::any &obj)
+  {
+    return hash(obj.type());
   }
 
   /**
@@ -57,7 +71,7 @@ namespace coral
   inline std::string
   hash(const T && /*unused*/)
   {
-    std::shared_ptr<T> ptr;
+    std::shared_ptr<std::remove_cv_t<std::remove_reference_t<T>>> ptr;
     return hash(typeid(ptr));
   }
 
@@ -73,38 +87,6 @@ namespace coral
   make_node()
   {
     return std::make_shared<NodeObject>(hash<T>());
-  }
-
-  /**
-   * Implementation of cast_args function.
-   */
-  template <typename... Args, std::size_t... Is>
-  inline std::tuple<
-    std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
-  cast_args_impl(const std::vector<std::shared_ptr<NodeObject>> &args,
-                 std::index_sequence<Is...>)
-  {
-    try
-      {
-        return std::make_tuple(
-          std::any_cast<std::shared_ptr<
-            std::remove_const_t<std::remove_reference_t<Args>>>>(*args[Is])...);
-      }
-    catch (const std::bad_any_cast &e)
-      {
-        AssertThrow(false, dealii::ExcMessage(e.what()));
-      }
-  }
-
-  /**
-   * Cast a vector of NodeObject arguments to a tuple of shared pointers.
-   */
-  template <typename... Args>
-  inline std::tuple<
-    std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
-  cast_args(const std::vector<std::shared_ptr<NodeObject>> &args)
-  {
-    return cast_args_impl<Args...>(args, std::index_sequence_for<Args...>{});
   }
 
   /**
@@ -131,6 +113,13 @@ namespace coral
      * For supported types, we can also output the value as a string.
      */
     std::function<std::string(std::any)> to_string;
+
+    /**
+     * For derived types, we give a way to convert to the base class.
+     */
+    std::function<std::any(std::any)> to_base = [](std::any a) -> std::any {
+      return a;
+    };
 
     /**
      * The json serialization of the object.
@@ -161,6 +150,10 @@ namespace coral
     template <typename T>
     NodeObject(const T &data)
       : NodeObject(std::make_shared<T>(data))
+    {}
+
+    NodeObject(const std::any &data)
+      : NodeObject(coral::hash(data))
     {}
 
     /**
@@ -364,7 +357,7 @@ namespace coral
      * dealii::Patterns::Tools::parse_string().
      */
     template <typename T>
-    static void
+    static NodeObjectInitializer &
     register_elementary_type()
     {
       auto &initializer                       = register_json_header<T>();
@@ -393,6 +386,7 @@ namespace coral
         const T &t = *std::any_cast<std::shared_ptr<T>>(value);
         return dealii::Patterns::Tools::to_string(t);
       };
+      return initializer;
     }
 
     /**
@@ -401,7 +395,7 @@ namespace coral
      * copyable. This is the case for example of dealii::Triangulation<2>.
      */
     template <typename T>
-    static void
+    static NodeObjectInitializer &
     register_type()
     {
       auto &initializer                       = register_json_header<T>();
@@ -414,6 +408,60 @@ namespace coral
                     dealii::ExcMessage("Wrong number of arguments."));
         return std::any(std::make_shared<T>());
       };
+      return initializer;
+    }
+
+
+    /**
+     * Register an abstract type. This is a type that will never be constructed.
+     */
+    template <typename T>
+    static NodeObjectInitializer &
+    register_abstract_type()
+    {
+      auto &initializer                       = register_json_header<T>();
+      initializer.json_serializer["run_type"] = "none";
+
+      // Add to the initializer the emtpy executor.
+      initializer.executor =
+        [](std::vector<std::shared_ptr<NodeObject>>) -> std::any {
+        return std::any(std::shared_ptr<T>());
+      };
+      return initializer;
+    }
+
+    /**
+     * Register a trivially constructible type T, derived from type B.
+     *
+     * If a function requires a base class, and you want to pass a derived
+     * class, you can register the derived class with this function. This will
+     * allow the function to accept the derived class as an argument.
+     */
+    template <typename B, typename T>
+    static NodeObjectInitializer &
+    register_derived_type()
+    {
+      auto &initializer      = register_type<T>();
+      auto &base_initializer = register_abstract_type<B>();
+
+      base_initializer.json_serializer["derived"].push_back(
+        initializer.json_serializer["type_hash"]);
+
+      initializer.json_serializer["base"] =
+        base_initializer.json_serializer["type_hash"];
+
+      // Add the conversion to the base class.
+      initializer.to_base = [](std::any a) -> std::any {
+        std::cout << "Cast to derived class " << boost::core::type_name<T>()
+                  << std::endl;
+        auto ptr = std::any_cast<std::shared_ptr<T>>(a);
+        std::cout << "Cast to base class " << boost::core::type_name<B>()
+                  << std::endl;
+        auto ptrB = std::static_pointer_cast<B>(ptr);
+        std::cout << "Return std::any of base class" << std::endl;
+        return std::any(ptrB);
+      };
+      return initializer;
     }
 
     /**
@@ -423,7 +471,7 @@ namespace coral
      * requires the degree of the finite element to be instantiated.
      */
     template <typename T, typename... Args>
-    static void
+    static NodeObjectInitializer &
     register_type(const std::vector<std::string> &arg_names)
     {
       auto &initializer = register_json_header<T, Args...>(arg_names);
@@ -441,16 +489,52 @@ namespace coral
           },
           tuple);
       };
+      return initializer;
+    }
+
+    /**
+     * Register a non-trivially constructible type T derived from type B.
+     */
+    template <typename B, typename T, typename... Args>
+    static NodeObjectInitializer &
+    register_derived_type(const std::vector<std::string> &arg_names)
+    {
+      auto &initializer      = register_type<T, Args...>(arg_names);
+      auto &base_initializer = register_abstract_type<B>();
+
+      base_initializer.json_serializer["derived"].push_back(
+        initializer.json_serializer["type_hash"]);
+
+      initializer.json_serializer["base"] =
+        base_initializer.json_serializer["type_hash"];
+
+      // Add the conversion to the base class.
+      initializer.to_base = [](std::any a) -> std::any {
+        return std::any(
+          std::static_pointer_cast<B>(std::any_cast<std::shared_ptr<T>>(a)));
+      };
+      return initializer;
     }
 
     /**
      * Same as above, for objects that require a single argument.
      */
     template <typename T, typename Arg>
-    static void
+    static NodeObjectInitializer &
     register_type(const std::string &arg_name)
     {
-      register_type<T, Arg>(std::vector<std::string>{{arg_name}});
+      return register_type<T, Arg>(std::vector<std::string>{{arg_name}});
+    }
+
+    /**
+     * Same as above, for objects that require a single argument.
+     */
+    template <typename B, typename T, typename Arg>
+    static NodeObjectInitializer &
+    register_derived_type(const std::string &arg_name)
+    {
+      return register_derived_type<B, T, Arg>(
+        std::vector<std::string>{{arg_name}});
     }
 
     /**
@@ -724,19 +808,39 @@ namespace coral
       AssertThrow(ready(), dealii::ExcMessage("Object is not ready."));
       using type = std::remove_cv_t<std::remove_reference_t<T>>;
       std::shared_ptr<type> ptr;
-      try
+
+      if (hash() != coral::hash<type>())
         {
-          ptr = std::any_cast<std::shared_ptr<type>>(object);
-        }
-      catch (...)
-        {
-          AssertThrow(false,
+          // If the object is not of the requested type, try to convert it
+          // to the base class, using the right initializer.
+          auto &j = initializer.json_serializer;
+          AssertThrow(j.contains("base") &&
+                        (coral::hash<type>() == j.at("base")),
+                      dealii::ExcMessage("Cannot cast object of type " +
+                                         type_name() + " to object of type " +
+                                         boost::core::type_name<type>() + "."));
+          auto new_object = initializer.to_base(object);
+          AssertThrow(new_object.has_value(),
+                      dealii::ExcMessage("New object does not have value."));
+          AssertThrow(coral::hash(new_object) == j.at("base"),
                       dealii::ExcMessage(
-                        "Cannot cast object to shared pointer of type " +
-                        boost::core::type_name<type>() +
-                        " from object of type " +
-                        boost::core::demangle(object.type().name()) + "."));
+                        "New object does not have the right hash."));
+          ptr = std::any_cast<std::shared_ptr<type>>(new_object);
         }
+      else
+        try
+          {
+            ptr = std::any_cast<std::shared_ptr<type>>(object);
+          }
+        catch (...)
+          {
+            AssertThrow(false,
+                        dealii::ExcMessage(
+                          "Could not cast object to shared pointer of type " +
+                          boost::core::type_name<type>() +
+                          " from object of type " +
+                          boost::core::demangle(object.type().name()) + "."));
+          }
       return ptr;
     }
 
@@ -784,16 +888,38 @@ namespace coral
     {
       using type = std::remove_cv_t<std::remove_reference_t<T>>;
       std::shared_ptr<const type> ptr;
-      try
+      if (hash() != coral::hash<type>())
         {
-          ptr = std::any_cast<std::shared_ptr<const type>>(object);
+          // If the object is not of the requested type, try to convert it
+          // to the base class, using the right initializer.
+          auto &j = initializer.json_serializer;
+          AssertThrow(j.contains("base") &&
+                        (coral::hash<type>() == j.at("base")),
+                      dealii::ExcMessage("Cannot cast object of type " +
+                                         type_name() + " to object of type " +
+                                         boost::core::type_name<type>() + "."));
+          auto new_object = initializer.to_base(object);
+          AssertThrow(new_object.has_value(),
+                      dealii::ExcMessage("New object does not have value."));
+          AssertThrow(coral::hash(new_object) == j.at("base"),
+                      dealii::ExcMessage(
+                        "New object does not have the right hash."));
+          ptr = std::any_cast<std::shared_ptr<const type>>(new_object);
         }
-      catch (const std::bad_any_cast &e)
-        {
-          std::cout << "Cannot cast object to shared pointer of type "
-                    << boost::core::type_name<const type>() << std::endl;
-          throw;
-        }
+      else
+        try
+          {
+            ptr = std::any_cast<std::shared_ptr<const type>>(object);
+          }
+        catch (...)
+          {
+            AssertThrow(false,
+                        dealii::ExcMessage(
+                          "Could not cast object to shared pointer of type " +
+                          boost::core::type_name<type>() +
+                          " from object of type " +
+                          boost::core::demangle(object.type().name()) + "."));
+          }
       return ptr;
     }
 
@@ -842,8 +968,8 @@ namespace coral
     {
       if (object.has_value())
         {
-          // The object is initialized. Check if this is consistent with the
-          // initializer, and return its hash.
+          // The object is initialized. Check if this is consistent with
+          // the initializer, and return its hash.
           const auto object_hash = coral::hash(object.type());
           const auto stored_hash =
             std::string(initializer.json_serializer.at("type_hash"));
@@ -919,6 +1045,41 @@ namespace coral
       {
         obj->parse_string(j.at("value").get<std::string>());
       }
+  }
+
+  /**
+   * Implementation of cast_args function.
+   */
+  template <typename... Args, std::size_t... Is>
+  inline std::tuple<
+    std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
+  cast_args_impl(const std::vector<std::shared_ptr<NodeObject>> &args,
+                 std::index_sequence<Is...>)
+  {
+    try
+      {
+        return std::make_tuple(
+          args[Is]
+            ->get_shared<
+              std::remove_const_t<std::remove_reference_t<Args>>>()...);
+        // std::any_cast<std::shared_ptr<
+        //   std::remove_const_t<std::remove_reference_t<Args>>>>(*args[Is])...);
+      }
+    catch (const std::bad_any_cast &e)
+      {
+        AssertThrow(false, dealii::ExcMessage(e.what()));
+      }
+  }
+
+  /**
+   * Cast a vector of NodeObject arguments to a tuple of shared pointers.
+   */
+  template <typename... Args>
+  inline std::tuple<
+    std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
+  cast_args(const std::vector<std::shared_ptr<NodeObject>> &args)
+  {
+    return cast_args_impl<Args...>(args, std::index_sequence_for<Args...>{});
   }
 } // namespace coral
 #endif
