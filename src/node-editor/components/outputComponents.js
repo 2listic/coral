@@ -25,7 +25,7 @@ export class OutputComponent extends Rete.Component {
     let result = inputs["result"].length
       ? inputs["result"][0]
       : node.data.result;
-    const control = await this.editor.nodes
+    const control = this.editor.nodes
       .find((n) => n.id === node.id)
       .controls.get("canvas");
 

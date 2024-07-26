@@ -41,7 +41,6 @@ export class ControllerComponent extends Rete.Component {
       }
       if (isAboveThreshold) break;
     }
-    console.log(isAboveThreshold);
     outputs["result"] = isAboveThreshold;
   }
 }

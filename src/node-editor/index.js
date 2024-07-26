@@ -11,6 +11,7 @@ import { OutputComponent } from "./components/outputComponents";
 import { RoomComponent } from "./components/roomComponent";
 import { ControllerComponent } from "./components/controlComponent";
 import { DeviceComponent } from "./components/deviceComponent";
+import { ConsumptionComponent } from "./components/consumptionComponent";
 
 export default async function (container) {
   var components = [
@@ -22,6 +23,7 @@ export default async function (container) {
     new RoomComponent(),
     new ControllerComponent(),
     new DeviceComponent(),
+    new ConsumptionComponent(),
   ];
 
   var editor = new Rete.NodeEditor("hvac@0.1.0", container);
@@ -52,6 +54,7 @@ export default async function (container) {
   // editor.connect(n1.outputs.get("num"), add.inputs.get("num1"));
   // editor.connect(n2.outputs.get("num"), add.inputs.get("num2"));
 
+  let inputNum = await components[0].createNode({ numm: 22 });
   let inputNodeMin = await components[2].createNode({
     minTemp: 18,
     maxTemp: 25,
@@ -77,6 +80,7 @@ export default async function (container) {
   roomNode.position = [100, 400];
   controllerNode.position = [400, -100];
   deviceNode.position = [600, -100];
+  inputNum.position = [100, -200];
 
   editor.addNode(inputNodeMax);
   editor.addNode(inputNodeMin);
@@ -85,6 +89,7 @@ export default async function (container) {
   editor.addNode(roomNode);
   editor.addNode(controllerNode);
   editor.addNode(deviceNode);
+  editor.addNode(inputNum);
 
   editor.connect(
     inputNodeMin.outputs.get("temp"),
@@ -109,6 +114,10 @@ export default async function (container) {
   editor.connect(
     controllerNode.outputs.get("result"),
     deviceNode.inputs.get("bool")
+  );
+  editor.connect(
+    inputNum.outputs.get("num"),
+    controllerNode.inputs.get("threshold")
   );
 
   editor.on(
