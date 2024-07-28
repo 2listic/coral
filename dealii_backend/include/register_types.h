@@ -4,6 +4,7 @@
 #include <deal.II/dofs/dof_handler.h>
 
 #include <deal.II/fe/fe.h>
+#include <deal.II/fe/fe_q.h>
 
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/grid_in.h>
@@ -16,7 +17,7 @@ namespace coral
 {
   using namespace dealii;
 
-  void
+  inline void
   register_non_dimensional_types()
   {
     NodeObject::register_elementary_type<std::string>();
@@ -37,7 +38,7 @@ namespace coral
   }
 
   template <int dim, int spacedim>
-  void
+  inline void
   register_dimensional_types()
   {
     NodeObject::register_type<Triangulation<dim, spacedim>>();

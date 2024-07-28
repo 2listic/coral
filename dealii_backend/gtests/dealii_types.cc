@@ -1,13 +1,9 @@
 #include <deal.II/dofs/dof_handler.h>
 
-#include <deal.II/fe/fe_q.h>
-
-#include <deal.II/grid/grid_generator.h>
-#include <deal.II/grid/tria.h>
-
 #include <gtest/gtest.h>
 
 #include "coral.h"
+#include "register_types.h"
 
 using namespace dealii;
 using namespace coral;

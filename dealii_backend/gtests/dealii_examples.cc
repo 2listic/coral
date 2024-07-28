@@ -12,6 +12,8 @@ TEST(dealiiExamples, step01)
   register_non_dimensional_types();
   register_dimensional_types<2, 2>();
 
+  NodeObject::clear_network();
+
   auto make_grid =
     make_node(&GridGenerator::generate_from_name_and_arguments<2, 2>);
   auto tria           = make_node<Triangulation<2>>();
@@ -30,8 +32,15 @@ TEST(dealiiExamples, step01)
   out_file->set_args({filename});
   write_vtk->set_args({grid_out, tria, out_file});
 
-  (*tria)();      // Build an empty triangulation
-  (*make_grid)(); // Now Tria is a hyper_cube
+  auto         &taskflow = NodeObject::get_taskflow();
+  std::ofstream dot_file("taskflow.dot");
+  taskflow.dump(dot_file);
+  dot_file.close();
+
+  // NodeObject::run_network(); // This is what we should have run
+
+  (*tria)();
+  (*make_grid)();
 
   ASSERT_EQ(1, tria->get<Triangulation<2>>().n_active_cells());
 

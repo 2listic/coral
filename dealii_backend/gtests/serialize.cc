@@ -20,7 +20,7 @@ TEST(Serialize, Int)
 
   // Serialize to json
   json j = obj;
-  ASSERT_TRUE(j["run_type"] == "elementary_constructor");
+  ASSERT_TRUE(j["node_type"] == "elementary_constructor");
   ASSERT_TRUE(j["value"] == "42");
 
   // Deserialize from json
@@ -42,7 +42,7 @@ TEST(Serialize, Point)
 
   // Serialize to json
   json j = obj;
-  ASSERT_TRUE(j["run_type"] == "elementary_constructor");
+  ASSERT_TRUE(j["node_type"] == "elementary_constructor");
   ASSERT_TRUE(j["value"] == "0, 1");
 
   // Deserialize from json
@@ -65,7 +65,7 @@ TEST(Serialize, Triangulation)
 
   // Serialize to json
   json j = obj;
-  ASSERT_TRUE(j["run_type"] == "empty_constructor");
+  ASSERT_TRUE(j["node_type"] == "empty_constructor");
 
   // Deserialize from json. This will call the constructor.
   auto obj2 = j.template get<NodeObjectPtr>();
