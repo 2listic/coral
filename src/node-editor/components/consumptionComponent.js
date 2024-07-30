@@ -7,6 +7,7 @@ export class ConsumptionComponent extends Rete.Component {
     super("Consumption");
     this.statusHistory = [];
     this.consumptionHistory = Array(24).fill(0); // Initialize with zeros for the chart
+    this.currentDay = 1;
   }
 
   builder(node) {
@@ -36,16 +37,21 @@ export class ConsumptionComponent extends Rete.Component {
       );
       this.consumptionHistory.push(actualConsumption);
       if (this.consumptionHistory.length > 24) {
-        this.consumptionHistory.shift(); // Maintain only the last 24 consumption entries
+        this.consumptionHistory.shift(); // Maintain only the last 24 days of consumption entries
       }
       this.statusHistory = []; // Reset status history
+      this.currentDay++;
     }
 
     let consumptionAlwaysOn = this.calculateAlwaysOnConsumption();
 
     node.data.consumption = {
-      alwaysOn: Array(24).fill(consumptionAlwaysOn),
+      alwaysOn: Array(this.consumptionHistory.length).fill(consumptionAlwaysOn),
       actual: this.consumptionHistory,
+      days: Array.from(
+        { length: this.consumptionHistory.length },
+        (_, i) => this.currentDay - this.consumptionHistory.length + i + 1
+      ),
     };
 
     this.updateChart(node);
@@ -77,8 +83,12 @@ export class ConsumptionComponent extends Rete.Component {
 
     if (control) {
       control.setValue({
-        alwaysOn: Array(24).fill(24),
+        alwaysOn: Array(this.consumptionHistory.length).fill(24),
         actual: this.consumptionHistory,
+        days: Array.from(
+          { length: this.consumptionHistory.length },
+          (_, i) => this.currentDay - this.consumptionHistory.length + i + 1
+        ),
       });
     }
   }

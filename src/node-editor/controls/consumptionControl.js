@@ -9,6 +9,6 @@ export class ConsumptionControl extends Rete.Control {
   }
 
   setValue(value) {
-    this.vueContext.updateChart(value.alwaysOn, value.actual);
+    this.vueContext.updateChart(value.alwaysOn, value.actual, value.days);
   }
 }
