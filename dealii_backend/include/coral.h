@@ -49,9 +49,8 @@ namespace coral
   {
     std::stringstream ss;
     ss << std::hex << std::type_index(type).hash_code();
-    // if (suffix != "")
-    //   ss << suffix;
-    (void)suffix;
+    if (suffix != "")
+      ss << suffix;
     return ss.str();
   }
 
@@ -104,6 +103,17 @@ namespace coral
   make_node()
   {
     return std::make_shared<NodeObject>(hash<T>());
+  }
+
+  /**
+   * Construct a pointer to a NodeObject for a named method
+   */
+  template <typename Arg>
+  NodeObjectPtr
+  make_method_node(const std::string &method_name, Arg &&)
+  {
+    auto hash = coral::hash<Arg>();
+    return std::make_shared<NodeObject>(hash + method_name);
   }
 
   /**
@@ -378,7 +388,7 @@ namespace coral
      * Set the arguments of the node executor.
      */
     void
-    set_args(const std::vector<std::shared_ptr<NodeObject>> &args)
+    set_arguments(const std::vector<std::shared_ptr<NodeObject>> &args)
     {
       AssertThrow(
         args.size() == initializer.json_serializer["arguments"].size(),
@@ -491,7 +501,7 @@ namespace coral
             AssertThrow(
               expected == output_hash,
               dealii::ExcMessage(
-                "The hash type of input " + std::to_string(i) + " (" +
+                "The hash type of output " + std::to_string(i) + " (" +
                 output_hash + ") does not match what we expect in argument " +
                 std::to_string(j) + " from the json (" + expected + ")."));
             arguments[j] = outputs[i++];
