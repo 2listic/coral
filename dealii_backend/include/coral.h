@@ -156,8 +156,11 @@ namespace coral
   inline ConnectionType
   connection_type()
   {
+    // For const reference types, we have input types
+    if constexpr (std::is_reference_v<T> && std::is_const_v<std::remove_reference_t<T>>)
+      return ConnectionType::input;
     // For non-const reference types, we have pass-through types
-    if constexpr (std::is_reference_v<T> && !std::is_const_v<T>)
+    else if constexpr (std::is_reference_v<T>)
       return ConnectionType::pass_through;
     else
       return ConnectionType::input;
