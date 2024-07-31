@@ -6,7 +6,8 @@
 #include <deal.II/grid/tria.h>
 
 #include "coral.h"
-#include "json/json.hpp"         // JSON library
+#include "json/json.hpp" // JSON library
+#include "register_types.h"
 #include "taskflow/taskflow.hpp" // Taskflow library
 
 using json = nlohmann::json;
@@ -16,15 +17,12 @@ using namespace coral;
 int
 main()
 {
-  NodeObject::register_elementary_type<unsigned int>();
-  NodeObject::register_elementary_type<double>();
-  NodeObject::register_type<dealii::Triangulation<2>>();
-  NodeObject::register_method<dealii::Triangulation<2>, void, unsigned int>(
-    &dealii::Triangulation<2>::refine_global,
-    {"dealii::Triangulation<2>::refine_global",
-     "triangulation",
-     "n_refinements"});
+  coral::register_all_types();
 
   auto j = NodeObject::get_registry();
   std::cout << std::setw(4) << j << std::endl;
+
+  // Now write the registry to a file
+  std::ofstream file("node_types.json");
+  file << std::setw(4) << j << std::endl;
 }

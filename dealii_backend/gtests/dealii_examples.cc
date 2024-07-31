@@ -15,22 +15,26 @@ TEST(dealiiExamples, step01)
   NodeObject::clear_network();
 
   auto make_grid =
-    make_node(&GridGenerator::generate_from_name_and_arguments<2, 2>);
+    make_method_node("GridGenerator::generate_from_name_and_arguments<2>",
+                     &GridGenerator::generate_from_name_and_arguments<2, 2>);
+
   auto tria           = make_node<Triangulation<2>>();
   auto grid_name      = make_node("hyper_cube");
   auto grid_arguments = make_node("0: 1: false");
-  auto ref            = make_node(&Triangulation<2>::refine_global);
+  auto ref            = make_method_node("Triangulation<2>::refine_global",
+                              &Triangulation<2>::refine_global);
   auto n_ref          = make_node(2u);
   auto filename       = make_node("grid-1.vtk");
   auto out_file       = make_node<std::ofstream>();
   auto grid_out       = make_node<GridOut>();
-  auto write_vtk      = make_node(&GridOut::write_vtk<2, 2>);
+  auto write_vtk =
+    make_method_node("GridOut::write_vtk<2>", &GridOut::write_vtk<2, 2>);
 
 
-  make_grid->set_args({tria, grid_name, grid_arguments});
-  ref->set_args({tria, n_ref});
-  out_file->set_args({filename});
-  write_vtk->set_args({grid_out, tria, out_file});
+  make_grid->set_arguments({tria, grid_name, grid_arguments});
+  ref->set_arguments({tria, n_ref});
+  out_file->set_arguments({filename});
+  write_vtk->set_arguments({grid_out, tria, out_file});
 
   auto         &taskflow = NodeObject::get_taskflow();
   std::ofstream dot_file("taskflow.dot");

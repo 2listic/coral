@@ -1,5 +1,7 @@
 #include <deal.II/dofs/dof_handler.h>
 
+#include <deal.II/grid/grid_generator.h>
+
 #include <gtest/gtest.h>
 
 #include "coral.h"
@@ -33,7 +35,7 @@ TEST(dealiiTypes, FE_Q)
   // This builds a FE_Q<2> object
   NodeObjectPtr obj    = make_node<type>();
   NodeObjectPtr degree = make_node(1u);
-  obj->set_args({degree});
+  obj->set_arguments({degree});
   (*obj)();
   auto &fe = obj->get<type>();
   ASSERT_EQ(1, fe.degree);
@@ -57,7 +59,7 @@ TEST(dealiiTypes, DoFHandler)
   NodeObjectPtr dh   = make_node<type>();
 
   (*tria)();
-  dh->set_args({tria});
+  dh->set_arguments({tria});
   (*dh)();
 
   // Check that we are the same guy
@@ -75,9 +77,7 @@ TEST(dealiiTypes, TriangulationRefineGlobal)
   NodeObject::register_type<unsigned int>();
   NodeObject::register_method<type, void, unsigned int>(
     &type::refine_global,
-    {"dealii::Triangulation<2>::refine_global",
-     "triangulation",
-     "n_refinements"});
+    {"Triangulation<2>::refine_global", "triangulation", "n_refinements"});
 
   // This builds a Triangulation<2> object
   NodeObjectPtr obj = make_node<type>();
@@ -85,9 +85,10 @@ TEST(dealiiTypes, TriangulationRefineGlobal)
   auto &tria = obj->get<type>();
   GridGenerator::hyper_cube(tria, 0, 1, true);
 
-  NodeObjectPtr ref   = make_node(&type::refine_global);
+  NodeObjectPtr ref   = make_method_node("Triangulation<2>::refine_global",
+                                       &Triangulation<2>::refine_global);
   NodeObjectPtr n_ref = make_node(2u);
-  ref->set_args({obj, n_ref});
+  ref->set_arguments({obj, n_ref});
   (*ref)();
   ASSERT_EQ(16, tria.n_active_cells());
 }
@@ -95,35 +96,25 @@ TEST(dealiiTypes, TriangulationRefineGlobal)
 // Void function test
 TEST(dealiiTypes, TriangulationHyperCube)
 {
-  using type = Triangulation<2>;
-  NodeObject::register_type<type>();
-  NodeObject::register_elementary_type<bool>();
-  NodeObject::register_elementary_type<unsigned int>();
-  NodeObject::register_elementary_type<double>();
-  NodeObject::register_function<void,
-                                Triangulation<2> &,
-                                const double,
-                                const double,
-                                const bool>(
-    GridGenerator::hyper_cube<2, 2>,
-    {"dealii::GridGenerator<2>::hyper_cube",
-     "triangulation",
-     "left",
-     "right",
-     "colorize"});
-
+  register_all_types();
   // This builds a Triangulation<2> object
-  NodeObjectPtr obj = make_node<type>();
+  NodeObjectPtr obj = make_node<Triangulation<2>>();
   (*obj)();
-  auto &tria = obj->get<type>();
+  auto &tria = obj->get<Triangulation<2>>();
 
-  NodeObjectPtr left     = make_node(0.0);
-  NodeObjectPtr right    = make_node(1.0);
-  NodeObjectPtr colorize = make_node(true);
+  NodeObjectPtr make_grid =
+    make_method_node("GridGenerator::generate_from_name_and_arguments<2>",
+                     &GridGenerator::generate_from_name_and_arguments<2, 2>);
 
-  NodeObjectPtr make_grid = make_node(&GridGenerator::hyper_cube<2, 2>);
+  ASSERT_EQ(
+    make_grid->hash(),
+    "52ebbe41807005b2GridGenerator::generate_from_name_and_arguments<2>");
 
-  make_grid->set_args({obj, left, right, colorize});
+  NodeObjectPtr name      = make_node("hyper_cube");
+  NodeObjectPtr arguments = make_node("-1.0: 1.0: false");
+
+
+  make_grid->set_arguments({obj, name, arguments});
   (*make_grid)();
   ASSERT_EQ(1, tria.n_active_cells());
 }

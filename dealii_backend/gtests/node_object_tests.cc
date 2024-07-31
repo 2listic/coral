@@ -46,7 +46,7 @@ TEST(NodeObject, NonTriviallyConstructibleType)
   NodeObject::register_type<type, int>("degree");
   NodeObjectPtr fe     = make_node<type>(1);
   NodeObjectPtr degree = make_node(1);
-  fe->set_args({degree});
+  fe->set_arguments({degree});
   (*fe)();
   ASSERT_TRUE(fe->ready());
 }
@@ -84,7 +84,7 @@ TEST(NodeObject, AbstractType)
 //   NodeObjectPtr obj = make_node<MyClass>();
 //   NodeObjectPtr fun = make_node(&MyClass::set_value);
 //   NodeObjectPtr arg = make_node(42);
-//   fun->set_args({obj, arg});
+//   fun->set_arguments({obj, arg});
 //   (*fun)();
 //   ASSERT_EQ(obj->get<MyClass>().value, 42);
 // }
@@ -100,7 +100,7 @@ TEST(NodeObject, AbstractType)
 //   NodeObjectPtr obj  = make_node<decltype(my_function)>();
 //   NodeObjectPtr arg1 = make_node(1);
 //   NodeObjectPtr arg2 = make_node(2);
-//   obj->set_args({arg1, arg2});
+//   obj->set_arguments({arg1, arg2});
 //   (*obj)();
 //   ASSERT_EQ(obj->get<int>(), 3);
 // }

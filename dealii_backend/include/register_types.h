@@ -50,7 +50,8 @@ namespace coral
                                   const std::string &,
                                   const std::string &>(
       GridGenerator::generate_from_name_and_arguments<dim, spacedim>,
-      {"GridGenerator::generate_from_name_and_arguments",
+      {"GridGenerator::generate_from_name_and_arguments<" +
+         Utilities::dim_string(dim, spacedim) + ">",
        "triangulation",
        "grid_generator_function_name",
        "grid_generator_function_arguments"});
@@ -58,15 +59,30 @@ namespace coral
     NodeObject::
       register_method<Triangulation<dim, spacedim>, void, unsigned int>(
         &Triangulation<dim, spacedim>::refine_global,
-        {"Triangulation::refine_global", "triangulation", "n_refinements"});
+        {"Triangulation<" + Utilities::dim_string(dim, spacedim) +
+           ">::refine_global",
+         "triangulation",
+         "n_refinements"});
 
     NodeObject::register_method<GridOut,
                                 void,
                                 const Triangulation<dim, spacedim> &,
                                 std::ostream &>(
       &GridOut::write_vtk<dim, spacedim>,
-      {"GridOut::write_vtk", "grid_out", "triangulation", "output_file"});
+      {"GridOut::write_vtk<" + Utilities::dim_string(dim, spacedim) + ">",
+       "grid_out",
+       "triangulation",
+       "output_file"});
   }
+
+  inline void
+  register_all_types()
+  {
+    register_non_dimensional_types();
+    register_dimensional_types<2, 2>();
+    // register_dimensional_types<3, 3>();
+    // register_dimensional_types<2, 3>();
+  };
 
 } // namespace coral
 #endif
