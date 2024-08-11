@@ -185,10 +185,10 @@ namespace coral
      * called when the node is executed. The behavior of this function depends
      * on the type of the node.
      */
-    std::function<std::shared_ptr<std::any>(std::vector<std::shared_ptr<NodeObject>> args)>
-      executor = [](std::vector<std::shared_ptr<NodeObject>>) -> std::shared_ptr<std::any> {
-      return std::make_shared<std::any>();
-    };
+    std::function<std::shared_ptr<std::any>(
+      std::vector<std::shared_ptr<NodeObject>> args)>
+      executor = [](std::vector<std::shared_ptr<NodeObject>>)
+      -> std::shared_ptr<std::any> { return std::make_shared<std::any>(); };
 
     /**
      * For supported types, we can also parse a string to a value.
@@ -203,12 +203,13 @@ namespace coral
     /**
      * For derived types, we give a way to convert to the base class.
      */
-    std::function<std::shared_ptr<std::any>(std::shared_ptr<std::any>)> to_base = [](std::shared_ptr<std::any> a) -> std::shared_ptr<std::any> {
+    std::function<std::shared_ptr<std::any>(std::shared_ptr<std::any>)>
+      to_base = [](std::shared_ptr<std::any> a) -> std::shared_ptr<std::any> {
       return a;
     };
 
     /**
-     * The json serialization of the object.
+     * The json serialization of the object->
      */
     mutable json json_serializer;
   };
@@ -217,9 +218,10 @@ namespace coral
    * @class NodeObject
    * @brief A class that represents an object of any type.
    *
-   * The object itself is stored in a std::shared_ptr<std::any>. To allow for serialization and
-   * to build non trivially constructible classes, the actual type stored in
-   * std::shared_ptr<std::any> is a shared pointer to the object.
+   * The object itself is stored in a std::shared_ptr<std::any>. To allow for
+   * serialization and to build non trivially constructible classes, the actual
+   * type stored in std::shared_ptr<std::any> is a shared pointer to the
+   * object->
    *
    * The object is built only when calling the operator() function. This allows
    * you to connect arguments to this object, in case the building of the object
@@ -239,8 +241,9 @@ namespace coral
     {}
 
     /**
-     * Construct NodeObject from a std::shared_ptr<std::any>. The std::shared_ptr<std::any> is supposed to contain
-     * a shared pointer to a registered type.
+     * Construct NodeObject from a std::shared_ptr<std::any>. The
+     * std::shared_ptr<std::any> is supposed to contain a shared pointer to a
+     * registered type.
      */
     NodeObject(const std::shared_ptr<std::any> &data)
       : NodeObject(coral::hash(data))
@@ -284,7 +287,7 @@ namespace coral
       catch (const std::out_of_range &e)
         {
           // If we did not find the hash, this is actually an std::string
-          // object.
+          // object->
           *this = NodeObject(std::make_shared<std::string>(hash_str));
         }
       task = taskflow.emplace([this]() { (*this)(); })
@@ -327,7 +330,7 @@ namespace coral
     bool
     ready() const
     {
-      return object.has_value();
+      return object.operator bool();
     }
 
     void
@@ -363,7 +366,7 @@ namespace coral
     }
 
     /**
-     * Run the executor function of the object.
+     * Run the executor function of the object->
      *
      * @return true If the executor function was run successfully.
      * @return false If the executor function failed to run (i.e.,
@@ -387,7 +390,7 @@ namespace coral
       // try
       //   {
       object = initializer.executor(arguments);
-      return object.has_value();
+      return object.operator bool();
       //   }
       // catch (...)
       //   {
@@ -535,15 +538,16 @@ namespace coral
       initializer.json_serializer["outputs"].push_back("self");
 
       // Add to the initializer the emtpy executor.
-      initializer.executor =
-        [](std::vector<std::shared_ptr<NodeObject>> args) -> std::shared_ptr<std::any> {
+      initializer.executor = [](std::vector<std::shared_ptr<NodeObject>> args)
+        -> std::shared_ptr<std::any> {
         AssertThrow(args.size() == 0,
                     dealii::ExcMessage("Wrong number of arguments."));
         return std::make_shared<std::any>(std::make_shared<T>());
       };
 
       // Add value parser
-      initializer.parse_string = [](std::string value) -> std::shared_ptr<std::any> {
+      initializer.parse_string =
+        [](std::string value) -> std::shared_ptr<std::any> {
         auto t = std::make_shared<T>();
         dealii::Patterns::Tools::to_value(value, *t);
         return std::make_shared<std::any>(t);
@@ -551,7 +555,8 @@ namespace coral
 
 
       // Add value parser
-      initializer.to_string = [](std::shared_ptr<std::any> value) -> std::string {
+      initializer.to_string =
+        [](std::shared_ptr<std::any> value) -> std::string {
         const T &t = *std::any_cast<std::shared_ptr<T>>(value);
         return dealii::Patterns::Tools::to_string(t);
       };
@@ -574,8 +579,8 @@ namespace coral
 
 
       // Add to the initializer the emtpy executor.
-      initializer.executor =
-        [](std::vector<std::shared_ptr<NodeObject>> args) -> std::shared_ptr<std::any> {
+      initializer.executor = [](std::vector<std::shared_ptr<NodeObject>> args)
+        -> std::shared_ptr<std::any> {
         AssertThrow(args.size() == 0,
                     dealii::ExcMessage("Wrong number of arguments."));
         return std::make_shared<std::any>(std::make_shared<T>());
@@ -596,8 +601,8 @@ namespace coral
       initializer.node_type                    = NodeType::abstract;
 
       // Add to the initializer the emtpy executor.
-      initializer.executor =
-        [](std::vector<std::shared_ptr<NodeObject>>) -> std::shared_ptr<std::any> {
+      initializer.executor = [](std::vector<std::shared_ptr<NodeObject>>)
+        -> std::shared_ptr<std::any> {
         return std::make_shared<std::any>(std::shared_ptr<T>());
       };
       return initializer;
@@ -626,7 +631,8 @@ namespace coral
         base_initializer.json_serializer["type_hash"];
 
       // Add the conversion to the base class.
-      initializer.to_base = [](std::shared_ptr<std::any> a) -> std::shared_ptr<std::any> {
+      initializer.to_base =
+        [](std::shared_ptr<std::any> a) -> std::shared_ptr<std::any> {
         std::cout << "Cast to derived class " << boost::core::type_name<T>()
                   << std::endl;
         auto ptr = std::any_cast<std::shared_ptr<T>>(a);
@@ -655,14 +661,15 @@ namespace coral
       initializer.json_serializer["outputs"].push_back("self");
 
       // And the executor.
-      initializer.executor =
-        [](std::vector<std::shared_ptr<NodeObject>> args) -> std::shared_ptr<std::any> {
+      initializer.executor = [](std::vector<std::shared_ptr<NodeObject>> args)
+        -> std::shared_ptr<std::any> {
         AssertThrow(args.size() == sizeof...(Args),
                     dealii::ExcMessage("Wrong number of arguments."));
         auto tuple = cast_args<Args...>(args);
         return std::apply(
           [](auto &&...unpackedArgs) {
-            return std::make_shared<std::any>(std::make_shared<T>(*unpackedArgs...));
+            return std::make_shared<std::any>(
+              std::make_shared<T>(*unpackedArgs...));
           },
           tuple);
       };
@@ -686,7 +693,8 @@ namespace coral
         base_initializer.json_serializer["type_hash"];
 
       // Add the conversion to the base class.
-      initializer.to_base = [](std::shared_ptr<std::any> a) -> std::shared_ptr<std::any> {
+      initializer.to_base =
+        [](std::shared_ptr<std::any> a) -> std::shared_ptr<std::any> {
         return std::make_shared<std::any>(
           std::static_pointer_cast<B>(std::any_cast<std::shared_ptr<T>>(a)));
       };
@@ -758,7 +766,8 @@ namespace coral
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr](std::vector<std::shared_ptr<NodeObject>> args) -> std::shared_ptr<std::any> {
+            [ptr](std::vector<std::shared_ptr<NodeObject>> args)
+            -> std::shared_ptr<std::any> {
             AssertThrow(args.size() == 1 + sizeof...(Args),
                         dealii::ExcMessage("Wrong number of arguments."));
             auto &obj = args[0]->get<T>();
@@ -785,7 +794,8 @@ namespace coral
 
           // Add to the initializer the emtpy executor.
           initializer.executor =
-            [ptr](std::vector<std::shared_ptr<NodeObject>> args) -> std::shared_ptr<std::any> {
+            [ptr](std::vector<std::shared_ptr<NodeObject>> args)
+            -> std::shared_ptr<std::any> {
             AssertThrow(args.size() == 2 + sizeof...(Args),
                         dealii::ExcMessage("Wrong number of arguments."));
             auto &obj = args[0]->get<T>();
@@ -841,7 +851,8 @@ namespace coral
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr](std::vector<std::shared_ptr<NodeObject>> args) -> std::shared_ptr<std::any> {
+            [ptr](std::vector<std::shared_ptr<NodeObject>> args)
+            -> std::shared_ptr<std::any> {
             AssertThrow(args.size() == 1 + sizeof...(Args),
                         dealii::ExcMessage("Wrong number of arguments."));
             auto &obj = args[0]->get<T>();
@@ -868,7 +879,8 @@ namespace coral
 
           // Add to the initializer the emtpy executor.
           initializer.executor =
-            [ptr](std::vector<std::shared_ptr<NodeObject>> args) -> std::shared_ptr<std::any> {
+            [ptr](std::vector<std::shared_ptr<NodeObject>> args)
+            -> std::shared_ptr<std::any> {
             AssertThrow(args.size() == 2 + sizeof...(Args),
                         dealii::ExcMessage("Wrong number of arguments."));
             auto &obj = args[0]->get<T>();
@@ -927,7 +939,8 @@ namespace coral
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr](std::vector<std::shared_ptr<NodeObject>> args) -> std::shared_ptr<std::any> {
+            [ptr](std::vector<std::shared_ptr<NodeObject>> args)
+            -> std::shared_ptr<std::any> {
             AssertThrow(args.size() == sizeof...(Args),
                         dealii::ExcMessage("Wrong number of arguments."));
 
@@ -949,7 +962,8 @@ namespace coral
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr](std::vector<std::shared_ptr<NodeObject>> args) -> std::shared_ptr<std::any> {
+            [ptr](std::vector<std::shared_ptr<NodeObject>> args)
+            -> std::shared_ptr<std::any> {
             AssertThrow(args.size() == 1 + sizeof...(Args),
                         dealii::ExcMessage("Wrong number of arguments."));
             auto &ret = args[0]->get<ReturnType>();
@@ -976,7 +990,7 @@ namespace coral
     // }
 
     /**
-     * Get a shared pointer of the stored object.
+     * Get a shared pointer of the stored object->
      *
      * Will throw if the object is not ready, or if the stored object is not
      * of the requested type.
@@ -1000,17 +1014,17 @@ namespace coral
                                          type_name() + " to object of type " +
                                          boost::core::type_name<type>() + "."));
           auto new_object = initializer.to_base(object);
-          AssertThrow(new_object.has_value(),
+          AssertThrow(new_object->has_value(),
                       dealii::ExcMessage("New object does not have value."));
           AssertThrow(coral::hash(new_object) == j.at("base"),
                       dealii::ExcMessage(
                         "New object does not have the right hash."));
-          ptr = std::any_cast<std::shared_ptr<type>>(new_object);
+          ptr = std::any_cast<std::shared_ptr<type>>(*new_object);
         }
       else
         try
           {
-            ptr = std::any_cast<std::shared_ptr<type>>(object);
+            ptr = std::any_cast<std::shared_ptr<type>>(*object);
           }
         catch (...)
           {
@@ -1019,13 +1033,13 @@ namespace coral
                           "Could not cast object to shared pointer of type " +
                           boost::core::type_name<type>() +
                           " from object of type " +
-                          boost::core::demangle(object.type().name()) + "."));
+                          boost::core::demangle(object->type().name()) + "."));
           }
       return ptr;
     }
 
     /**
-     * Get a writeable reference to the stored object.
+     * Get a writeable reference to the stored object->
      */
     template <typename T>
     T &
@@ -1036,7 +1050,7 @@ namespace coral
     }
 
     /**
-     * Get a const reference to the stored object.
+     * Get a const reference to the stored object->
      */
     template <typename T>
     const T &
@@ -1047,7 +1061,7 @@ namespace coral
     }
 
     /**
-     * Expose the underlying std::shared_ptr<std::any> object.
+     * Expose the underlying std::shared_ptr<std::any> object->
      */
     operator const std::shared_ptr<std::any> &() const
     {
@@ -1078,7 +1092,7 @@ namespace coral
     }
 
     /**
-     * Expose the underlying std::shared_ptr<std::any> object.
+     * Expose the underlying std::shared_ptr<std::any> object->
      */
     operator std::shared_ptr<std::any> &()
     {
@@ -1102,7 +1116,7 @@ namespace coral
                                          type_name() + " to object of type " +
                                          boost::core::type_name<type>() + "."));
           auto new_object = initializer.to_base(object);
-          AssertThrow(new_object.has_value(),
+          AssertThrow(new_object->has_value(),
                       dealii::ExcMessage("New object does not have value."));
           AssertThrow(coral::hash(new_object) == j.at("base"),
                       dealii::ExcMessage(
@@ -1121,7 +1135,7 @@ namespace coral
                           "Could not cast object to shared pointer of type " +
                           boost::core::type_name<type>() +
                           " from object of type " +
-                          boost::core::demangle(object.type().name()) + "."));
+                          boost::core::demangle(object->type().name()) + "."));
           }
       return ptr;
     }
@@ -1131,7 +1145,7 @@ namespace coral
     NodeObject &
     operator=(std::shared_ptr<T> data)
     {
-      if (!object.has_value())
+      if (!object->has_value())
         {
           *this = NodeObject(data);
           return *this;
@@ -1165,18 +1179,18 @@ namespace coral
     get_info() const
     {
       auto &j = initializer.json_serializer;
-      if (initializer.to_string && object.has_value())
+      if (initializer.to_string && object->has_value())
         j["value"] = initializer.to_string(object);
       return j;
     }
 
     /**
-     * Get the hash of the stored object.
+     * Get the hash of the stored object->
      */
     std::string
     hash() const
     {
-      if (object.has_value())
+      if (object->has_value())
         {
           // The object is initialized. Check if this is consistent with
           // the initializer, and return its hash.
@@ -1311,7 +1325,7 @@ namespace coral
   };
 
   /**
-   * json serialization of a NodeObject.
+   * json serialization of a Nodeobject->
    */
   inline void
   to_json(json &j, const NodeObjectPtr &obj)
@@ -1324,7 +1338,7 @@ namespace coral
   }
 
   /**
-   * json deserialization of a NodeObject.
+   * json deserialization of a Nodeobject->
    */
   inline void
   from_json(const json &j, NodeObjectPtr &obj)
