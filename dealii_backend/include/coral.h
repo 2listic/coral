@@ -557,7 +557,7 @@ namespace coral
       // Add value parser
       initializer.to_string =
         [](std::shared_ptr<std::any> value) -> std::string {
-        const T &t = *std::any_cast<std::shared_ptr<T>>(value);
+        const T &t = *std::any_cast<std::shared_ptr<T>>(*value);
         return dealii::Patterns::Tools::to_string(t);
       };
       return initializer;
@@ -635,7 +635,7 @@ namespace coral
         [](std::shared_ptr<std::any> a) -> std::shared_ptr<std::any> {
         std::cout << "Cast to derived class " << boost::core::type_name<T>()
                   << std::endl;
-        auto ptr = std::any_cast<std::shared_ptr<T>>(a);
+        auto ptr = std::any_cast<std::shared_ptr<T>>(*a);
         std::cout << "Cast to base class " << boost::core::type_name<B>()
                   << std::endl;
         auto ptrB = std::static_pointer_cast<B>(ptr);
@@ -696,7 +696,7 @@ namespace coral
       initializer.to_base =
         [](std::shared_ptr<std::any> a) -> std::shared_ptr<std::any> {
         return std::make_shared<std::any>(
-          std::static_pointer_cast<B>(std::any_cast<std::shared_ptr<T>>(a)));
+          std::static_pointer_cast<B>(std::any_cast<std::shared_ptr<T>>(*a)));
       };
       return initializer;
     }
@@ -1190,7 +1190,7 @@ namespace coral
     std::string
     hash() const
     {
-      if (object->has_value())
+      if (object.operator bool())
         {
           // The object is initialized. Check if this is consistent with
           // the initializer, and return its hash.

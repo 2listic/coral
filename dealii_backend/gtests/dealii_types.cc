@@ -126,6 +126,6 @@ TEST(dealiiTypes, NodeObjectInputsOutputs)
   obj->set_arguments({}); // No arguments for this example
 
   // Check the number of inputs and outputs
-  ASSERT_EQ(obj->n_inputs(), 0); // Assuming no inputs are registered
+  ASSERT_EQ(obj->n_inputs(), 0);  // Assuming no inputs are registered
   ASSERT_EQ(obj->n_outputs(), 1); // Assuming one output is registered (self)
 }
