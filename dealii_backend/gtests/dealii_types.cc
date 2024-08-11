@@ -46,7 +46,6 @@ TEST(dealiiTypes, FE_Q)
   ASSERT_EQ(4, fe_base.dofs_per_cell);
 }
 
-
 // Non-trivial constructor test, with non trivial argument
 TEST(dealiiTypes, DoFHandler)
 {
@@ -67,7 +66,6 @@ TEST(dealiiTypes, DoFHandler)
   auto &tria_ = tria->get<Triangulation<2>>();
   ASSERT_EQ(&tria_, &dh_.get_triangulation());
 }
-
 
 // Void method test
 TEST(dealiiTypes, TriangulationRefineGlobal)
@@ -113,8 +111,21 @@ TEST(dealiiTypes, TriangulationHyperCube)
   NodeObjectPtr name      = make_node("hyper_cube");
   NodeObjectPtr arguments = make_node("-1.0: 1.0: false");
 
-
   make_grid->set_arguments({obj, name, arguments});
   (*make_grid)();
   ASSERT_EQ(1, tria.n_active_cells());
+}
+
+// Test for n_inputs() and n_outputs()
+TEST(dealiiTypes, NodeObjectInputsOutputs)
+{
+  using type = Triangulation<2>;
+  NodeObject::register_type<type>();
+
+  NodeObjectPtr obj = make_node<type>();
+  obj->set_arguments({}); // No arguments for this example
+
+  // Check the number of inputs and outputs
+  ASSERT_EQ(obj->n_inputs(), 0); // Assuming no inputs are registered
+  ASSERT_EQ(obj->n_outputs(), 1); // Assuming one output is registered (self)
 }
