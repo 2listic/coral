@@ -23,7 +23,7 @@
 #include "json/json.hpp"                 // JSON library
 #include "magic_enum/magic_enum_all.hpp" // Magic Enum library
 #include "taskflow/taskflow.hpp"         // Taskflow library
-#include "type_name.h"                   // Singo boost file
+#include "type_name.h"                   // Single boost file
 
 using json = nlohmann::json;
 
@@ -134,7 +134,9 @@ namespace coral
    */
   enum class NodeType : unsigned int
   {
-    none,                   //<The node has not been initialized with an object
+    none,                   //< The node has not been initialized with an object
+    abstract,               //< This is an abstract type. It will never be
+                            // instantiated.
     elementary_constructor, //< Trivially copyable and constructible types
     empty_constructor, //< Non trivially copyable, but trivially constructible
                        // types
@@ -157,10 +159,8 @@ namespace coral
   connection_type()
   {
     // For const reference types, we have input types
-    if constexpr (std::is_reference_v<T> && std::is_const_v<std::remove_reference_t<T>>)
-      return ConnectionType::input;
-    // For const reference types, we have input types
-    if constexpr (std::is_reference_v<T> && std::is_const_v<std::remove_reference_t<T>>)
+    if constexpr (std::is_reference_v<T> &&
+                  std::is_const_v<std::remove_reference_t<T>>)
       return ConnectionType::input;
     // For non-const reference types, we have pass-through types
     else if constexpr (std::is_reference_v<T>)
@@ -176,8 +176,14 @@ namespace coral
   struct NodeObjectInitializer
   {
     /**
-     * Build a new NodeObject, given a list of NodeObject elements as arguments
-     * to the executor.
+     * The type of the node.
+     */
+    NodeType node_type = NodeType::none;
+
+    /**
+     * The execution function associated with this node. This function will be
+     * called when the node is executed. The behavior of this function depends
+     * on the type of the node.
      */
     std::function<std::any(std::vector<std::shared_ptr<NodeObject>> args)>
       executor = [](std::vector<std::shared_ptr<NodeObject>>) -> std::any {
@@ -219,7 +225,7 @@ namespace coral
    * you to connect arguments to this object, in case the building of the object
    * requires other objects.
    */
-  class NodeObject
+  class NodeObject : public std::enable_shared_from_this<NodeObject>
   {
   public:
     NodeObject() = default;
@@ -410,116 +416,42 @@ namespace coral
      * Connect the inputs of this node.
      */
     void
-    set_inputs(const std::vector<std::shared_ptr<NodeObject>> &inputs)
+    set_inputs(
+      const std::vector<std::pair<NodeObjectPtr, unsigned int>> &inputs)
     {
-      this->inputs          = inputs;
-      const auto &json_args = initializer.json_serializer["arguments"];
-      AssertThrow(arguments.size() == connections.size(),
-                  dealii::ExcMessage("Wrong number of arguments: " +
-                                     std::to_string(arguments.size()) +
-                                     " instead of " +
-                                     std::to_string(connections.size()) + "."));
+      this->inputs.resize(inputs.size());
+      for (unsigned int i = 0; i < inputs.size(); ++i)
+        this->inputs[i] = inputs[i].first->output(inputs[i].second);
 
-      AssertThrow(arguments.size() == json_args.size(),
+      const auto &json_args   = initializer.json_serializer["arguments"];
+      const auto &json_inputs = initializer.json_serializer["inputs"];
+
+      AssertThrow(inputs.size() == json_inputs.size(),
                   dealii::ExcMessage(
-                    "Wrong number of arguments: " +
-                    std::to_string(arguments.size()) +
-                    " instead of what is registered in json: " +
-                    std::to_string(json_args.size()) + "."));
+                    "Wrong number of inputs: " + std::to_string(inputs.size()) +
+                    " instead of " + std::to_string(json_inputs.size()) + "."));
 
-      // Count the number of inputs we need to connect. If ConnectionType in
-      // connnections is input, count it
-      const unsigned int n_inputs = std::count_if(
-        connections.begin(), connections.end(), [](const auto &conn) -> bool {
-          return ((conn & ConnectionType::input) != ConnectionType::none);
-        });
-      AssertThrow(inputs.size() == n_inputs,
-                  dealii::ExcMessage("Wrong number of inputs. Was expecting " +
-                                     std::to_string(n_inputs) + " but got " +
-                                     std::to_string(inputs.size()) + "."));
-      unsigned int i = 0;
-      for (unsigned int j = 0; j < arguments.size(); ++j)
-        if ((connections[j] & ConnectionType::input) != ConnectionType::none)
-          {
-            // Let's make some checks on the compatibilities
-            const auto expected =
-              json_args[j].at("type_hash").get<std::string>();
-            const auto input_hash = inputs[i]->hash();
-            AssertThrow(
-              expected == input_hash,
-              dealii::ExcMessage(
-                "The hash type of input " + std::to_string(i) + " (" +
-                input_hash + ") does not match what we expect in argument " +
-                std::to_string(j) + " from the json (" + expected + ")."));
-            arguments[j] = inputs[i++];
-          }
+      for (unsigned int i = 0; i < inputs.size(); ++i)
+        {
+          const auto j       = json_inputs[i].get<unsigned int>();
+          auto      &in_node = inputs[i].first;
+          auto      &in      = in_node->output(inputs[i].second);
+          // Let's make some checks on the compatibilities
+          const auto expected = json_args[j].at("type_hash").get<std::string>();
+          const auto input_hash = in->hash();
+          AssertThrow(
+            expected == input_hash,
+            dealii::ExcMessage(
+              "The hash type of input " + std::to_string(i) + " (" +
+              input_hash + ") does not match what we expect in argument " +
+              std::to_string(j) + " from the json (" + expected + ")."));
+          arguments[j] = inputs[i].first->output(inputs[i].second);
+        }
 
 
       // Now make sure the executor is in the correct spot.
       for (const auto &arg : inputs)
-        {
-          auto in_task = arg->get_task();
-          if (task != in_task)
-            task.succeed(in_task);
-        }
-    }
-
-    /**
-     * Connect the outputs of this node.
-     */
-    void
-    set_outputs(const std::vector<std::shared_ptr<NodeObject>> &outputs)
-    {
-      this->outputs         = outputs;
-      const auto &json_args = initializer.json_serializer["arguments"];
-      AssertThrow(arguments.size() == connections.size(),
-                  dealii::ExcMessage("Wrong number of arguments: " +
-                                     std::to_string(arguments.size()) +
-                                     " instead of " +
-                                     std::to_string(connections.size()) + "."));
-
-      AssertThrow(arguments.size() == json_args.size(),
-                  dealii::ExcMessage(
-                    "Wrong number of arguments: " +
-                    std::to_string(arguments.size()) +
-                    " instead of what is registered in json: " +
-                    std::to_string(json_args.size()) + "."));
-
-      // Same as before, for output nodes
-      const unsigned int n_outputs = std::count_if(
-        connections.begin(), connections.end(), [](const auto &conn) {
-          return ((conn & ConnectionType::output) != ConnectionType::none);
-        });
-
-      AssertThrow(outputs.size() == n_outputs,
-                  dealii::ExcMessage("Wrong number of outputs. Was expecting " +
-                                     std::to_string(n_outputs) + " but got " +
-                                     std::to_string(outputs.size()) + "."));
-
-      unsigned int i = 0;
-      for (unsigned int j = 0; j < arguments.size(); ++j)
-        if ((connections[j] & ConnectionType::output) != ConnectionType::none)
-          {
-            // Let's make some checks on the compatibilities
-            const auto expected =
-              json_args[j].at("type_hash").get<std::string>();
-            const auto output_hash = outputs[i]->hash();
-            AssertThrow(
-              expected == output_hash,
-              dealii::ExcMessage(
-                "The hash type of output " + std::to_string(i) + " (" +
-                output_hash + ") does not match what we expect in argument " +
-                std::to_string(j) + " from the json (" + expected + ")."));
-            arguments[j] = outputs[i++];
-          }
-
-      // Now make sure the executor is in the correct spot.
-      for (const auto &arg : outputs)
-        {
-          auto out_task = arg->get_task();
-          if (task != out_task)
-            task.precede(out_task);
-        }
+        task.succeed(arg.first->get_task());
     }
 
     /**
@@ -597,6 +529,7 @@ namespace coral
     {
       auto &initializer                        = register_json_header<T>();
       initializer.json_serializer["node_type"] = "elementary_constructor";
+      initializer.node_type = NodeType::elementary_constructor;
       initializer.json_serializer["value"] =
         dealii::Patterns::Tools::to_string(T());
       initializer.json_serializer["outputs"].push_back("self");
@@ -636,6 +569,7 @@ namespace coral
     {
       auto &initializer                        = register_json_header<T>();
       initializer.json_serializer["node_type"] = "empty_constructor";
+      initializer.node_type                    = NodeType::empty_constructor;
       initializer.json_serializer["outputs"].push_back("self");
 
 
@@ -659,6 +593,7 @@ namespace coral
     {
       auto &initializer                        = register_json_header<T>();
       initializer.json_serializer["node_type"] = "abstract";
+      initializer.node_type                    = NodeType::abstract;
 
       // Add to the initializer the emtpy executor.
       initializer.executor =
@@ -716,6 +651,7 @@ namespace coral
     {
       auto &initializer = register_json_header<T, Args...>(arg_names);
       initializer.json_serializer["node_type"] = "constructor";
+      initializer.node_type                    = NodeType::constructor;
       initializer.json_serializer["outputs"].push_back("self");
 
       // And the executor.
@@ -816,6 +752,7 @@ namespace coral
             register_json_header<ThisMethod, T &, Args...>(arg_names,
                                                            method_name);
           initializer.json_serializer["node_type"]   = "void_method";
+          initializer.node_type                      = NodeType::void_method;
           initializer.json_serializer["method_name"] = method_name;
 
 
@@ -843,6 +780,7 @@ namespace coral
             register_json_header<ThisMethod, T &, ReturnType &, Args...>(
               arg_names, method_name);
           initializer.json_serializer["node_type"]   = "method";
+          initializer.node_type                      = NodeType::method;
           initializer.json_serializer["method_name"] = method_name;
 
           // Add to the initializer the emtpy executor.
@@ -896,7 +834,8 @@ namespace coral
           auto &initializer =
             register_json_header<ThisMethod, const T &, Args...>(arg_names,
                                                                  method_name);
-          initializer.json_serializer["node_type"]   = "void_const_method";
+          initializer.json_serializer["node_type"] = "void_const_method";
+          initializer.node_type = NodeType::void_const_method;
           initializer.json_serializer["method_name"] = method_name;
 
 
@@ -924,6 +863,7 @@ namespace coral
             register_json_header<ThisMethod, const T &, ReturnType &, Args...>(
               arg_names, method_name);
           initializer.json_serializer["node_type"]   = "const_method";
+          initializer.node_type                      = NodeType::const_method;
           initializer.json_serializer["method_name"] = method_name;
 
           // Add to the initializer the emtpy executor.
@@ -982,6 +922,7 @@ namespace coral
           auto &initializer =
             register_json_header<ThisMethod, Args...>(arg_names, method_name);
           initializer.json_serializer["node_type"]   = "void_function";
+          initializer.node_type                      = NodeType::void_function;
           initializer.json_serializer["method_name"] = method_name;
 
           // Add the method to the initializer
@@ -1003,6 +944,7 @@ namespace coral
             register_json_header<ThisMethod, ReturnType &, Args...>(
               arg_names, method_name);
           initializer.json_serializer["node_type"]   = "function";
+          initializer.node_type                      = NodeType::function;
           initializer.json_serializer["method_name"] = method_name;
 
           // Add the method to the initializer
@@ -1112,6 +1054,29 @@ namespace coral
       return object;
     }
 
+
+    /**
+     * Return a Pointer to the ith output.
+     */
+    NodeObjectPtr &
+    output(const unsigned int index)
+    {
+      AssertThrow(index < outputs.size(),
+                  dealii::ExcMessage("Index out of bounds."));
+      return outputs[index];
+    }
+
+    /**
+     * Return a Pointer to the @p index -th input.
+     */
+    NodeObjectPtr &
+    input(const unsigned int index)
+    {
+      AssertThrow(index < inputs.size(),
+                  dealii::ExcMessage("Index out of bounds."));
+      return inputs[index];
+    }
+
     /**
      * Expose the underlying std::any object.
      */
@@ -1174,8 +1139,15 @@ namespace coral
       else
         {
           // Check that we store a compatible type first.
-          AssertThrow(coral::hash<T>() == hash(),
-                      dealii::ExcMessage("Object type does not match."));
+          // Check that coral::hash<T>() is contained in hash().
+          const auto my_hash   = hash();
+          const auto type_hash = coral::hash<T>();
+          AssertThrow(
+            my_hash.find(type_hash) == 0,
+            dealii::ExcMessage(
+              "Object type does not match. My hash is " + my_hash +
+              " and the object hash is " + type_hash +
+              ". They should at least start with the same characters."));
           *this = NodeObject(data);
           return *this;
         }
@@ -1211,11 +1183,13 @@ namespace coral
           const auto object_hash = coral::hash(object.type());
           const auto stored_hash =
             std::string(initializer.json_serializer.at("type_hash"));
-          AssertThrow(object_hash == stored_hash,
-                      dealii::ExcMessage(
-                        "Object type does not match: we should store " +
-                        stored_hash + " instead of " + object_hash + "."));
-          return object_hash;
+          AssertThrow(
+            stored_hash.find(object_hash) == 0,
+            dealii::ExcMessage(
+              "Object type does not match: we store " + stored_hash +
+              ", and cannot set this object equal to " + object_hash +
+              ". The two hashes should at least start with the same characters."));
+          return stored_hash;
         }
       else
         {
@@ -1227,6 +1201,14 @@ namespace coral
     type_name() const
     {
       return initializer.json_serializer.at("type");
+    }
+
+    NodeType
+    node_type() const
+    {
+      return magic_enum::enum_cast<NodeType>(
+               initializer.json_serializer.at("node_type").get<std::string>())
+        .value();
     }
 
     /**
@@ -1392,6 +1374,24 @@ namespace coral
   cast_args(const std::vector<std::shared_ptr<NodeObject>> &args)
   {
     return cast_args_impl<Args...>(args, std::index_sequence_for<Args...>{});
+  }
+
+  /**
+   * Connect the inputs of a node.
+   *
+   * This function sets the inputs of @p node to the output connectors of
+   * nodes in @p inputs, in particular, it sets the input of the node to
+   * @p inputs[i].first->outputs[inputs[i].second].
+   *
+   * @param node The node to connect
+   * @param inputs The pair input/output connector of the node
+   */
+  inline void
+  connect(
+    NodeObjectPtr                                             &node,
+    const std::vector<std::pair<NodeObjectPtr, unsigned int>> &inputs = {})
+  {
+    node->set_inputs(inputs);
   }
 } // namespace coral
 #endif
