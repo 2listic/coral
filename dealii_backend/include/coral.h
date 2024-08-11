@@ -1226,6 +1226,24 @@ namespace coral
     }
 
     /**
+     * Get the number of inputs.
+     */
+    size_t
+    n_inputs() const
+    {
+      return initializer.json_serializer["inputs"].size();
+    }
+
+    /**
+     * Get the number of outputs.
+     */
+    size_t
+    n_outputs() const
+    {
+      return initializer.json_serializer["outputs"].size();
+    }
+
+    /**
      * Run all tasks registered in the current network.
      */
     static void
