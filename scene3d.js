@@ -1,10 +1,18 @@
 const canvas3D = document.getElementById("canvas3D");
-export {canvas3D};
 
-let scene, camera, renderer, controls;
-let gui, raycaster, mouse, draggableObject = null, offset;
-let isDragging = false;
-export {scene};
+let scene, camera, renderer, controls, transformControls;
+let gui, raycaster;
+let draggableObject = null;
+let models = [];
+
+export {scene,camera,canvas3D, renderer};
+
+var min_model_position = new THREE.Vector3( - 10, - 2.5, -10);
+var max_model_position = new THREE.Vector3( 10, 2.5, 10);
+
+function render() {
+  renderer.render(scene, camera);
+}
 
 export function init3D() {
   scene = new THREE.Scene();
@@ -22,7 +30,15 @@ export function init3D() {
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   camera.position.set(10, 10, 10);
   controls.update();
-
+           
+  // Transform controls
+  transformControls = new THREE.TransformControls(camera, renderer.domElement);
+  transformControls.addEventListener('change', render);
+  transformControls.addEventListener('dragging-changed', function (event) {
+	controls.enabled = !event.value;
+    });
+  scene.add(transformControls);
+ 
   // Add lights
   const ambientLight = new THREE.AmbientLight(0x404040);
   scene.add(ambientLight);
@@ -32,7 +48,7 @@ export function init3D() {
   scene.add(directionalLight);
 
   // Add a floor
-  const floorGeometry = new THREE.PlaneGeometry(20, 20);
+  const floorGeometry = new THREE.PlaneGeometry(30, 30);
   const floorMaterial = new THREE.MeshStandardMaterial({
     color: 0xdddddd,
     side: THREE.DoubleSide,
@@ -44,7 +60,6 @@ export function init3D() {
 
   // Raycaster and mouse initialization
   raycaster = new THREE.Raycaster();
-  mouse = new THREE.Vector2();
 
   // Ensure that dat.GUI is only initialized once
   if (!gui) {
@@ -53,6 +68,7 @@ export function init3D() {
     // Attach dat.GUI to the guiContainer outside the canvas
     const guiContainer = document.createElement('div');
     guiContainer.classList.add('dat-gui');
+    
     canvas3D.parentElement.appendChild(guiContainer);
     guiContainer.appendChild(gui.domElement);
 
@@ -63,74 +79,59 @@ export function init3D() {
       }
     };
 
-    gui.add(options, 'objectType', ['cube', 'sphere', 'cone']);
-    gui.add(options, 'addObject');
+    gui.add(options, 'objectType', ['cube', 'sphere', 'cone']).name("Models");
+    gui.add(options, 'addObject').name("Add");
   }
 
   animate();
 
   // Event listeners for drag functionality
-  window.addEventListener('mousedown', onMouseDown);
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', onMouseUp);
+  window.addEventListener('click', onMouseClick);
 }
 
-function onMouseDown(event) {
-  event.preventDefault();
-  
-  // Convert mouse coordinates to normalized device coordinates
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  
+function onMouseClick(event) {
+//  event.preventDefault();
+  const rect = renderer.domElement.getBoundingClientRect();
+  const mouse = new THREE.Vector2(
+	((event.clientX - rect.left) / rect.width) * 2 - 1,
+	-((event.clientY - rect.top) / rect.height) * 2 + 1
+    );
+
   // Update the raycaster with camera and mouse
   raycaster.setFromCamera(mouse, camera);
   
   // Check for intersection with objects in the scene
-  const intersects = raycaster.intersectObjects(scene.children, true);
+  const intersects = raycaster.intersectObjects(models, true);
   
   if (intersects.length > 0) {
+	if (draggableObject) {
+		transformControls.detach();
+	}
     // Select the first intersected object
-    draggableObject = intersects[0].object;
-
-    // Calculate the offset between object and mouse position
-    offset = intersects[0].point.clone().sub(draggableObject.position);
-    isDragging = true;
+        draggableObject = intersects[0].object;
+        transformControls.attach(draggableObject);
+        transformControls.object.position.clamp(min_model_position, max_model_position
+	)
+    }
+    else {
+        if (draggableObject) {
+		transformControls.detach();
+		draggableObject = null;	
+	}
   }
 }
 
-function onMouseMove(event) {
-  if (isDragging && draggableObject) {
-    // Convert mouse coordinates to normalized device coordinates
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    
-    // Update the raycaster
-    raycaster.setFromCamera(mouse, camera);
-    
-    // Get the plane the object is moving on (assumed to be the floor)
-    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // Horizontal plane at y = 0
-    
-    const intersection = new THREE.Vector3();
-    raycaster.ray.intersectPlane(plane, intersection);
-    
-    // Set the new position of the object based on the mouse movement
-    draggableObject.position.copy(intersection.sub(offset));
-  }
-}
-
-function onMouseUp() {
-  isDragging = false;
-  draggableObject = null;
-}
 
 function animate() {
   requestAnimationFrame(animate);
-  controls.update();
-  renderer.render(scene, camera);
+  render();
 }
 
+
 function addObjectToScene(type) {
+  console.log("PIPPO")
   let geometry;
+  type = "cube";
   switch (type) {
     case 'cube':
       geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -145,10 +146,13 @@ function addObjectToScene(type) {
   const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
   const mesh = new THREE.Mesh(geometry, material);
   scene.add(mesh);
+  models.push(mesh);
 }
 
 init3D();
 
+let add_model = document.getElementById("add_model");
+add_model.addEventListener("click", addObjectToScene, false);
 // Resize canvas on window resize
 window.addEventListener('resize', function () {
   camera.aspect = window.innerWidth / window.innerHeight;

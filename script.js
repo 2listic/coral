@@ -1,5 +1,8 @@
 import { canvas2D } from "./floor2d.js"; // Import from floor2d.js
-import { canvas3D, init3D, scene } from "./scene3d.js";  
+import { canvas3D, init3D, scene, camera, renderer } from "./scene3d.js";  
+
+const container2D = document.getElementById("container2D");
+const container3D = document.getElementById("container3D");
 
 let walls = []
 function convertPathsTo3D() {
@@ -58,10 +61,13 @@ switchButton.addEventListener("click", () => {
     convertPathsTo3D();
     canvas2D.style.display = "none";
     canvas3D.style.display = "block";
+    container3D.style.display = "block";
     switchButton.textContent = "Switch to 2D";
   } else {
     canvas2D.style.display = "block";
+    container2D.style.display = "block";
     canvas3D.style.display = "none";
+    container3D.style.display = "none";
     switchButton.textContent = "Switch to 3D";
   }
 });

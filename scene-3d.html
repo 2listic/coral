@@ -44,10 +44,6 @@
         const cubes = [];
         let selectedCube = null;
         const fixedHeight = 2.5;
-        // Array to store particle objects
-        const particles = [];
-        const particleCount = 100; // Number of particles
-        const particleSpeed = 0.02; // Speed of particles
 
         init();
         animate();
@@ -167,82 +163,6 @@
             walls[2].position.set(0, fixedHeight / 2, -length / 2);
         }
 
-    // Function to create particles
-    function createParticles() {
-        const width = parseFloat(document.getElementById('planeWidth').value);
-        const length = parseFloat(document.getElementById('planeLength').value); // Adjusted for length of the plane
-        const particleGeometry = new THREE.SphereGeometry(0.05, 8, 8); // Small spheres as particles
-        const particleMaterial = new THREE.MeshLambertMaterial({ color: 0x0000ff }); // Blue particles
-
-        for (let i = 0; i < particleCount; i++) {
-            const particle = new THREE.Mesh(particleGeometry, particleMaterial);
-            particle.position.set(
-                -width / 2, // Start near the left wall
-                Math.random() * fixedHeight, // Random y position within the wall height
-                Math.random() * length - length / 2 // Random z position within the plane length
-            );
-            particles.push(particle);
-            scene.add(particle);
-        }
-    }
-
-    // Function to update particle positions to simulate airflow from left to right
-    function updateParticles() {
-        const width = parseFloat(document.getElementById('planeWidth').value);
-        const length = parseFloat(document.getElementById('planeLength').value); // Adjusted for length of the plane
-
-        // Create bounding boxes for cubes
-        const cubeBoundingBoxes = cubes.map(cube => new THREE.Box3().setFromObject(cube));
-
-        // Array to store particles that hit a cube in the current iteration
-        const particlesToRemove = [];
-
-        for (let i = 0; i < particles.length; i++) {
-            const particle = particles[i];
-            particle.position.x += particleSpeed; // Move particles along the x-axis
-
-            // Create bounding box for the particle
-            const particleBoundingBox = new THREE.Box3().setFromObject(particle);
-
-            // Check for intersections with cubes
-            let hitCube = false;
-            for (let j = 0; j < cubeBoundingBoxes.length; j++) {
-                if (particleBoundingBox.intersectsBox(cubeBoundingBoxes[j])) {
-                    hitCube = true;
-                    break;
-                }
-            }
-
-            if (hitCube) {
-                // Mark particle for removal if it hits a cube
-                particlesToRemove.push(particle);
-            } else if (particle.position.x > width / 2) {
-                // Reset particles to the start position when they reach the end of the plane
-                particle.position.set(
-                    -width / 2, // Reset to the starting x position near the left wall
-                    Math.random() * fixedHeight, // Random y position within the wall height
-                    Math.random() * length - length / 2 // Random z position within the plane length
-                );
-            }
-        }
-
-        // Remove particles that hit a cube in the current iteration
-        for (let i = 0; i < particlesToRemove.length; i++) {
-            scene.remove(particlesToRemove[i]);
-            particles.splice(particles.indexOf(particlesToRemove[i]), 1);
-        }
-
-        // Recreate particles if necessary
-        while (particles.length < particleCount) {
-            const particle = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), new THREE.MeshLambertMaterial({ color: 0x0000ff }));
-            particle.position.set(
-                -width / 2, // Start near the left wall
-                Math.random() * fixedHeight, // Random y position within the wall height
-                Math.random() * length - length / 2 // Random z position within the plane length
-            );
-            particles.push(particle);
-            scene.add(particle);
-        }
     }
         function onMouseClick(event) {
             // Calculate mouse position in normalized device coordinates
