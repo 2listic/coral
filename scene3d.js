@@ -1,13 +1,13 @@
 const canvas3D = document.getElementById("canvas3D");
 
 let scene, camera, renderer, controls, transformControls;
-let gui, raycaster;
+let raycaster;
 let draggableObject = null;
 let models = [];
 
 export {scene,camera,canvas3D, renderer};
 
-var min_model_position = new THREE.Vector3( - 10, - 2.5, -10);
+var min_model_position = new THREE.Vector3( - 10,  0.5, -10);
 var max_model_position = new THREE.Vector3( 10, 2.5, 10);
 
 function render() {
@@ -38,7 +38,7 @@ export function init3D() {
 	controls.enabled = !event.value;
     });
   scene.add(transformControls);
- 
+	 
   // Add lights
   const ambientLight = new THREE.AmbientLight(0x404040);
   scene.add(ambientLight);
@@ -60,28 +60,6 @@ export function init3D() {
 
   // Raycaster and mouse initialization
   raycaster = new THREE.Raycaster();
-
-  // Ensure that dat.GUI is only initialized once
-  if (!gui) {
-    gui = new dat.GUI({ autoPlace: false });
-
-    // Attach dat.GUI to the guiContainer outside the canvas
-    const guiContainer = document.createElement('div');
-    guiContainer.classList.add('dat-gui');
-    
-    canvas3D.parentElement.appendChild(guiContainer);
-    guiContainer.appendChild(gui.domElement);
-
-    const options = {
-      objectType: 'cube', // Default selection
-      addObject: function () { 
-        addObjectToScene(options.objectType);
-      }
-    };
-
-    gui.add(options, 'objectType', ['cube', 'sphere', 'cone']).name("Models");
-    gui.add(options, 'addObject').name("Add");
-  }
 
   animate();
 
@@ -145,14 +123,32 @@ function addObjectToScene(type) {
   }
   const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
   const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(0,0.5,0)
   scene.add(mesh);
   models.push(mesh);
 }
 
 init3D();
 
+
+// Add event listener for keypress
+window.addEventListener('keydown', (event) => {
+    switch (event.key) {
+        case 't': // If "t" is pressed, switch to translation mode
+            transformControls.setMode('translate');
+            break;
+        case 'r': // If "r" is pressed, switch to rotation mode
+            transformControls.setMode('rotate');
+            transformControls.showX = false;
+	    transformControls.showY = true;
+	    transformControls.showZ = false;  
+	break;
+    }
+});
+
 let add_model = document.getElementById("add_model");
 add_model.addEventListener("click", addObjectToScene, false);
+
 // Resize canvas on window resize
 window.addEventListener('resize', function () {
   camera.aspect = window.innerWidth / window.innerHeight;
