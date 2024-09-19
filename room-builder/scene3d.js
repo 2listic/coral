@@ -7,8 +7,8 @@ let models = [];
 
 export {scene,camera,canvas3D, renderer};
 
-var min_model_position = new THREE.Vector3( - 10,  0.5, -10);
-var max_model_position = new THREE.Vector3( 10, 2.5, 10);
+var min_model_position = new THREE.Vector3( - 100,  0.5, -100);
+var max_model_position = new THREE.Vector3( 100, 2.5, 100);
 
 function render() {
   renderer.render(scene, camera);
@@ -48,7 +48,7 @@ export function init3D() {
   scene.add(directionalLight);
 
   // Add a floor
-  const floorGeometry = new THREE.PlaneGeometry(30, 30);
+  const floorGeometry = new THREE.PlaneGeometry(20, 20);
   const floorMaterial = new THREE.MeshStandardMaterial({
     color: 0xdddddd,
     side: THREE.DoubleSide,
@@ -106,26 +106,18 @@ function animate() {
 }
 
 
-function addObjectToScene(type) {
-  console.log("PIPPO")
-  let geometry;
-  type = "cube";
-  switch (type) {
-    case 'cube':
-      geometry = new THREE.BoxGeometry(1, 1, 1);
-      break;
-    case 'sphere':
-      geometry = new THREE.SphereGeometry(1, 32, 32);
-      break;
-    case 'cone':
-      geometry = new THREE.ConeGeometry(1, 2, 32);
-      break;
-  }
-  const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set(0,0.5,0)
-  scene.add(mesh);
-  models.push(mesh);
+function addObjectToScene(model) {
+  console.log(model)
+  let material_obj = new THREE.MeshBasicMaterial( { color: 0x444444 } ); 
+  const objLoader = new THREE.OBJLoader();
+  objLoader.load(`public/${model}.obj`, function(object) {
+     	object.traverse( function ( child ) {
+           if ( child.isMesh ) child.material = material_obj;
+	} );
+        object.scale.setScalar(0.03);
+        scene.add(object);
+        models.push(object);
+  });
 }
 
 init3D();
@@ -147,7 +139,10 @@ window.addEventListener('keydown', (event) => {
 });
 
 let add_model = document.getElementById("add_model");
-add_model.addEventListener("click", addObjectToScene, false);
+add_model.addEventListener("click", () => {
+	let model = document.getElementById('selectedImageText').getAttribute('data-alt');
+	addObjectToScene(model);},
+	false);
 
 // Resize canvas on window resize
 window.addEventListener('resize', function () {
