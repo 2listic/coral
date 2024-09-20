@@ -41,13 +41,15 @@ function convertPathsTo3D() {
       });
       const wall = new THREE.Mesh(wallGeometry, wallMaterial);
 
-      wall.position.x = (startX + endX) / 2;
-      wall.position.y = wallHeight / 2;
-      wall.position.z = (startY + endY) / 2;
+      wall.position.x = (startX + endX);
+      wall.position.y = wallHeight ;
+      wall.position.z = (startY + endY);
 
       const angle = Math.atan2(endY - startY, endX - startX);
       wall.rotation.y = -angle;
-
+      wall.scale.set(2,2,2);
+      // After scaling, set the wall's position Y to half of the scaled height
+      wall.position.y = wallHeight * wall.scale.y / 2;
       scene.add(wall);
       walls.push(wall);
     }

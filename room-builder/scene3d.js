@@ -7,8 +7,8 @@ let models = [];
 
 export {scene,camera,canvas3D, renderer};
 
-var min_model_position = new THREE.Vector3( - 100,  0.5, -100);
-var max_model_position = new THREE.Vector3( 100, 2.5, 100);
+var min_model_position = new THREE.Vector3( - 100,  0, -100);
+var max_model_position = new THREE.Vector3( 100, 5.5, 100);
 
 function render() {
   renderer.render(scene, camera);
@@ -37,6 +37,9 @@ export function init3D() {
   transformControls.addEventListener('dragging-changed', function (event) {
 	controls.enabled = !event.value;
     });
+  transformControls.showX = true;
+  transformControls.showY = false;
+  transformControls.showZ = true;  
   scene.add(transformControls);
 	 
   // Add lights
@@ -88,8 +91,7 @@ function onMouseClick(event) {
     // Select the first intersected object
         draggableObject = intersects[0].object;
         transformControls.attach(draggableObject);
-        transformControls.object.position.clamp(min_model_position, max_model_position
-	)
+ 
     }
     else {
         if (draggableObject) {
@@ -108,17 +110,86 @@ function animate() {
 
 function addObjectToScene(model) {
   console.log(model)
-  let material_obj = new THREE.MeshBasicMaterial( { color: 0x444444 } ); 
+// Use a material that responds to light
+  let material_obj = new THREE.MeshStandardMaterial({
+    color: 0x6e6e6e,    // Gray color
+    metalness: 0.5,     // How metallic the material appears (0 = non-metal, 1 = metal)
+    roughness: 0.7,     // How rough the surface is (0 = smooth, 1 = rough)
+  });
+
+  // let material_obj = new THREE.MeshBasicMaterial( { color: 0x6E6E6E} ); 
   const objLoader = new THREE.OBJLoader();
   objLoader.load(`public/${model}.obj`, function(object) {
      	object.traverse( function ( child ) {
            if ( child.isMesh ) child.material = material_obj;
-	} );
-        object.scale.setScalar(0.03);
-        scene.add(object);
+	});
+	switch (model){
+	  case "Chair":
+	        object.scale.setScalar(0.04);	
+		break;
+	  case "Cooler":
+		object.scale.setScalar(0.02);
+		break;
+	  case "Table":
+		object.scale.setScalar(0.8);
+        }
+	scene.add(object);
         models.push(object);
   });
 }
+
+function deleteCube() {
+  const intersects = raycaster.intersectObjects(models, true);
+
+  // Check if there are any intersected objects
+  if (intersects.length > 0) {
+    // Get the parent object that was added to the models array
+    let draggableObject = intersects[0].object;
+
+    // Traverse up the hierarchy to find the root parent that was added to models
+    while (draggableObject.parent && !models.includes(draggableObject)) {
+      draggableObject = draggableObject.parent;
+    }
+
+    // Remove the object from the scene if it's part of models
+    if (models.includes(draggableObject)) {
+      console.log(draggableObject);
+      scene.remove(draggableObject);
+
+      // Find and remove the object from the models array
+      const index = models.indexOf(draggableObject);
+      if (index > -1) {
+        models.splice(index, 1);
+      }
+
+      // Detach transform controls and reset the draggableObject variable
+      transformControls.detach();
+      draggableObject = null;
+    }
+  }
+}
+
+
+
+// function deleteCube() {
+//    
+//     const intersects = raycaster.intersectObjects(models, true);
+//     draggableObject = intersects[0].object;
+//     if (draggableObject) {
+// 	console.log(draggableObject);
+// 	scene.remove(draggableObject);
+//
+// 	const index = models.indexOf(draggableObject);
+// 	if (index > -1) {
+// 	    models.splice(index, 1);
+// 	}
+//
+// 	// Detach transform controls
+// 	transformControls.detach();
+// 	// Update the selectedCube variable
+// 	draggableObject = null;
+//     }
+// }
 
 init3D();
 
@@ -128,9 +199,18 @@ window.addEventListener('keydown', (event) => {
     switch (event.key) {
         case 't': // If "t" is pressed, switch to translation mode
             transformControls.setMode('translate');
-            break;
+            transformControls.showX = true;
+	    transformControls.showY = false;
+	    transformControls.showZ = true;  
+	break;
         case 'r': // If "r" is pressed, switch to rotation mode
             transformControls.setMode('rotate');
+            transformControls.showX = false;
+	    transformControls.showY = true;
+	    transformControls.showZ = false;  
+	break;
+        case 'y': // If "t" is pressed, switch to translation mode
+            transformControls.setMode('translate');
             transformControls.showX = false;
 	    transformControls.showY = true;
 	    transformControls.showZ = false;  
@@ -143,6 +223,9 @@ add_model.addEventListener("click", () => {
 	let model = document.getElementById('selectedImageText').getAttribute('data-alt');
 	addObjectToScene(model);},
 	false);
+
+let remove_model = document.getElementById("delete_model");
+remove_model.addEventListener("click", deleteCube, false);
 
 // Resize canvas on window resize
 window.addEventListener('resize', function () {
