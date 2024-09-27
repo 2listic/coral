@@ -4,11 +4,10 @@ let scene, camera, renderer, controls, transformControls;
 let raycaster;
 let draggableObject = null;
 let models = [];
+let MODELS_NAME = ["cooler", "chair", "table", "wall"]; 
 
 export {scene,camera,canvas3D, renderer};
 
-var min_model_position = new THREE.Vector3( - 100,  0, -100);
-var max_model_position = new THREE.Vector3( 100, 5.5, 100);
 
 function render() {
   renderer.render(scene, camera);
@@ -108,6 +107,15 @@ function animate() {
 }
 
 
+
+function aux_mesh_name(object, material, name) {
+  object.traverse( function ( child ) {
+    if ( child.isMesh ) 
+      child.material = material;
+      child.name = name;
+});
+}
+
 function addObjectToScene(model) {
   console.log(model)
 // Use a material that responds to light
@@ -120,17 +128,17 @@ function addObjectToScene(model) {
   // let material_obj = new THREE.MeshBasicMaterial( { color: 0x6E6E6E} ); 
   const objLoader = new THREE.OBJLoader();
   objLoader.load(`public/${model}.obj`, function(object) {
-     	object.traverse( function ( child ) {
-           if ( child.isMesh ) child.material = material_obj;
-	});
 	switch (model){
 	  case "Chair":
-	        object.scale.setScalar(0.04);	
+		aux_mesh_name(object, material_obj, "chair");
+	        object.scale.setScalar(0.04);
 		break;
 	  case "Cooler":
-		object.scale.setScalar(0.02);
+		aux_mesh_name(object, material_obj, "cooler");
+		object.scale.setScalar(0.01);
 		break;
 	  case "Table":
+		aux_mesh_name(object, material_obj, "table");
 		object.scale.setScalar(0.8);
         }
 	scene.add(object);
@@ -169,27 +177,38 @@ function deleteCube() {
   }
 }
 
+let localPosition = new THREE.Vector3(0, 0, 0);
+let box = new THREE.Box3();
+let size = new THREE.Vector3(0,0,0);
+
+function exportSceneToJson() {
+    const sceneData = {};
+
+    scene.traverse((object) => {
+        // Ensure object has a position property
+        if (object.position && object.isMesh) {
+            
+            // Use object name as key, or generate a unique identifier if name is empty
+            if (MODELS_NAME.includes(object.name)) {
+	      const objectKey = `${object.name}_${object.id}`;
+              if (object.name.startsWith("wall")) {
+		sceneData[objectKey] = { "dimensions": null, 
+			                 "coords": object.localToWorld(localPosition.clone())}; 
+	      }
+	      else {
+		sceneData[objectKey] = {
+			"dimensions": box.setFromObject(object).getSize(size),
+	        	"coords": object.localToWorld(localPosition.clone()),
+	                };
+	      }
+            }
+	}
+    });
+
+    console.log(JSON.stringify(sceneData, null, 2)); // Pretty print JSON with 2-space indent
+}
 
 
-// function deleteCube() {
-//    
-//     const intersects = raycaster.intersectObjects(models, true);
-//     draggableObject = intersects[0].object;
-//     if (draggableObject) {
-// 	console.log(draggableObject);
-// 	scene.remove(draggableObject);
-//
-// 	const index = models.indexOf(draggableObject);
-// 	if (index > -1) {
-// 	    models.splice(index, 1);
-// 	}
-//
-// 	// Detach transform controls
-// 	transformControls.detach();
-// 	// Update the selectedCube variable
-// 	draggableObject = null;
-//     }
-// }
 
 init3D();
 
@@ -226,6 +245,9 @@ add_model.addEventListener("click", () => {
 
 let remove_model = document.getElementById("delete_model");
 remove_model.addEventListener("click", deleteCube, false);
+
+let export_scene = document.getElementById("export_scene");
+export_scene.addEventListener("click", exportSceneToJson, false);
 
 // Resize canvas on window resize
 window.addEventListener('resize', function () {
