@@ -29,22 +29,32 @@ def calculate_room_and_objects(data):
             dimensions = value['dimensions']
 
             # Apply correction only if x or z is less than 0
-            adjusted_x = coords['x'] - min_x if coords['x'] < 0 \
+            adjusted_x_min = coords['x'] - min_x if coords['x'] < 0 \
                     else coords['x']
-            adjusted_z = coords['z'] - min_z if coords['z'] < 0 \
+            adjusted_z_min = coords['z'] - min_z if coords['z'] < 0 \
                     else coords['z']
-            adjusted_y = coords['y'] if coords['y'] <= 2.5 \
+            adjusted_y_min = coords['y'] if coords['y'] <= 2.5 \
                     else 2.5 - dimensions['y']  # Ensure height does not exceed 2.5
 
+            adjusted_x_max = adjusted_x_min + dimensions['x'] \
+                    if adjusted_x_min + dimensions['x'] < \
+                    room_dimensions['x'] else room_dimensions['x']
+            adjusted_y_max = adjusted_y_min + dimensions['y'] \
+                    if adjusted_y_min + dimensions['y'] < \
+                    room_dimensions['y'] else room_dimensions['y']
+            adjusted_z_max = adjusted_z_min + dimensions['z'] \
+                    if adjusted_z_min + dimensions['z'] < \
+                    room_dimensions['z'] else room_dimensions['z']
+
             adjusted_objects[key] = {
-                'models_dim': {
-                    'x': (round(adjusted_x, 2),
-                          round(adjusted_x + dimensions['x'], 2)),
-                    'y': (round(adjusted_y, 2),
-                          round(adjusted_y + dimensions['y'], 2)),
-                    'z': (round(adjusted_z, 2),
-                          round(adjusted_z + dimensions['z'], 2))
-                },
+
+                    'x': (round(adjusted_x_min, 2),
+                          round(adjusted_x_max, 2)),
+                    'y': (round(adjusted_y_min, 2),
+                          round(adjusted_y_max, 2)),
+                    'z': (round(adjusted_z_min, 2),
+                          round(adjusted_z_max, 2))
+
             }
 
     return {
