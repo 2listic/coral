@@ -1,8 +1,26 @@
 import json
+from typing import Dict
+from typing import Any
 
 
-def calculate_room_and_objects(data):
+def calculate_room_and_objects(data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Calculate room dimensions based on the wall coordinates and adjust
+    the position and size of objects within the room while ensuring
+    height does not exceed 2.5 units. Corrections are applied only to
+    objects whose keys start with 'cooler', 'chair', or 'table' and
+    where 'x' or 'z' coordinates are less than 0.
 
+    Args:
+        data (Dict[str, Any]): A dictionary containing object data, where
+            each object has keys for 'coords' and 'dimensions'. Wall
+            objects are used to calculate room size, and object positions
+            are adjusted based on room constraints.
+
+    Returns:
+        Dict[str, Any]: A dictionary containing the calculated room
+            dimensions and the adjusted object coordinates.
+    """
     # Extract walls' coordinates
     walls = {key: value['coords'] for key, value in data.items()
              if 'wall' in key}
@@ -28,23 +46,19 @@ def calculate_room_and_objects(data):
             coords = value['coords']
             dimensions = value['dimensions']
 
-            # Apply correction only if x or z is less than 0
-            adjusted_x_min = coords['x'] - min_x if coords['x'] < 0 \
-                    else coords['x']
-            adjusted_z_min = coords['z'] - min_z if coords['z'] < 0 \
-                    else coords['z']
-            adjusted_y_min = coords['y'] if coords['y'] <= 2.5 \
-                    else 2.5 - dimensions['y']  # Ensure height does not exceed 2.5
+            # Adjust x and z coordinates if less than 0
+            adjusted_x_min = max(coords['x'] - min_x, 0)
+            adjusted_z_min = max(coords['z'] - min_z, 0)
 
-            adjusted_x_max = adjusted_x_min + dimensions['x'] \
-                    if adjusted_x_min + dimensions['x'] < \
-                    room_dimensions['x'] else room_dimensions['x']
-            adjusted_y_max = adjusted_y_min + dimensions['y'] \
-                    if adjusted_y_min + dimensions['y'] < \
-                    room_dimensions['y'] else room_dimensions['y']
-            adjusted_z_max = adjusted_z_min + dimensions['z'] \
-                    if adjusted_z_min + dimensions['z'] < \
-                    room_dimensions['z'] else room_dimensions['z']
+            # Ensure height does not exceed 2.5 units
+            adjusted_y_min = min(coords['y'], 2.5 - dimensions['y'])
+
+            adjusted_x_max = min(adjusted_x_min + dimensions['x'],
+                                 room_dimensions['x'])
+            adjusted_y_max = min(adjusted_y_min + dimensions['y'],
+                                 room_dimensions['y'])
+            adjusted_z_max = min(adjusted_z_min + dimensions['z'],
+                                 room_dimensions['z'])
 
             adjusted_objects[key] = {
 
