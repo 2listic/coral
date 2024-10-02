@@ -1,42 +1,82 @@
 from phi.torch.flow import *
 from tqdm.notebook import trange
+import matplotlib.pyplot as plt
 
-domain = Box(x=10, y=10, z=10)
-boundary_v = {
-    'x-': 20, 'x+': 0,
-    'y': 0,
-    'z': 0}
-v0 = StaggeredGrid(0, boundary_v, domain, x=50, y=50, z=50)
+##### Variables ############################
+len_x = 10 # domain length
+len_y = 10 # domain width
 
-boundary_t= {'x-': 0, 'x+': 0, 'y-': 0, 'y+': 0, 'z': 0}
-t0 = CenteredGrid(0, boundary_t, domain, x=50, y=50, z=50)
+res_x = 50 # resolution grid x
+res_y = 50 # resolution grid y
 
-heat_source_location = Box(x=(1, 2), y=(2, 3), z=(2, 3))
-heat_source = 20 * resample(heat_source_location, to=t0, soft=True)
+obstacles_ = {
+    'box1': [(2, 5), (8, 9)], 
+    #'chair': [(3, 4), (7.5, 8.5)],
+}
 
-# @jit_compile
+ac_ = {
+    'ac1': [(2, 3), (0, 1)],
+}
+
+t_ambient = 30
+t_room = 25
+t_ac = 20
+inflow = vec(x=0, y=10)
+
+viscosity = .001
+conductivity = 1.
+
+############################################
+domain = Box(x=len_x, y=len_y)
+
+acs = { 
+    name: Box(x=ac_[name][0], y=ac_[name][1])
+    for name in ac_
+}
+
+obstacles = {
+    name: Box(x=obstacles_[name][0], y=obstacles_[name][1])
+    for name in obstacles_
+}
+objects_dict = {**obstacles, **acs}
+
+mesh = geom.build_mesh(domain, x=res_x, y=res_y, obstacles=objects_dict)
+
+# @jit.compile
 def step(v, p, t, dt=1.):
     v = advect.semi_lagrangian(v, v, dt)
-    v, p = fluid.make_incompressible(v, [], Solve(x0=p))
+    v, p = fluid.make_incompressible(v, solve=Solve(x0=p))
 
-    t = advect.semi_lagrangian(t, v, dt) + heat_source
-    #t = 100 * resample(heat_source, t) + advect.semi_lagrangian(t, v, dt)
-    t = diffuse.implicit(t, 1., dt) 
+    t = advect.semi_lagrangian(t, v, dt)
+    t = diffuse.implicit(t, conductivity, dt, correct_skew=False)
     return v, p, t
 
+boundary_v_obstacles = {
+    name: 0 for name in obstacles_
+}
+boundary_v_acs = {
+    name: inflow for name in ac_
+}
+boundary_v = {
+    'x': 0, 'y': 0, **boundary_v_obstacles, **boundary_v_acs
+}
+v0 = Field(mesh, tensor(vec(x=0, y=0)), boundary_v)
+
+boundary_t_obstacles = {
+    name: ZERO_GRADIENT for name in obstacles_
+}
+boundary_t_acs = {
+    name: t_ac for name in ac_
+}
+boundary_t= {
+    'x': t_ambient, 'y': t_ambient,
+    **boundary_t_obstacles, **boundary_t_acs
+}
+t0 = Field(mesh, tensor(t_room), boundary_t)
+
+
 v_sol, p_sol, t_sol = iterate(
-    step, batch(time=40), v0, None, t0, dt=0.01, range=trange)
+    step, batch(time=50), v0, None, t0, dt=0.1, range=trange)
 
-v_sol_xy = v_sol[{'z': 2, 'vector': 'x, y'}]
-v_sol_xz = v_sol[{'y': 2, 'vector': 'x, z'}]
-v_sol_yz = v_sol[{'x': 1, 'vector': 'y, z'}]
-
-t_sol_xy = t_sol[{'z': 2}]
-t_sol_xz = t_sol[{'y': 2}]
-t_sol_yz = t_sol[{'x': 1}]
-
-plot(
-    [t_sol_xy, t_sol_xz, t_sol_yz],
-    ['XY', 'XZ', 'YZ'], animate='time')
-import matplotlib.pyplot as plt
+plot(t_sol, *obstacles, *acs, animate='time', overlay='args')
 plt.show()
