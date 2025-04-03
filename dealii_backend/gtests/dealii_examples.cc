@@ -30,11 +30,18 @@ TEST(dealiiExamples, step01)
   auto write_vtk =
     make_method_node("GridOut::write_vtk<2>", &GridOut::write_vtk<2, 2>);
 
+  connect(make_grid, {{tria, 0}, {grid_name, 0}, {grid_arguments, 0}});
 
-  make_grid->set_arguments({tria, grid_name, grid_arguments});
-  ref->set_arguments({tria, n_ref});
-  out_file->set_arguments({filename});
-  write_vtk->set_arguments({grid_out, tria, out_file});
+  // make_grid->set_arguments({tria, grid_name, grid_arguments});
+  // ref->set_arguments({tria, n_ref});
+
+  connect(ref, {{make_grid, 0}, {n_ref, 0}});
+
+  // out_file->set_arguments({filename});
+  connect(out_file, {{filename, 0}});
+
+  // write_vtk->set_arguments({grid_out, tria, out_file});
+  connect(write_vtk, {{grid_out, 0}, {tria, 0}, {out_file, 0}});
 
   auto         &taskflow = NodeObject::get_taskflow();
   std::ofstream dot_file("taskflow.dot");
