@@ -7,7 +7,6 @@
 #include <taskflow/taskflow.hpp>
 
 #include <any>
-#include <fstream>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -17,7 +16,6 @@
 #include <type_traits>
 #include <typeindex>
 #include <typeinfo>
-#include <unordered_map>
 #include <vector>
 
 #include "json/json.hpp"                 // JSON library
@@ -44,8 +42,9 @@ namespace coral
   /**
    * Provide a string that can be used as a hash for a type.
    */
-  inline std::string
+  inline auto
   hash(const std::type_info &type, const std::string &suffix = "")
+    -> std::string
   {
     std::stringstream ss;
     ss << std::hex << std::type_index(type).hash_code();
@@ -58,8 +57,8 @@ namespace coral
    * Provide a string that can be used as a hash for a type.
    */
   template <typename T>
-  inline std::string
-  hash(const std::string &suffix = "")
+  inline auto
+  hash(const std::string &suffix = "") -> std::string
   {
     std::shared_ptr<std::remove_cv_t<std::remove_reference_t<T>>> ptr;
     return hash(typeid(ptr), suffix);
@@ -68,8 +67,9 @@ namespace coral
   /**
    * Provide a string that can be used as a hash for a type.
    */
-  inline std::string
+  inline auto
   hash(const std::shared_ptr<std::any> &obj, const std::string &suffix = "")
+    -> std::string
   {
     return hash(obj->type(), suffix);
   }
@@ -78,8 +78,8 @@ namespace coral
    * Provide a string that can be used as a hash for a type.
    */
   template <typename T>
-  inline std::string
-  hash(const T && /*unused*/, const std::string &suffix = "")
+  inline auto
+  hash(const T && /*unused*/, const std::string &suffix = "") -> std::string
   {
     std::shared_ptr<std::remove_cv_t<std::remove_reference_t<T>>> ptr;
     return hash(typeid(ptr), suffix);
@@ -89,8 +89,8 @@ namespace coral
    * Construct a pointer to a NodeObject from the arguments of the constructor.
    */
   template <typename... Args>
-  NodeObjectPtr
-  make_node(Args &&...args)
+  inline auto
+  make_node(Args &&...args) -> NodeObjectPtr
   {
     return std::make_shared<NodeObject>(args...);
   }
@@ -99,8 +99,8 @@ namespace coral
    * Construct a pointer to a NodeObject from a type T.
    */
   template <typename T>
-  NodeObjectPtr
-  make_node()
+  inline auto
+  make_node() -> NodeObjectPtr
   {
     return std::make_shared<NodeObject>(hash<T>());
   }
@@ -109,8 +109,8 @@ namespace coral
    * Construct a pointer to a NodeObject for a named method
    */
   template <typename Arg>
-  NodeObjectPtr
-  make_method_node(const std::string &method_name, Arg &&)
+  inline auto
+  make_method_node(const std::string &method_name, Arg &&) -> NodeObjectPtr
   {
     auto hash = coral::hash<Arg>();
     return std::make_shared<NodeObject>(hash + method_name);
@@ -155,8 +155,8 @@ namespace coral
    * arguments.
    */
   template <typename T>
-  inline ConnectionType
-  connection_type()
+  inline auto
+  connection_type() -> ConnectionType
   {
     // For const reference types, we have input types
     if constexpr (std::is_reference_v<T> &&
@@ -221,7 +221,7 @@ namespace coral
    * The object itself is stored in a std::shared_ptr<std::any>. To allow for
    * serialization and to build non trivially constructible classes, the actual
    * type stored in std::shared_ptr<std::any> is a shared pointer to the
-   * object->
+   * object.
    *
    * The object is built only when calling the operator() function. This allows
    * you to connect arguments to this object, in case the building of the object
@@ -272,6 +272,9 @@ namespace coral
         }
       task = taskflow.emplace([this]() { (*this)(); })
                .name(initializer.json_serializer.at("type").get<std::string>());
+
+      initialize_inputs();
+      initialize_outputs();
     }
 
     /**
@@ -302,6 +305,8 @@ namespace coral
                              args[i].at("connection_type").get<std::string>())
                              .value();
         }
+      initialize_inputs();
+      initialize_outputs();
     }
 
     /**
@@ -316,8 +321,8 @@ namespace coral
      * instantiate a class that is not in the registry, an exception will be
      * thrown.
      */
-    static json
-    get_registry()
+    static auto
+    get_registry() -> json
     {
       json registry;
       for (const auto &[hash_str, initializer] : NodeObject::initializers)
@@ -327,8 +332,8 @@ namespace coral
       return registry;
     }
 
-    bool
-    ready() const
+    auto
+    ready() const -> bool
     {
       return object.operator bool();
     }
@@ -346,8 +351,8 @@ namespace coral
         }
     }
 
-    std::string
-    to_string() const
+    auto
+    to_string() const -> std::string
     {
       if (initializer.to_string)
         {
@@ -372,31 +377,26 @@ namespace coral
      * @return false If the executor function failed to run (i.e.,
      * if it failed when running or if some of the arguments were not ready.)
      */
-    bool
-    operator()()
+    auto
+    operator()() -> bool
     {
       bool is_ready = true;
       for (const auto &arg : arguments)
-        if (!arg->ready())
-          {
-            is_ready = false;
-            break;
-          }
+        {
+          if (!arg->ready())
+            {
+              is_ready = false;
+              break;
+            }
+        }
 
       AssertThrow(is_ready,
                   dealii::ExcMessage(
                     "Arguments are not ready. You can only call "
                     "this function after all arguments are ready."));
-      // try
-      //   {
+
       object = initializer.executor(arguments);
       return object.operator bool();
-      //   }
-      // catch (...)
-      //   {
-      //     std::cout << "Error in running executor." << std::endl;
-      //   }
-      // return false;
     }
 
     /**
@@ -416,54 +416,13 @@ namespace coral
     }
 
     /**
-     * Connect the inputs of this node.
-     */
-    void
-    set_inputs(
-      const std::vector<std::pair<NodeObjectPtr, unsigned int>> &inputs)
-    {
-      this->inputs.resize(inputs.size());
-      for (unsigned int i = 0; i < inputs.size(); ++i)
-        this->inputs[i] = inputs[i].first->output(inputs[i].second);
-
-      const auto &json_args   = initializer.json_serializer["arguments"];
-      const auto &json_inputs = initializer.json_serializer["inputs"];
-
-      AssertThrow(inputs.size() == json_inputs.size(),
-                  dealii::ExcMessage(
-                    "Wrong number of inputs: " + std::to_string(inputs.size()) +
-                    " instead of " + std::to_string(json_inputs.size()) + "."));
-
-      for (unsigned int i = 0; i < inputs.size(); ++i)
-        {
-          const auto j       = json_inputs[i].get<unsigned int>();
-          auto      &in_node = inputs[i].first;
-          auto      &in      = in_node->output(inputs[i].second);
-          // Let's make some checks on the compatibilities
-          const auto expected = json_args[j].at("type_hash").get<std::string>();
-          const auto input_hash = in->hash();
-          AssertThrow(
-            expected == input_hash,
-            dealii::ExcMessage(
-              "The hash type of input " + std::to_string(i) + " (" +
-              input_hash + ") does not match what we expect in argument " +
-              std::to_string(j) + " from the json (" + expected + ")."));
-          arguments[j] = inputs[i].first->output(inputs[i].second);
-        }
-
-
-      // Now make sure the executor is in the correct spot.
-      for (const auto &arg : inputs)
-        task.succeed(arg.first->get_task());
-    }
-
-    /**
      * Register a new type in the json registry. This method does not add
      * constructors.
      */
     template <typename T>
-    static NodeObjectInitializer &
+    static auto
     register_json_header(const std::string &suffix = "")
+      -> NodeObjectInitializer &
     {
       auto hash_str = coral::hash<T>(suffix);
       if (initializers.find(hash_str) != initializers.end())
@@ -484,9 +443,10 @@ namespace coral
      * additional arguments. This method does not add constructors.
      */
     template <typename T, typename... Args>
-    static NodeObjectInitializer &
+    static auto
     register_json_header(const std::vector<std::string> &arg_names,
                          const std::string              &suffix = "")
+      -> NodeObjectInitializer &
     {
       auto &initializer = register_json_header<T>(suffix);
 
@@ -527,8 +487,8 @@ namespace coral
      * dealii::Patterns::Tools::parse_string().
      */
     template <typename T>
-    static NodeObjectInitializer &
-    register_elementary_type()
+    static auto
+    register_elementary_type() -> NodeObjectInitializer &
     {
       auto &initializer                        = register_json_header<T>();
       initializer.json_serializer["node_type"] = "elementary_constructor";
@@ -538,7 +498,8 @@ namespace coral
       initializer.json_serializer["outputs"].push_back("self");
 
       // Add to the initializer the emtpy executor.
-      initializer.executor = [](std::vector<std::shared_ptr<NodeObject>> args)
+      initializer.executor =
+        [](const std::vector<std::shared_ptr<NodeObject>> &args)
         -> std::shared_ptr<std::any> {
         AssertThrow(args.size() == 0,
                     dealii::ExcMessage("Wrong number of arguments."));
@@ -547,7 +508,7 @@ namespace coral
 
       // Add value parser
       initializer.parse_string =
-        [](std::string value) -> std::shared_ptr<std::any> {
+        [](const std::string &value) -> std::shared_ptr<std::any> {
         auto t = std::make_shared<T>();
         dealii::Patterns::Tools::to_value(value, *t);
         return std::make_shared<std::any>(t);
@@ -556,7 +517,7 @@ namespace coral
 
       // Add value parser
       initializer.to_string =
-        [](std::shared_ptr<std::any> value) -> std::string {
+        [](const std::shared_ptr<std::any> &value) -> std::string {
         const T &t = *std::any_cast<std::shared_ptr<T>>(*value);
         return dealii::Patterns::Tools::to_string(t);
       };
@@ -569,8 +530,8 @@ namespace coral
      * copyable. This is the case for example of dealii::Triangulation<2>.
      */
     template <typename T>
-    static NodeObjectInitializer &
-    register_type()
+    static auto
+    register_type() -> NodeObjectInitializer &
     {
       auto &initializer                        = register_json_header<T>();
       initializer.json_serializer["node_type"] = "empty_constructor";
@@ -579,7 +540,8 @@ namespace coral
 
 
       // Add to the initializer the emtpy executor.
-      initializer.executor = [](std::vector<std::shared_ptr<NodeObject>> args)
+      initializer.executor =
+        [](const std::vector<std::shared_ptr<NodeObject>> &args)
         -> std::shared_ptr<std::any> {
         AssertThrow(args.size() == 0,
                     dealii::ExcMessage("Wrong number of arguments."));
@@ -593,8 +555,8 @@ namespace coral
      * Register an abstract type. This is a type that will never be constructed.
      */
     template <typename T>
-    static NodeObjectInitializer &
-    register_abstract_type()
+    static auto
+    register_abstract_type() -> NodeObjectInitializer &
     {
       auto &initializer                        = register_json_header<T>();
       initializer.json_serializer["node_type"] = "abstract";
@@ -616,8 +578,8 @@ namespace coral
      * allow the function to accept the derived class as an argument.
      */
     template <typename B, typename T>
-    static NodeObjectInitializer &
-    register_derived_type()
+    static auto
+    register_derived_type() -> NodeObjectInitializer &
     {
       auto &initializer = register_type<T>();
       initializer.json_serializer["outputs"].push_back("self");
@@ -652,8 +614,9 @@ namespace coral
      * requires the degree of the finite element to be instantiated.
      */
     template <typename T, typename... Args>
-    static NodeObjectInitializer &
+    static auto
     register_type(const std::vector<std::string> &arg_names)
+      -> NodeObjectInitializer &
     {
       auto &initializer = register_json_header<T, Args...>(arg_names);
       initializer.json_serializer["node_type"] = "constructor";
@@ -680,8 +643,9 @@ namespace coral
      * Register a non-trivially constructible type T derived from type B.
      */
     template <typename B, typename T, typename... Args>
-    static NodeObjectInitializer &
+    static auto
     register_derived_type(const std::vector<std::string> &arg_names)
+      -> NodeObjectInitializer &
     {
       auto &initializer      = register_type<T, Args...>(arg_names);
       auto &base_initializer = register_abstract_type<B>();
@@ -705,8 +669,8 @@ namespace coral
      * Same as above, for objects that require a single argument.
      */
     template <typename T, typename Arg>
-    static NodeObjectInitializer &
-    register_type(const std::string &arg_name)
+    static auto
+    register_type(const std::string &arg_name) -> NodeObjectInitializer &
     {
       return register_type<T, Arg>(std::vector<std::string>{{arg_name}});
     }
@@ -715,8 +679,9 @@ namespace coral
      * Same as above, for objects that require a single argument.
      */
     template <typename B, typename T, typename Arg>
-    static NodeObjectInitializer &
+    static auto
     register_derived_type(const std::string &arg_name)
+      -> NodeObjectInitializer &
     {
       return register_derived_type<B, T, Arg>(
         std::vector<std::string>{{arg_name}});
@@ -996,8 +961,8 @@ namespace coral
      * of the requested type.
      */
     template <typename T>
-    std::shared_ptr<T>
-    get_shared()
+    auto
+    get_shared() -> std::shared_ptr<T>
     {
       AssertThrow(ready(), dealii::ExcMessage("Object is not ready."));
       using type = std::remove_cv_t<std::remove_reference_t<T>>;
@@ -1072,12 +1037,16 @@ namespace coral
     /**
      * Return a Pointer to the ith output.
      */
-    NodeObjectPtr &
+    NodeObjectPtr
     output(const unsigned int index)
     {
-      AssertThrow(index < outputs.size(),
+      AssertThrow(index < output_indices.size(),
                   dealii::ExcMessage("Index out of bounds."));
-      return outputs[index];
+      if (output_indices[index] == -1)
+        {
+          return shared_from_this(); // Return this object for 'self'
+        }
+      return arguments[output_indices[index]];
     }
 
     /**
@@ -1086,9 +1055,9 @@ namespace coral
     NodeObjectPtr &
     input(const unsigned int index)
     {
-      AssertThrow(index < inputs.size(),
+      AssertThrow(index < input_indices.size(),
                   dealii::ExcMessage("Index out of bounds."));
-      return inputs[index];
+      return arguments[input_indices[index]];
     }
 
     /**
@@ -1316,20 +1285,9 @@ namespace coral
     std::vector<ConnectionType> connections;
 
     /**
-     * Input nodes.
-     */
-    std::vector<std::shared_ptr<NodeObject>> inputs;
-
-    /**
-     * Output nodes.
-     */
-    std::vector<std::shared_ptr<NodeObject>> outputs;
-
-    /**
      * A list of all known types and their initializers.
      */
     static std::map<std::string, NodeObjectInitializer> initializers;
-
 
     /**
      * A taskflow executor to run the tasks.
@@ -1340,6 +1298,124 @@ namespace coral
      * A taskflow to store all tasks.
      */
     static tf::Taskflow taskflow;
+
+    /**
+     * Input indices mapping to arguments.
+     */
+    std::vector<unsigned int> input_indices;
+
+    /**
+     * Output indices mapping to arguments. If the content is -1, then we return
+     * the object itself.
+     */
+    std::vector<int> output_indices;
+
+    void
+    initialize_inputs()
+    {
+      const auto &json_inputs = initializer.json_serializer["inputs"];
+      input_indices.resize(json_inputs.size());
+      for (unsigned int i = 0; i < json_inputs.size(); ++i)
+        {
+          input_indices[i] = json_inputs[i].get<unsigned int>();
+        }
+    }
+
+    void
+    initialize_outputs()
+    {
+      const auto &json_outputs = initializer.json_serializer["outputs"];
+      output_indices.resize(json_outputs.size());
+      for (unsigned int i = 0; i < json_outputs.size(); ++i)
+        {
+          if (json_outputs[i].is_string() &&
+              json_outputs[i].get<std::string>() == "self")
+            {
+              output_indices[i] = -1; // Special case for 'self'
+            }
+          else
+            {
+              output_indices[i] = json_outputs[i].get<int>();
+            }
+        }
+    }
+
+  public:
+    void
+    set_inputs(
+      const std::vector<std::pair<NodeObjectPtr, unsigned int>> &inputs)
+    {
+      AssertThrow(inputs.size() == input_indices.size(),
+                  dealii::ExcMessage(
+                    "Wrong number of inputs: " + std::to_string(inputs.size()) +
+                    " instead of " + std::to_string(input_indices.size()) +
+                    "."));
+
+      for (unsigned int i = 0; i < inputs.size(); ++i)
+        {
+          const auto &input_node  = inputs[i].first;
+          const auto &input_index = inputs[i].second;
+
+          const auto expected_hash =
+            initializer
+              .json_serializer["arguments"][input_indices[i]]["type_hash"]
+              .get<std::string>();
+          const auto input_hash = input_node->output(input_index)->hash();
+
+          // Check if the input hash matches the expected hash or is derived
+          // from the base type
+          const auto &base_hash =
+            initializer.json_serializer["arguments"][input_indices[i]].value(
+              "base", "");
+          const bool is_valid =
+            (expected_hash == input_hash) || (base_hash == input_hash);
+
+          AssertThrow(is_valid,
+                      dealii::ExcMessage(
+                        "The hash type of input " + std::to_string(i) + " (" +
+                        input_hash + ") does not match the expected hash (" +
+                        expected_hash + ") or its base type (" + base_hash +
+                        ")."));
+
+          arguments[input_indices[i]] = input_node->output(input_index);
+        }
+
+      for (const auto &input : inputs)
+        {
+          task.succeed(input.first->get_task());
+        }
+    }
+
+    void
+    set_outputs(
+      const std::vector<std::pair<NodeObjectPtr, unsigned int>> &outputs)
+    {
+      AssertThrow(outputs.size() == output_indices.size(),
+                  dealii::ExcMessage(
+                    "Wrong number of outputs: " +
+                    std::to_string(outputs.size()) + " instead of " +
+                    std::to_string(output_indices.size()) + "."));
+
+      for (unsigned int i = 0; i < outputs.size(); ++i)
+        {
+          const auto &output_node  = outputs[i].first;
+          const auto &output_index = outputs[i].second;
+
+          const auto expected_hash =
+            initializer
+              .json_serializer["arguments"][output_indices[i]]["type_hash"]
+              .get<std::string>();
+          const auto output_hash = arguments[output_indices[i]]->hash();
+
+          AssertThrow(expected_hash == output_hash,
+                      dealii::ExcMessage(
+                        "The hash type of output " + std::to_string(i) + " (" +
+                        output_hash + ") does not match the expected hash (" +
+                        expected_hash + ")."));
+
+          output_node->arguments[output_index] = arguments[output_indices[i]];
+        }
+    }
   };
 
   /**
