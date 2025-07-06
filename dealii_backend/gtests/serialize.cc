@@ -75,4 +75,9 @@ TEST(Serialize, Triangulation)
 
   // The two objects are actually different objects in memory.
   ASSERT_NE(&obj->get<type>(), &obj2->get<type>());
+
+  // Dump the json to a file
+  std::ofstream ofs("triangulation.json");
+  ofs << j.dump(2);
+  ofs.close();
 }

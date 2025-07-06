@@ -49,6 +49,12 @@ TEST(NodeObject, NonTriviallyConstructibleType)
   fe->set_arguments({degree});
   (*fe)();
   ASSERT_TRUE(fe->ready());
+
+  // Dump the json to a file
+  std::ofstream ofs("fe_q.json");
+  json          j = fe;
+  ofs << j.dump(2);
+  ofs.close();
 }
 
 TEST(NodeObject, AbstractType)

@@ -4,8 +4,6 @@
 #include <deal.II/base/mutable_bind.h>
 #include <deal.II/base/patterns.h>
 
-#include <taskflow/taskflow.hpp>
-
 #include <any>
 #include <functional>
 #include <iostream>
@@ -19,9 +17,158 @@
 #include <vector>
 
 #include "json/json.hpp"                 // JSON library
-#include "magic_enum/magic_enum_all.hpp" // Magic Enum library
-#include "taskflow/taskflow.hpp"         // Taskflow library
+#include "magic_enum/magic_enum_all.hpp" // Reintroduced Magic Enum library
 #include "type_name.h"                   // Single boost file
+
+/**
+ * @mainpage CORAL - Computational Object-oriented Representation And Library
+ *
+ * @section intro Introduction
+ *
+ * CORAL is a C++ library for building, connecting, and executing computational
+ * graphs. It provides a flexible framework for representing computational
+ * workflows as directed graphs where nodes represent data or operations, and
+ * edges represent dependencies. The library is designed with parallel
+ * scientific computing in mind.
+ *
+ * @section design Design Philosophy
+ * @subsection functional_philosophy Functional approach
+ *
+ * In CORAL, every node is designed to be interpreted as a function, represented
+ * by its `operator()`. This functional philosophy ensures that nodes are not
+ * merely containers of data or operations but are active participants in the
+ * computational graph. The execution of a node's function is determined by its
+ * type, which defines its behavior and role within the graph.
+ *
+ * - **Node as a Function**: Each node encapsulates a callable function through
+ *   its `operator()`. When invoked, the node performs its designated operation,
+ *   which may include constructing an object, modifying inputs, or producing
+ *   outputs.
+ *
+ * - **Type-Driven Behavior**: The behavior of a node during execution is
+ *   controlled by its type. For example:
+ *   - **Constructor Nodes**: These nodes create new objects when executed.
+ *   - **Pass-Through Nodes**: These nodes modify their inputs and pass them
+ *     to their outputs.
+ *   - **Method Nodes**: These nodes invoke a specific method on an object,
+ *     potentially modifying its state or producing a result.
+ *   - **Function Nodes**: These nodes execute a free function, using their
+ *     inputs as arguments and producing outputs.
+ *
+ * - **Lazy Evaluation**: Nodes are executed only when their outputs are
+ *   explicitly required by other nodes or the user. This ensures that
+ *   computations are performed efficiently and only when necessary.
+ *
+ * - **Input and Output Management**: Each node manages its inputs and outputs
+ *   through a type-safe system. Inputs are connected to other nodes' outputs,
+ *   and the execution of the node ensures that the outputs are updated
+ *   accordingly.
+ *
+ * This functional approach ensures that nodes in CORAL are versatile and
+ * adaptable, capable of representing a wide range of computational tasks.
+ * By interpreting nodes as functions, CORAL provides a consistent and
+ * intuitive framework for building and executing complex computational
+ * workflows.
+ *
+ * @subsection features Key Features
+ * The core design principles of CORAL are:
+ *
+ * - **Type Safety**: All connections between nodes are type-checked at runtime,
+ *   ensuring that only compatible types can be connected.
+ *
+ * - **Reflection System**: The library implements a runtime reflection system
+ *   that allows for introspection of types, methods, and functions, without
+ *   requiring compiler support for C++ reflection.
+ *
+ * - **Polymorphism Support**: The system properly handles inheritance
+ *   hierarchies, allowing derived types to be used where base types are
+ *   expected.
+ *
+ * - **Lazy Evaluation**: Computation nodes are only executed when explicitly
+ *   requested or when their outputs are needed by other nodes, allowing for
+ *   efficient execution.
+ *
+ * - **Serialization**: All nodes can be serialized to and from JSON, enabling
+ *   workflow persistence and reconstruction, and interfacing with graphical
+ *   node editors and libraries.
+ *
+ * @section architecture Core Architecture
+ *
+ * @subsection node_object NodeObject Class
+ *
+ * The `NodeObject` class is the central component of CORAL. Each NodeObject:
+ *
+ * - Wraps any C++ type using std::any and shared pointers
+ * - Maintains type information through a hash-based type system
+ * - Provides inputs and outputs for connecting to other nodes
+ * - Can execute computation through its operator() method
+ *
+ * @subsection connections Connections and Networks
+ *
+ * Nodes are connected through a system of typed inputs and outputs:
+ *
+ * - **ConnectionType::input**: Read-only parameters
+ * - **ConnectionType::output**: Write-only results
+ * - **ConnectionType::pass_through**: Parameters that are both read and
+ *   modified
+ * - **ConnectionType::self**: The node itself can be used as input and is
+ *   returned as an output
+ *
+ * The `Network` class manages collections of nodes and their connections,
+ * allowing for the construction and execution of complex computational
+ * workflows.
+ *
+ * @section registration Type Registration System
+ *
+ * CORAL requires types to be registered before use. Registration functions
+ * include:
+ *
+ * - **register_elementary_type**: For trivially copyable and constructible
+ *   types
+ * - **register_type**: For non-trivially copyable but trivially constructible
+ *   types
+ * - **register_abstract_type**: For interface types that can't be instantiated
+ *   directly
+ * - **register_derived_type**: For types inheriting from a base class
+ * - **register_method**: For member functions (void/non-void, const/non-const)
+ * - **register_function**: For free functions
+ *
+ * @section execution Execution Model
+ *
+ * The execution model is based on the Taskflow library:
+ *
+ * 1. Nodes are registered as tasks in a taskflow graph
+ * 2. Dependencies between tasks are established based on node connections
+ * 3. When execution is requested, tasks are run in the correct order
+ *    (potentially in parallel)
+ * 4. Results flow through the network as tasks complete
+ *
+ * @section serialization JSON Serialization
+ *
+ * The library provides comprehensive JSON serialization for:
+ *
+ * - Type information and relationships
+ * - Node configurations and connections
+ * - Input/output specifications
+ * - Method and function registrations
+ *
+ * This enables workflows to be saved, loaded, and shared between applications.
+ *
+ * @section usage Example Usage
+ *
+ * A typical workflow using CORAL involves:
+ *
+ * 1. Registering relevant types, and dump the correpsonding json representation
+ *    of the known node types
+ * 2. Sending the JSON representation to a remote server (the frontend) for
+ *    processing
+ * 3. Creating nodes representing data or computational steps in the frontend,
+ *    and connecting them to the appropriate inputs and outputs
+ * 4. Send the resulting json to the backend for execution
+ * 5. Executing the graph to perform the computation
+ *
+ * @author Luca Heltai
+ */
 
 using json = nlohmann::json;
 
@@ -121,12 +268,16 @@ namespace coral
    */
   enum class ConnectionType : unsigned int
   {
-    none         = 0x000, //< Invalid connection type
-    input        = 0x001, //< Input only
-    output       = 0x002, //< Output only
-    pass_through = 0x003, //< Input and output
-    self         = 0x006, //< Special connection to indicate that this output is
-                          // the node itself
+    //! Invalid connection type
+    none = 0x000,
+    //! Input only
+    input = 0x001,
+    //! Output only
+    output = 0x002,
+    //! Input and output
+    pass_through = 0x003,
+    //! Special connection to indicate that this output is the node itself
+    self = 0x006,
   };
 
   /**
@@ -134,20 +285,28 @@ namespace coral
    */
   enum class NodeType : unsigned int
   {
-    none,                   //< The node has not been initialized with an object
-    abstract,               //< This is an abstract type. It will never be
-                            // instantiated.
-    elementary_constructor, //< Trivially copyable and constructible types
-    empty_constructor, //< Non trivially copyable, but trivially constructible
-                       // types
-    constructor, //< Non trivially copyable, and non trivially constructible
-                 // types
-    void_method, //< void member function
-    void_const_method, //<void const member function
-    method,            //< non void method
-    const_method,      //< non void const method
-    void_function,     // void function
-    function,          // non void function
+    //! The node has not been initialized with an object
+    none,
+    //! This is an abstract type. It will never be instantiated
+    abstract,
+    //! Trivially copyable and constructible types
+    elementary_constructor,
+    //! Non trivially copyable, but trivially constructible types
+    empty_constructor,
+    //! Non trivially copyable, and non trivially constructible types
+    constructor,
+    //! void member function
+    void_method,
+    //! void const member function
+    void_const_method,
+    //! non void member function
+    method,
+    //! non void const member function
+    const_method,
+    //! void function
+    void_function,
+    //! non void function
+    function,
   };
 
   /**
@@ -270,8 +429,6 @@ namespace coral
                         "one of the NodeObject::register_*<" +
                         boost::core::type_name<T>() + ">(...) functions."));
         }
-      task = taskflow.emplace([this]() { (*this)(); })
-               .name(initializer.json_serializer.at("type").get<std::string>());
 
       initialize_inputs();
       initialize_outputs();
@@ -293,8 +450,6 @@ namespace coral
           // object->
           *this = NodeObject(std::make_shared<std::string>(hash_str));
         }
-      task = taskflow.emplace([this]() { (*this)(); })
-               .name(initializer.json_serializer.at("type").get<std::string>());
       const auto &args   = initializer.json_serializer["arguments"];
       const auto  n_args = args.size();
       arguments.resize(n_args);
@@ -596,12 +751,13 @@ namespace coral
       initializer.to_base =
         [](std::shared_ptr<std::any> a) -> std::shared_ptr<std::any> {
         std::cout << "Cast to derived class " << boost::core::type_name<T>()
-                  << std::endl;
+                  << "\n";
         auto ptr = std::any_cast<std::shared_ptr<T>>(*a);
         std::cout << "Cast to base class " << boost::core::type_name<B>()
-                  << std::endl;
+                  << "\n";
         auto ptrB = std::static_pointer_cast<B>(ptr);
-        std::cout << "Return std::any of base class" << std::endl;
+        std::cout << "Return std::any of base class"
+                  << "\n";
         return std::make_shared<std::any>(ptrB);
       };
       return initializer;
@@ -1212,51 +1368,6 @@ namespace coral
       return initializer.json_serializer["outputs"].size();
     }
 
-    /**
-     * Run all tasks registered in the current network.
-     */
-    static void
-    run_network()
-    {
-      executor.run(taskflow).wait();
-    }
-
-    /**
-     * Clear all tasks registered in the current network.
-     */
-    static void
-    clear_network()
-    {
-      taskflow.clear();
-    }
-
-    /**
-     * Get the task associated with the operator()() function.
-     */
-    tf::Task
-    get_task() const
-    {
-      return task;
-    }
-
-    /**
-     * Get the taskflow and executor of the current network.
-     */
-    static tf::Taskflow &
-    get_taskflow()
-    {
-      return taskflow;
-    }
-
-    /**
-     * Get the executor of the current network.
-     */
-    static tf::Executor &
-    get_executor()
-    {
-      return executor;
-    }
-
   private:
     /**
      * The actual object is stored here as a std::shared_ptr<std::any>.
@@ -1268,11 +1379,6 @@ namespace coral
      * manipulate it.
      */
     NodeObjectInitializer initializer;
-
-    /**
-     * The task associated with this node.
-     */
-    tf::Task task;
 
     /**
      * The arguments to pass to the executor.
@@ -1288,16 +1394,6 @@ namespace coral
      * A list of all known types and their initializers.
      */
     static std::map<std::string, NodeObjectInitializer> initializers;
-
-    /**
-     * A taskflow executor to run the tasks.
-     */
-    static tf::Executor executor;
-
-    /**
-     * A taskflow to store all tasks.
-     */
-    static tf::Taskflow taskflow;
 
     /**
      * Input indices mapping to arguments.
@@ -1378,11 +1474,6 @@ namespace coral
                         ")."));
 
           arguments[input_indices[i]] = input_node->output(input_index);
-        }
-
-      for (const auto &input : inputs)
-        {
-          task.succeed(input.first->get_task());
         }
     }
 

@@ -85,6 +85,7 @@ FOREACH(_build_type ${_d2_build_types})
 
     ADD_LIBRARY(${_lib} SHARED ${_files})
     DEAL_II_SETUP_TARGET(${_lib} ${_BUILD_TYPE})
+    TARGET_COMPILE_DEFINITIONS(${_lib} PUBLIC SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     SET(TEST_LIBRARIES_${_BUILD_TYPE} ${_lib})
 
     # Setup one executable per dimension/per build type
@@ -115,3 +116,13 @@ IF(ENABLE_GOOGLE_TESTING)
       MESSAGE(WARNING "GTest library not found. Tests will not be compiled!")
   endif ()
 ENDIF()
+
+find_package(Doxygen)
+
+if(DOXYGEN_FOUND)
+  add_custom_target(doc
+    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "Generating API documentation with Doxygen" VERBATIM)
+  MESSAGE("-- Configured Doxygen")
+endif(DOXYGEN_FOUND)
