@@ -15,7 +15,7 @@
 
 #include <boost/config.hpp>
 #include <boost/core/demangle.hpp>
-#include <boost/core/is_same.hpp>
+#include <boost/type_traits/is_same.hpp>
 
 #include <cstddef>
 #include <cstdio>
@@ -47,7 +47,7 @@ namespace boost
       // tn_remove_prefix
 
       inline bool
-      tn_remove_prefix(std::string &str, char const *prefix)
+      tn_remove_prefix(std::string &str, const char *prefix)
       {
         std::size_t n = std::strlen(prefix);
 
@@ -67,7 +67,7 @@ namespace boost
       // typeid_name
 
       inline std::string
-      fix_typeid_name(char const *n)
+      fix_typeid_name(const char *n)
       {
         std::string r = boost::core::demangle(n);
 
@@ -232,7 +232,7 @@ namespace boost
       struct tn_holder
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return typeid_name<T>() + suffix;
         }
@@ -244,7 +244,7 @@ namespace boost
       struct tn_holder<bool>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "bool" + suffix;
         }
@@ -254,7 +254,7 @@ namespace boost
       struct tn_holder<char>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "char" + suffix;
         }
@@ -264,7 +264,7 @@ namespace boost
       struct tn_holder<signed char>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "signed char" + suffix;
         }
@@ -274,7 +274,7 @@ namespace boost
       struct tn_holder<unsigned char>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "unsigned char" + suffix;
         }
@@ -284,7 +284,7 @@ namespace boost
       struct tn_holder<short>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "short" + suffix;
         }
@@ -294,7 +294,7 @@ namespace boost
       struct tn_holder<unsigned short>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "unsigned short" + suffix;
         }
@@ -304,7 +304,7 @@ namespace boost
       struct tn_holder<int>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "int" + suffix;
         }
@@ -314,7 +314,7 @@ namespace boost
       struct tn_holder<unsigned>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "unsigned" + suffix;
         }
@@ -324,7 +324,7 @@ namespace boost
       struct tn_holder<long>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "long" + suffix;
         }
@@ -334,7 +334,7 @@ namespace boost
       struct tn_holder<unsigned long>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "unsigned long" + suffix;
         }
@@ -344,7 +344,7 @@ namespace boost
       struct tn_holder<boost::long_long_type>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "long long" + suffix;
         }
@@ -354,7 +354,7 @@ namespace boost
       struct tn_holder<boost::ulong_long_type>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "unsigned long long" + suffix;
         }
@@ -364,7 +364,7 @@ namespace boost
       struct tn_holder<wchar_t>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "wchar_t" + suffix;
         }
@@ -376,7 +376,7 @@ namespace boost
       struct tn_holder<char16_t>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "char16_t" + suffix;
         }
@@ -390,7 +390,7 @@ namespace boost
       struct tn_holder<char32_t>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "char32_t" + suffix;
         }
@@ -404,7 +404,7 @@ namespace boost
       struct tn_holder<char8_t>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "char8_t" + suffix;
         }
@@ -418,7 +418,7 @@ namespace boost
       struct tn_holder<std::byte>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "std::byte" + suffix;
         }
@@ -432,7 +432,7 @@ namespace boost
       struct tn_holder<float>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "float" + suffix;
         }
@@ -442,7 +442,7 @@ namespace boost
       struct tn_holder<double>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "double" + suffix;
         }
@@ -452,7 +452,7 @@ namespace boost
       struct tn_holder<long double>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "long double" + suffix;
         }
@@ -464,7 +464,7 @@ namespace boost
       struct tn_holder<void>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "void" + suffix;
         }
@@ -478,7 +478,7 @@ namespace boost
       struct tn_holder<std::nullptr_t>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return "std::nullptr_t" + suffix;
         }
@@ -489,20 +489,20 @@ namespace boost
       // cv
 
       template <class T>
-      struct tn_holder<T const>
+      struct tn_holder<const T>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return tn_holder<T>::type_name(" const" + suffix);
         }
       };
 
       template <class T>
-      struct tn_holder<T volatile>
+      struct tn_holder<volatile T>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return tn_holder<T>::type_name(" volatile" + suffix);
         }
@@ -512,7 +512,7 @@ namespace boost
       struct tn_holder<T const volatile>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return tn_holder<T>::type_name(" const volatile" + suffix);
         }
@@ -524,7 +524,7 @@ namespace boost
       struct tn_holder<T &>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return tn_holder<T>::type_name("&" + suffix);
         }
@@ -536,7 +536,7 @@ namespace boost
       struct tn_holder<T &&>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return tn_holder<T>::type_name("&&" + suffix);
         }
@@ -575,8 +575,8 @@ namespace boost
       template <class R, class... A>
       std::string
       function_type_name(tn_identity<R(A...)>,
-                         std::string const &trailer,
-                         std::string const &suffix)
+                         const std::string &trailer,
+                         const std::string &suffix)
       {
         std::string r = tn_holder<R>::type_name("");
 
@@ -606,7 +606,7 @@ namespace boost
       struct tn_holder<R(A...)>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(), "", suffix);
         }
@@ -618,7 +618,7 @@ namespace boost
       struct tn_holder<R(A...) const>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " const",
@@ -630,7 +630,7 @@ namespace boost
       struct tn_holder<R(A...) volatile>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " volatile",
@@ -642,7 +642,7 @@ namespace boost
       struct tn_holder<R(A...) const volatile>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " const volatile",
@@ -658,7 +658,7 @@ namespace boost
       struct tn_holder<R(A...) &>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " &",
@@ -670,7 +670,7 @@ namespace boost
       struct tn_holder<R(A...) const &>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " const &",
@@ -682,7 +682,7 @@ namespace boost
       struct tn_holder<R(A...) volatile &>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " volatile &",
@@ -694,7 +694,7 @@ namespace boost
       struct tn_holder<R(A...) const volatile &>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " const volatile &",
@@ -706,7 +706,7 @@ namespace boost
       struct tn_holder<R(A...) &&>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " &&",
@@ -718,7 +718,7 @@ namespace boost
       struct tn_holder<R(A...) const &&>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " const &&",
@@ -730,7 +730,7 @@ namespace boost
       struct tn_holder<R(A...) volatile &&>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " volatile &&",
@@ -742,7 +742,7 @@ namespace boost
       struct tn_holder<R(A...) const volatile &&>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " const volatile &&",
@@ -759,7 +759,7 @@ namespace boost
       struct tn_holder<R(A...) noexcept>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " noexcept",
@@ -771,7 +771,7 @@ namespace boost
       struct tn_holder<R(A...) const noexcept>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " const noexcept",
@@ -783,7 +783,7 @@ namespace boost
       struct tn_holder<R(A...) volatile noexcept>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " volatile noexcept",
@@ -795,7 +795,7 @@ namespace boost
       struct tn_holder<R(A...) const volatile noexcept>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " const volatile noexcept",
@@ -807,7 +807,7 @@ namespace boost
       struct tn_holder<R(A...) & noexcept>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " & noexcept",
@@ -819,7 +819,7 @@ namespace boost
       struct tn_holder<R(A...) const & noexcept>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " const & noexcept",
@@ -831,7 +831,7 @@ namespace boost
       struct tn_holder<R(A...) volatile & noexcept>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " volatile & noexcept",
@@ -843,7 +843,7 @@ namespace boost
       struct tn_holder<R(A...) const volatile & noexcept>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " const volatile & noexcept",
@@ -855,7 +855,7 @@ namespace boost
       struct tn_holder<R(A...) && noexcept>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " && noexcept",
@@ -867,7 +867,7 @@ namespace boost
       struct tn_holder<R(A...) const && noexcept>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " const && noexcept",
@@ -879,7 +879,7 @@ namespace boost
       struct tn_holder<R(A...) volatile && noexcept>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " volatile && noexcept",
@@ -891,7 +891,7 @@ namespace boost
       struct tn_holder<R(A...) const volatile && noexcept>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::function_type_name(tn_identity<R(A...)>(),
                                             " const volatile && noexcept",
@@ -909,7 +909,7 @@ namespace boost
       struct tn_holder<T *>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return tn_holder<T>::type_name("*" + suffix);
         }
@@ -939,7 +939,7 @@ namespace boost
 
       template <class T>
       std::string
-      array_type_name(tn_identity<T[]>, std::string const &suffix)
+      array_type_name(tn_identity<T[]>, const std::string &suffix)
       {
         std::pair<std::string, std::string> r =
           detail::array_prefix_suffix(tn_identity<T>());
@@ -958,468 +958,479 @@ namespace boost
       struct tn_holder<T[]>
       {
         static std::string
-        type_name(std::string const &suffix)
+        type_name(const std::string &suffix)
         {
           return detail::array_type_name(tn_identity<T[]>(), suffix);
         }
       };
 
       template <class T>
-      struct tn_holder<T const[]>{
-        static std::string type_name(std::string const &suffix){
-          return detail::array_type_name(tn_identity<T const[]>(), suffix);
+      struct tn_holder<const T[]>
+      {
+        static std::string
+        type_name(const std::string &suffix)
+        {
+          return detail::array_type_name(tn_identity<const T[]>(), suffix);
+        } // namespace detail
+      };  // namespace core
+
+      template <class T>
+      struct tn_holder<volatile T[]>
+      {
+        static std::string
+        type_name(const std::string &suffix)
+        {
+          return detail::array_type_name(tn_identity<volatile T[]>(), suffix);
+        } // namespace boost
+      };
+
+      template <class T>
+      struct tn_holder<T const volatile[]>{
+        static std::string type_name(const std::string &suffix){
+          return detail::array_type_name(tn_identity<T const volatile[]>(),
+                                         suffix);
     } // namespace detail
   };  // namespace core
 
-  template <class T>
-  struct tn_holder<T volatile[]>{
-    static std::string type_name(std::string const &suffix){
-      return detail::array_type_name(tn_identity<T volatile[]>(), suffix);
-} // namespace boost
-}
-;
+  template <class T, std::size_t N>
+  std::string
+  array_type_name(tn_identity<T[N]>, const std::string &suffix)
+  {
+    std::pair<std::string, std::string> r =
+      detail::array_prefix_suffix(tn_identity<T[N]>());
 
-template <class T>
-struct tn_holder<T const volatile[]>{
-  static std::string type_name(std::string const &suffix){
-    return detail::array_type_name(tn_identity<T const volatile[]>(), suffix);
-}
-}
-;
+    if (suffix.empty())
+      {
+        return r.first + r.second;
+      }
+    else
+      {
+        return r.first + '(' + suffix + ")" + r.second;
+      }
+  }
 
-template <class T, std::size_t N>
-std::string
-array_type_name(tn_identity<T[N]>, std::string const &suffix)
-{
-  std::pair<std::string, std::string> r =
-    detail::array_prefix_suffix(tn_identity<T[N]>());
-
-  if (suffix.empty())
+  template <class T, std::size_t N>
+  struct tn_holder<T[N]>
+  {
+    static std::string
+    type_name(const std::string &suffix)
     {
-      return r.first + r.second;
+      return detail::array_type_name(tn_identity<T[N]>(), suffix);
     }
-  else
+  };
+
+  template <class T, std::size_t N>
+  struct tn_holder<const T[N]>
+  {
+    static std::string
+    type_name(const std::string &suffix)
     {
-      return r.first + '(' + suffix + ")" + r.second;
+      return detail::array_type_name(tn_identity<const T[N]>(), suffix);
     }
-}
+  };
 
-template <class T, std::size_t N>
-struct tn_holder<T[N]>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <class T, std::size_t N>
+  struct tn_holder<volatile T[N]>
   {
-    return detail::array_type_name(tn_identity<T[N]>(), suffix);
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return detail::array_type_name(tn_identity<volatile T[N]>(), suffix);
+    }
+  };
 
-template <class T, std::size_t N>
-struct tn_holder<T const [N]> {
-  static std::string type_name(std::string const &suffix)
+  template <class T, std::size_t N>
+  struct tn_holder<T const volatile [N]> {
+    static std::string type_name(std::string const &suffix)
+    {
+      return detail::array_type_name(tn_identity<T const volatile[N]>(),
+                                     suffix);
+    }
+  };
+
+  // pointers to members
+
+  template <class R, class T>
+  struct tn_holder<R T::*>
   {
-    return detail::array_type_name(tn_identity<T const[N]>(), suffix);
-  }
-};
-
-template <class T, std::size_t N>
-struct tn_holder<T volatile [N]> {
-  static std::string type_name(std::string const &suffix)
-  {
-    return detail::array_type_name(tn_identity<T volatile[N]>(), suffix);
-  }
-};
-
-template <class T, std::size_t N>
-struct tn_holder<T const volatile [N]> {
-  static std::string type_name(std::string const &suffix)
-  {
-    return detail::array_type_name(tn_identity<T const volatile[N]>(), suffix);
-  }
-};
-
-// pointers to members
-
-template <class R, class T>
-struct tn_holder<R T::*>
-{
-  static std::string
-  type_name(std::string const &suffix)
-  {
-    return tn_holder<R>::type_name(' ' + tn_holder<T>::type_name("") + "::*" +
-                                   suffix);
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return tn_holder<R>::type_name(' ' + tn_holder<T>::type_name("") + "::*" +
+                                     suffix);
+    }
+  };
 
 #if defined(BOOST_MSVC) && BOOST_MSVC < 1900 && \
   !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-template <class R, class T, class... A>
-struct tn_holder<R (T::*)(A...)>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <class R, class T, class... A>
+  struct tn_holder<R (T::*)(A...)>
   {
-    return detail::function_type_name(tn_identity<R(A...)>(),
-                                      "",
-                                      ' ' + tn_holder<T>::type_name("") +
-                                        "::*" + suffix);
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return detail::function_type_name(tn_identity<R(A...)>(),
+                                        "",
+                                        ' ' + tn_holder<T>::type_name("") +
+                                          "::*" + suffix);
+    }
+  };
 
-template <class R, class T, class... A>
-struct tn_holder<R (T::*)(A...) const>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <class R, class T, class... A>
+  struct tn_holder<R (T::*)(A...) const>
   {
-    return detail::function_type_name(tn_identity<R(A...)>(),
-                                      " const",
-                                      ' ' + tn_holder<T>::type_name("") +
-                                        "::*" + suffix);
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return detail::function_type_name(tn_identity<R(A...)>(),
+                                        " const",
+                                        ' ' + tn_holder<T>::type_name("") +
+                                          "::*" + suffix);
+    }
+  };
 
-template <class R, class T, class... A>
-struct tn_holder<R (T::*)(A...) volatile>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <class R, class T, class... A>
+  struct tn_holder<R (T::*)(A...) volatile>
   {
-    return detail::function_type_name(tn_identity<R(A...)>(),
-                                      " volatile",
-                                      ' ' + tn_holder<T>::type_name("") +
-                                        "::*" + suffix);
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return detail::function_type_name(tn_identity<R(A...)>(),
+                                        " volatile",
+                                        ' ' + tn_holder<T>::type_name("") +
+                                          "::*" + suffix);
+    }
+  };
 
-template <class R, class T, class... A>
-struct tn_holder<R (T::*)(A...) const volatile>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <class R, class T, class... A>
+  struct tn_holder<R (T::*)(A...) const volatile>
   {
-    return detail::function_type_name(tn_identity<R(A...)>(),
-                                      " const volatile",
-                                      ' ' + tn_holder<T>::type_name("") +
-                                        "::*" + suffix);
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return detail::function_type_name(tn_identity<R(A...)>(),
+                                        " const volatile",
+                                        ' ' + tn_holder<T>::type_name("") +
+                                          "::*" + suffix);
+    }
+  };
 
 #endif
 
-// strings
+  // strings
 
-template <template <class Ch, class Tr, class A> class L, class Ch>
-struct tn_holder<L<Ch, std::char_traits<Ch>, std::allocator<Ch>>>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <template <class Ch, class Tr, class A> class L, class Ch>
+  struct tn_holder<L<Ch, std::char_traits<Ch>, std::allocator<Ch>>>
   {
-    std::string tn =
-      sequence_template_name<L<Ch, std::char_traits<Ch>, std::allocator<Ch>>>();
-    return tn + '<' + tn_holder<Ch>::type_name("") + '>' + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      std::string tn = sequence_template_name<
+        L<Ch, std::char_traits<Ch>, std::allocator<Ch>>>();
+      return tn + '<' + tn_holder<Ch>::type_name("") + '>' + suffix;
+    }
+  };
 
-template <>
-struct tn_holder<std::string>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <>
+  struct tn_holder<std::string>
   {
-    return "std::string" + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return "std::string" + suffix;
+    }
+  };
 
-template <>
-struct tn_holder<std::wstring>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <>
+  struct tn_holder<std::wstring>
   {
-    return "std::wstring" + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return "std::wstring" + suffix;
+    }
+  };
 
 #if !defined(BOOST_NO_CXX11_CHAR16_T)
 
-template <>
-struct tn_holder<std::u16string>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <>
+  struct tn_holder<std::u16string>
   {
-    return "std::u16string" + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return "std::u16string" + suffix;
+    }
+  };
 
 #endif
 
 #if !defined(BOOST_NO_CXX11_CHAR32_T)
 
-template <>
-struct tn_holder<std::u32string>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <>
+  struct tn_holder<std::u32string>
   {
-    return "std::u32string" + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return "std::u32string" + suffix;
+    }
+  };
 
 #endif
 
 #if defined(__cpp_char8_t) && __cpp_char8_t >= 201811L
 
-template <>
-struct tn_holder<std::basic_string<char8_t>>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <>
+  struct tn_holder<std::basic_string<char8_t>>
   {
-    return "std::u8string" + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return "std::u8string" + suffix;
+    }
+  };
 
 #endif
 
-// string views (et al)
+  // string views (et al)
 
-template <template <class Ch, class Tr> class L, class Ch>
-struct tn_holder<L<Ch, std::char_traits<Ch>>>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <template <class Ch, class Tr> class L, class Ch>
+  struct tn_holder<L<Ch, std::char_traits<Ch>>>
   {
-    std::string tn = sequence_template_name<L<Ch, std::char_traits<Ch>>>();
-    return tn + '<' + tn_holder<Ch>::type_name("") + '>' + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      std::string tn = sequence_template_name<L<Ch, std::char_traits<Ch>>>();
+      return tn + '<' + tn_holder<Ch>::type_name("") + '>' + suffix;
+    }
+  };
 
-// needed for libstdc++
-template <>
-struct tn_holder<std::ostream>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  // needed for libstdc++
+  template <>
+  struct tn_holder<std::ostream>
   {
-    return "std::ostream" + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return "std::ostream" + suffix;
+    }
+  };
 
 #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
 
-template <>
-struct tn_holder<std::string_view>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <>
+  struct tn_holder<std::string_view>
   {
-    return "std::string_view" + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return "std::string_view" + suffix;
+    }
+  };
 
-template <>
-struct tn_holder<std::wstring_view>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <>
+  struct tn_holder<std::wstring_view>
   {
-    return "std::wstring_view" + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return "std::wstring_view" + suffix;
+    }
+  };
 
 #  if !defined(BOOST_NO_CXX11_CHAR16_T)
 
-template <>
-struct tn_holder<std::u16string_view>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <>
+  struct tn_holder<std::u16string_view>
   {
-    return "std::u16string_view" + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return "std::u16string_view" + suffix;
+    }
+  };
 
 #  endif
 
 #  if !defined(BOOST_NO_CXX11_CHAR32_T)
 
-template <>
-struct tn_holder<std::u32string_view>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <>
+  struct tn_holder<std::u32string_view>
   {
-    return "std::u32string_view" + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return "std::u32string_view" + suffix;
+    }
+  };
 
 #  endif
 
 #  if defined(__cpp_char8_t) && __cpp_char8_t >= 201811L
 
-template <>
-struct tn_holder<std::basic_string_view<char8_t>>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <>
+  struct tn_holder<std::basic_string_view<char8_t>>
   {
-    return "std::u8string_view" + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      return "std::u8string_view" + suffix;
+    }
+  };
 
 #  endif
 
 #endif
 
-// class templates
+  // class templates
 
 #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES)
 
-template <template <class...> class L, class... T>
-struct tn_holder<L<T...>>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <template <class...> class L, class... T>
+  struct tn_holder<L<T...>>
   {
-    std::string tn = detail::class_template_name<L<T...>>();
-    std::string st = tn_add_each<T...>();
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      std::string tn = detail::class_template_name<L<T...>>();
+      std::string st = tn_add_each<T...>();
 
-    return tn + '<' + st + '>' + suffix;
-  }
-};
+      return tn + '<' + st + '>' + suffix;
+    }
+  };
 
 #else
 
-template <template <class T1> class L, class T1>
-struct tn_holder<L<T1>>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <template <class T1> class L, class T1>
+  struct tn_holder<L<T1>>
   {
-    std::string tn = detail::class_template_name<L<T1>>();
-    return tn + '<' + tn_holder<T1>::type_name("") + '>' + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      std::string tn = detail::class_template_name<L<T1>>();
+      return tn + '<' + tn_holder<T1>::type_name("") + '>' + suffix;
+    }
+  };
 
-template <template <class T1, class T2> class L, class T1, class T2>
-struct tn_holder<L<T1, T2>>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <template <class T1, class T2> class L, class T1, class T2>
+  struct tn_holder<L<T1, T2>>
   {
-    std::string tn = detail::class_template_name<L<T1, T2>>();
-    return tn + '<' + tn_holder<T1>::type_name("") + ", " +
-           tn_holder<T2>::type_name("") + '>' + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      std::string tn = detail::class_template_name<L<T1, T2>>();
+      return tn + '<' + tn_holder<T1>::type_name("") + ", " +
+             tn_holder<T2>::type_name("") + '>' + suffix;
+    }
+  };
 
 #endif
 
-// sequence containers
+  // sequence containers
 
-template <template <class T, class A> class L, class T>
-struct tn_holder<L<T, std::allocator<T>>>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <template <class T, class A> class L, class T>
+  struct tn_holder<L<T, std::allocator<T>>>
   {
-    std::string tn = detail::sequence_template_name<L<T, std::allocator<T>>>();
-    return tn + '<' + tn_holder<T>::type_name("") + '>' + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      std::string tn =
+        detail::sequence_template_name<L<T, std::allocator<T>>>();
+      return tn + '<' + tn_holder<T>::type_name("") + '>' + suffix;
+    }
+  };
 
-// set
+  // set
 
-template <template <class T, class Pr, class A> class L, class T>
-struct tn_holder<L<T, std::less<T>, std::allocator<T>>>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <template <class T, class Pr, class A> class L, class T>
+  struct tn_holder<L<T, std::less<T>, std::allocator<T>>>
   {
-    std::string tn =
-      detail::set_template_name<L<T, std::less<T>, std::allocator<T>>>();
-    return tn + '<' + tn_holder<T>::type_name("") + '>' + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      std::string tn =
+        detail::set_template_name<L<T, std::less<T>, std::allocator<T>>>();
+      return tn + '<' + tn_holder<T>::type_name("") + '>' + suffix;
+    }
+  };
 
-// map
+  // map
 
-template <template <class T, class U, class Pr, class A> class L,
-          class T,
-          class U>
-struct tn_holder<L<T, U, std::less<T>, std::allocator<std::pair<T const, U>>>>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <template <class T, class U, class Pr, class A> class L,
+            class T,
+            class U>
+  struct tn_holder<L<T, U, std::less<T>, std::allocator<std::pair<const T, U>>>>
   {
-    std::string tn = detail::map_template_name<
-      L<T, U, std::less<T>, std::allocator<std::pair<T const, U>>>>();
-    return tn + '<' + tn_holder<T>::type_name("") + ", " +
-           tn_holder<U>::type_name("") + '>' + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      std::string tn = detail::map_template_name<
+        L<T, U, std::less<T>, std::allocator<std::pair<const T, U>>>>();
+      return tn + '<' + tn_holder<T>::type_name("") + ", " +
+             tn_holder<U>::type_name("") + '>' + suffix;
+    }
+  };
 
 #if !defined(BOOST_NO_CXX11_HDR_FUNCTIONAL)
 
-// unordered_set
+  // unordered_set
 
-template <template <class T, class H, class Eq, class A> class L, class T>
-struct tn_holder<L<T, std::hash<T>, std::equal_to<T>, std::allocator<T>>>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <template <class T, class H, class Eq, class A> class L, class T>
+  struct tn_holder<L<T, std::hash<T>, std::equal_to<T>, std::allocator<T>>>
   {
-    std::string tn = detail::set_template_name<
-      L<T, std::hash<T>, std::equal_to<T>, std::allocator<T>>>();
-    return tn + '<' + tn_holder<T>::type_name("") + '>' + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      std::string tn = detail::set_template_name<
+        L<T, std::hash<T>, std::equal_to<T>, std::allocator<T>>>();
+      return tn + '<' + tn_holder<T>::type_name("") + '>' + suffix;
+    }
+  };
 
-// unordered_map
+  // unordered_map
 
-template <template <class T, class U, class H, class Eq, class A> class L,
-          class T,
-          class U>
-struct tn_holder<L<T,
-                   U,
-                   std::hash<T>,
-                   std::equal_to<T>,
-                   std::allocator<std::pair<T const, U>>>>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <template <class T, class U, class H, class Eq, class A> class L,
+            class T,
+            class U>
+  struct tn_holder<L<T,
+                     U,
+                     std::hash<T>,
+                     std::equal_to<T>,
+                     std::allocator<std::pair<const T, U>>>>
   {
-    std::string tn =
-      detail::map_template_name<L<T,
-                                  U,
-                                  std::hash<T>,
-                                  std::equal_to<T>,
-                                  std::allocator<std::pair<T const, U>>>>();
-    return tn + '<' + tn_holder<T>::type_name("") + ", " +
-           tn_holder<U>::type_name("") + '>' + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      std::string tn =
+        detail::map_template_name<L<T,
+                                    U,
+                                    std::hash<T>,
+                                    std::equal_to<T>,
+                                    std::allocator<std::pair<const T, U>>>>();
+      return tn + '<' + tn_holder<T>::type_name("") + ", " +
+             tn_holder<U>::type_name("") + '>' + suffix;
+    }
+  };
 
 #endif
 
-// array
+  // array
 
-template <template <class T, std::size_t N> class L, class T, std::size_t N>
-struct tn_holder<L<T, N>>
-{
-  static std::string
-  type_name(std::string const &suffix)
+  template <template <class T, std::size_t N> class L, class T, std::size_t N>
+  struct tn_holder<L<T, N>>
   {
-    std::string tn = detail::array_template_name<L<T, N>>();
-    return tn + '<' + tn_holder<T>::type_name("") + ", " + tn_to_string(N) +
-           '>' + suffix;
-  }
-};
+    static std::string
+    type_name(const std::string &suffix)
+    {
+      std::string tn = detail::array_template_name<L<T, N>>();
+      return tn + '<' + tn_holder<T>::type_name("") + ", " + tn_to_string(N) +
+             '>' + suffix;
+    }
+  };
 
-} // namespace detail
+} // namespace boost
 
 template <class T>
 std::string

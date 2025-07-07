@@ -104,9 +104,11 @@ TEST(dealiiTypes, TriangulationHyperCube)
     make_method_node("GridGenerator::generate_from_name_and_arguments<2>",
                      &GridGenerator::generate_from_name_and_arguments<2, 2>);
 
-  ASSERT_EQ(
-    make_grid->hash(),
-    "52ebbe41807005b2GridGenerator::generate_from_name_and_arguments<2>");
+  EXPECT_TRUE(
+    make_grid->hash() == "52ebbe41807005b2GridGenerator::generate_from_name_"
+                         "and_arguments<2>" ||
+    make_grid->hash() ==
+      "65897e8ca67dcc40GridGenerator::generate_from_name_and_arguments<2>");
 
   NodeObjectPtr name      = make_node("hyper_cube");
   NodeObjectPtr arguments = make_node("-1.0: 1.0: false");

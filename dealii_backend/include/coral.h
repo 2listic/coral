@@ -659,7 +659,6 @@ namespace coral
         return std::make_shared<std::any>(t);
       };
 
-
       // Add value parser
       initializer.to_string =
         [](const std::shared_ptr<std::any> &value) -> std::string {
@@ -683,7 +682,6 @@ namespace coral
       initializer.node_type                    = NodeType::empty_constructor;
       initializer.json_serializer["outputs"].push_back("self");
 
-
       // Add to the initializer the emtpy executor.
       initializer.executor =
         [](const std::vector<std::shared_ptr<NodeObject>> &args)
@@ -694,7 +692,6 @@ namespace coral
       };
       return initializer;
     }
-
 
     /**
      * Register an abstract type. This is a type that will never be
@@ -875,7 +872,6 @@ namespace coral
           initializer.node_type                      = NodeType::void_method;
           initializer.json_serializer["method_name"] = method_name;
 
-
           // Add the method to the initializer
           initializer.executor =
             [ptr](std::vector<std::shared_ptr<NodeObject>> args)
@@ -960,7 +956,6 @@ namespace coral
           initializer.node_type = NodeType::void_const_method;
           initializer.json_serializer["method_name"] = method_name;
 
-
           // Add the method to the initializer
           initializer.executor =
             [ptr](std::vector<std::shared_ptr<NodeObject>> args)
@@ -1034,8 +1029,8 @@ namespace coral
       using ThisMethod              = decltype(ptr);
       constexpr bool return_is_void = std::is_same_v<ReturnType, void>;
       if (arg_names.empty())
-        throw std::runtime_error(
-          "You must provide at least the name of the function as the first argument.");
+        throw std::runtime_error("You must provide at least the name of the "
+                                 "function as the first argument.");
       auto method_name = arg_names[0];
       arg_names.erase(arg_names.begin());
 
@@ -1090,7 +1085,6 @@ namespace coral
         }
     }
 
-
     // // Overload for function pointers
     // template <typename ReturnType, typename... Args>
     // static void
@@ -1121,14 +1115,15 @@ namespace coral
           // If the object is not of the requested type, try to convert it
           // to the base class, using the right initializer.
           auto &j = initializer.json_serializer;
-          if (!(j.contains("base") && (coral::hash<type>() == j.at("base"))))
+          if (!(j.contains("base") &&
+                (coral::hash<type>() == j.at("base").get<std::string>())))
             throw std::runtime_error("Cannot cast object of type " +
                                      type_name() + " to object of type " +
                                      boost::core::type_name<type>() + ".");
           auto new_object = initializer.to_base(object);
           if (!new_object->has_value())
             throw std::runtime_error("New object does not have value.");
-          if (!(coral::hash(new_object) == j.at("base")))
+          if (!(coral::hash(new_object) == j.at("base").get<std::string>()))
             throw std::runtime_error(
               "New object does not have the right hash.");
           ptr = std::any_cast<std::shared_ptr<type>>(*new_object);
@@ -1180,7 +1175,6 @@ namespace coral
       return object;
     }
 
-
     /**
      * Return a Pointer to the ith output.
      */
@@ -1226,14 +1220,15 @@ namespace coral
           // If the object is not of the requested type, try to convert it
           // to the base class, using the right initializer.
           auto &j = initializer.json_serializer;
-          if (!(j.contains("base") && (coral::hash<type>() == j.at("base"))))
+          if (!(j.contains("base") &&
+                (coral::hash<type>() == j.at("base").get<std::string>())))
             throw std::runtime_error("Cannot cast object of type " +
                                      type_name() + " to object of type " +
                                      boost::core::type_name<type>() + ".");
           auto new_object = initializer.to_base(object);
           if (!new_object->has_value())
             throw std::runtime_error("New object does not have value.");
-          if (!(coral::hash(new_object) == j.at("base")))
+          if (!(coral::hash(new_object) == j.at("base").get<std::string>()))
             throw std::runtime_error(
               "New object does not have the right hash.");
           ptr = std::any_cast<std::shared_ptr<const type>>(new_object);
@@ -1252,7 +1247,6 @@ namespace coral
           }
       return ptr;
     }
-
 
     template <typename T>
     NodeObject &
