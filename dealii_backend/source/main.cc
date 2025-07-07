@@ -5,8 +5,9 @@
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
 
+#include <nlohmann/json.hpp> // JSON library
+
 #include "coral.h"
-#include "json/json.hpp" // JSON library
 #include "register_types.h"
 #include "taskflow/taskflow.hpp" // Taskflow library
 

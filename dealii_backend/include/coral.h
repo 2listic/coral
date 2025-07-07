@@ -4,6 +4,8 @@
 #include <deal.II/base/mutable_bind.h>
 #include <deal.II/base/patterns.h>
 
+#include <nlohmann/json.hpp> // JSON library
+
 #include <any>
 #include <functional>
 #include <iostream>
@@ -16,7 +18,6 @@
 #include <typeinfo>
 #include <vector>
 
-#include "json/json.hpp"                 // JSON library
 #include "magic_enum/magic_enum_all.hpp" // Reintroduced Magic Enum library
 #include "type_name.h"                   // Single boost file
 

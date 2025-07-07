@@ -1,6 +1,7 @@
 #ifndef coral_network_h
 #define coral_network_h
 
+#include <nlohmann/json.hpp>
 #include <taskflow/taskflow.hpp>
 
 #include <fstream>
@@ -8,7 +9,6 @@
 #include <unordered_map>
 
 #include "coral.h"
-#include "json.hpp"
 
 namespace coral
 {
