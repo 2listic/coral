@@ -11,7 +11,31 @@
 #include <deal.II/grid/grid_out.h>
 #include <deal.II/grid/tria.h>
 
+#include <nlohmann/json.hpp>
+
 #include "coral.h"
+
+namespace nlohmann
+{
+  template <int dim>
+  struct adl_serializer<dealii::Point<dim>>
+  {
+    static void
+    to_json(json &j, const dealii::Point<dim> &p)
+    {
+      j = json::array();
+      for (unsigned int i = 0; i < dim; ++i)
+        j.push_back(p[i]);
+    }
+
+    static void
+    from_json(const json &j, dealii::Point<dim> &p)
+    {
+      for (unsigned int i = 0; i < dim; ++i)
+        p[i] = j.at(i).get<double>();
+    }
+  };
+} // namespace nlohmann
 
 namespace coral
 {

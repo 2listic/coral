@@ -1,9 +1,6 @@
 #ifndef CORAL_H
 #define CORAL_H
 
-#include <deal.II/base/mutable_bind.h>
-#include <deal.II/base/patterns.h>
-
 #include <nlohmann/json.hpp> // JSON library
 
 #include <any>
@@ -423,12 +420,11 @@ namespace coral
         }
       catch (const std::out_of_range &e)
         {
-          AssertThrow(false,
-                      dealii::ExcMessage(
-                        "Type " + boost::core::type_name<T>() +
-                        " is not registered. Before using it, you should call "
-                        "one of the NodeObject::register_*<" +
-                        boost::core::type_name<T>() + ">(...) functions."));
+          throw std::runtime_error(
+            "Type " + std::string(typeid(T).name()) +
+            " is not registered. Before using it, you should call "
+            "one of the NodeObject::register_*<" +
+            std::string(typeid(T).name()) + ">(...) functions.");
         }
 
       initialize_inputs();
@@ -501,9 +497,8 @@ namespace coral
         object = initializer.parse_string(value_str);
       else
         {
-          AssertThrow(false,
-                      dealii::ExcMessage(
-                        "No value parser available for this type."));
+          throw std::runtime_error(
+            "No parse_string function is available for this type.");
         }
     }
 
@@ -512,17 +507,14 @@ namespace coral
     {
       if (initializer.to_string)
         {
-          AssertThrow(
-            ready(),
-            dealii::ExcMessage(
-              "Object is not ready. You cannot ask for its value yet."));
+          if (!ready())
+            throw std::runtime_error("Object is not ready for conversion to "
+                                     "string. Please call operator() first.");
           return initializer.to_string(object);
         }
       else
         {
-          AssertThrow(false,
-                      dealii::ExcMessage(
-                        "No value parser available for this type."));
+          throw std::runtime_error("Unsupported type for JSON conversion");
         }
     }
 
@@ -545,11 +537,10 @@ namespace coral
               break;
             }
         }
-
-      AssertThrow(is_ready,
-                  dealii::ExcMessage(
-                    "Arguments are not ready. You can only call "
-                    "this function after all arguments are ready."));
+      if (!is_ready)
+        throw std::runtime_error(
+          "Arguments are not ready. You can only call "
+          "this function after all arguments are ready.");
 
       object = initializer.executor(arguments);
       return object.operator bool();
@@ -561,13 +552,12 @@ namespace coral
     void
     set_arguments(const std::vector<std::shared_ptr<NodeObject>> &args)
     {
-      AssertThrow(
-        args.size() == initializer.json_serializer["arguments"].size(),
-        dealii::ExcMessage(
+      if (args.size() != initializer.json_serializer["arguments"].size())
+        throw std::runtime_error(
           "Wrong number of arguments: " + std::to_string(args.size()) +
           " instead of " +
           std::to_string(initializer.json_serializer["arguments"].size()) +
-          "."));
+          ".");
       this->arguments = args;
     }
 
@@ -614,8 +604,8 @@ namespace coral
       std::vector<ConnectionType> arg_connection_types = {
         connection_type<Args>()...};
 
-      AssertThrow(args.size() == arg_names.size(),
-                  dealii::ExcMessage("Wrong number of arguments."));
+      if (args.size() != arg_names.size())
+        throw std::runtime_error("Wrong number of arguments.");
 
       for (unsigned int i = 0; i < args.size(); ++i)
         {
@@ -648,17 +638,16 @@ namespace coral
     {
       auto &initializer                        = register_json_header<T>();
       initializer.json_serializer["node_type"] = "elementary_constructor";
-      initializer.node_type = NodeType::elementary_constructor;
-      initializer.json_serializer["value"] =
-        dealii::Patterns::Tools::to_string(T());
+      initializer.node_type                = NodeType::elementary_constructor;
+      initializer.json_serializer["value"] = json(T()).dump();
       initializer.json_serializer["outputs"].push_back("self");
 
       // Add to the initializer the emtpy executor.
       initializer.executor =
         [](const std::vector<std::shared_ptr<NodeObject>> &args)
         -> std::shared_ptr<std::any> {
-        AssertThrow(args.size() == 0,
-                    dealii::ExcMessage("Wrong number of arguments."));
+        if (args.size() != 0)
+          throw std::runtime_error("Wrong number of arguments.");
         return std::make_shared<std::any>(std::make_shared<T>());
       };
 
@@ -666,7 +655,7 @@ namespace coral
       initializer.parse_string =
         [](const std::string &value) -> std::shared_ptr<std::any> {
         auto t = std::make_shared<T>();
-        dealii::Patterns::Tools::to_value(value, *t);
+        *t     = json::parse(value).get<T>();
         return std::make_shared<std::any>(t);
       };
 
@@ -675,7 +664,7 @@ namespace coral
       initializer.to_string =
         [](const std::shared_ptr<std::any> &value) -> std::string {
         const T &t = *std::any_cast<std::shared_ptr<T>>(*value);
-        return dealii::Patterns::Tools::to_string(t);
+        return json(t).dump();
       };
       return initializer;
     }
@@ -699,8 +688,8 @@ namespace coral
       initializer.executor =
         [](const std::vector<std::shared_ptr<NodeObject>> &args)
         -> std::shared_ptr<std::any> {
-        AssertThrow(args.size() == 0,
-                    dealii::ExcMessage("Wrong number of arguments."));
+        if (args.size() != 0)
+          throw std::runtime_error("Wrong number of arguments.");
         return std::make_shared<std::any>(std::make_shared<T>());
       };
       return initializer;
@@ -708,7 +697,8 @@ namespace coral
 
 
     /**
-     * Register an abstract type. This is a type that will never be constructed.
+     * Register an abstract type. This is a type that will never be
+     * constructed.
      */
     template <typename T>
     static auto
@@ -783,8 +773,8 @@ namespace coral
       // And the executor.
       initializer.executor = [](std::vector<std::shared_ptr<NodeObject>> args)
         -> std::shared_ptr<std::any> {
-        AssertThrow(args.size() == sizeof...(Args),
-                    dealii::ExcMessage("Wrong number of arguments."));
+        if (args.size() != sizeof...(Args))
+          throw std::runtime_error("Wrong number of arguments.");
         auto tuple = cast_args<Args...>(args);
         return std::apply(
           [](auto &&...unpackedArgs) {
@@ -890,8 +880,8 @@ namespace coral
           initializer.executor =
             [ptr](std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<std::any> {
-            AssertThrow(args.size() == 1 + sizeof...(Args),
-                        dealii::ExcMessage("Wrong number of arguments."));
+            if (args.size() != 1 + sizeof...(Args))
+              throw std::runtime_error("Wrong number of arguments.");
             auto &obj = args[0]->get<T>();
             args.erase(args.begin()); // remove the first element
 
@@ -918,8 +908,8 @@ namespace coral
           initializer.executor =
             [ptr](std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<std::any> {
-            AssertThrow(args.size() == 2 + sizeof...(Args),
-                        dealii::ExcMessage("Wrong number of arguments."));
+            if (args.size() != 2 + sizeof...(Args))
+              throw std::runtime_error("Wrong number of arguments.");
             auto &obj = args[0]->get<T>();
             auto &ret = args[1]->get<ReturnType>();
             args.erase(args.begin()); // remove the class
@@ -975,8 +965,8 @@ namespace coral
           initializer.executor =
             [ptr](std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<std::any> {
-            AssertThrow(args.size() == 1 + sizeof...(Args),
-                        dealii::ExcMessage("Wrong number of arguments."));
+            if (args.size() != 1 + sizeof...(Args))
+              throw std::runtime_error("Wrong number of arguments.");
             auto &obj = args[0]->get<T>();
             args.erase(args.begin()); // remove the first element
 
@@ -1003,8 +993,8 @@ namespace coral
           initializer.executor =
             [ptr](std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<std::any> {
-            AssertThrow(args.size() == 2 + sizeof...(Args),
-                        dealii::ExcMessage("Wrong number of arguments."));
+            if (args.size() != 2 + sizeof...(Args))
+              throw std::runtime_error("Wrong number of arguments.");
             auto &obj = args[0]->get<T>();
             auto &ret = args[1]->get<ReturnType>();
             args.erase(args.begin()); // remove the class
@@ -1043,16 +1033,16 @@ namespace coral
     {
       using ThisMethod              = decltype(ptr);
       constexpr bool return_is_void = std::is_same_v<ReturnType, void>;
-      AssertThrow(arg_names.size() > 0,
-                  dealii::ExcMessage("You must provide at least the name of "
-                                     "the function as the first argument."));
+      if (arg_names.empty())
+        throw std::runtime_error(
+          "You must provide at least the name of the function as the first argument.");
       auto method_name = arg_names[0];
       arg_names.erase(arg_names.begin());
 
       if constexpr (return_is_void)
         {
-          AssertThrow(arg_names.size() == sizeof...(Args),
-                      dealii::ExcMessage("Wrong number of arguments."));
+          if (arg_names.size() != sizeof...(Args))
+            throw std::runtime_error("Wrong number of arguments.");
           auto &initializer =
             register_json_header<ThisMethod, Args...>(arg_names, method_name);
           initializer.json_serializer["node_type"]   = "void_function";
@@ -1063,8 +1053,8 @@ namespace coral
           initializer.executor =
             [ptr](std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<std::any> {
-            AssertThrow(args.size() == sizeof...(Args),
-                        dealii::ExcMessage("Wrong number of arguments."));
+            if (args.size() != sizeof...(Args))
+              throw std::runtime_error("Wrong number of arguments.");
 
             auto tuple = cast_args<Args...>(args);
 
@@ -1086,8 +1076,8 @@ namespace coral
           initializer.executor =
             [ptr](std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<std::any> {
-            AssertThrow(args.size() == 1 + sizeof...(Args),
-                        dealii::ExcMessage("Wrong number of arguments."));
+            if (args.size() != 1 + sizeof...(Args))
+              throw std::runtime_error("Wrong number of arguments.");
             auto &ret = args[0]->get<ReturnType>();
             args.erase(args.begin()); // remove the first element
 
@@ -1121,7 +1111,8 @@ namespace coral
     auto
     get_shared() -> std::shared_ptr<T>
     {
-      AssertThrow(ready(), dealii::ExcMessage("Object is not ready."));
+      if (!ready())
+        throw std::runtime_error("Object is not ready.");
       using type = std::remove_cv_t<std::remove_reference_t<T>>;
       std::shared_ptr<type> ptr;
 
@@ -1130,17 +1121,16 @@ namespace coral
           // If the object is not of the requested type, try to convert it
           // to the base class, using the right initializer.
           auto &j = initializer.json_serializer;
-          AssertThrow(j.contains("base") &&
-                        (coral::hash<type>() == j.at("base")),
-                      dealii::ExcMessage("Cannot cast object of type " +
-                                         type_name() + " to object of type " +
-                                         boost::core::type_name<type>() + "."));
+          if (!(j.contains("base") && (coral::hash<type>() == j.at("base"))))
+            throw std::runtime_error("Cannot cast object of type " +
+                                     type_name() + " to object of type " +
+                                     boost::core::type_name<type>() + ".");
           auto new_object = initializer.to_base(object);
-          AssertThrow(new_object->has_value(),
-                      dealii::ExcMessage("New object does not have value."));
-          AssertThrow(coral::hash(new_object) == j.at("base"),
-                      dealii::ExcMessage(
-                        "New object does not have the right hash."));
+          if (!new_object->has_value())
+            throw std::runtime_error("New object does not have value.");
+          if (!(coral::hash(new_object) == j.at("base")))
+            throw std::runtime_error(
+              "New object does not have the right hash.");
           ptr = std::any_cast<std::shared_ptr<type>>(*new_object);
         }
       else
@@ -1150,12 +1140,10 @@ namespace coral
           }
         catch (...)
           {
-            AssertThrow(false,
-                        dealii::ExcMessage(
-                          "Could not cast object to shared pointer of type " +
-                          boost::core::type_name<type>() +
-                          " from object of type " +
-                          boost::core::demangle(object->type().name()) + "."));
+            throw std::runtime_error(
+              "Could not cast object to shared pointer of type " +
+              boost::core::type_name<type>() + " from object of type " +
+              boost::core::demangle(object->type().name()) + ".");
           }
       return ptr;
     }
@@ -1167,7 +1155,8 @@ namespace coral
     T &
     get()
     {
-      AssertThrow(ready(), dealii::ExcMessage("Object is not ready."));
+      if (!ready())
+        throw std::runtime_error("Object is not ready.");
       return *(get_shared<T>());
     }
 
@@ -1178,7 +1167,8 @@ namespace coral
     const T &
     get() const
     {
-      AssertThrow(ready(), dealii::ExcMessage("Object is not ready."));
+      if (!ready())
+        throw std::runtime_error("Object is not ready.");
       return *(get_shared<T>());
     }
 
@@ -1197,8 +1187,8 @@ namespace coral
     NodeObjectPtr
     output(const unsigned int index)
     {
-      AssertThrow(index < output_indices.size(),
-                  dealii::ExcMessage("Index out of bounds."));
+      if (!(index < output_indices.size()))
+        throw std::runtime_error("Index out of bounds.");
       if (output_indices[index] == -1)
         {
           return shared_from_this(); // Return this object for 'self'
@@ -1212,8 +1202,8 @@ namespace coral
     NodeObjectPtr &
     input(const unsigned int index)
     {
-      AssertThrow(index < input_indices.size(),
-                  dealii::ExcMessage("Index out of bounds."));
+      if (!(index < input_indices.size()))
+        throw std::runtime_error("Index out of bounds.");
       return arguments[input_indices[index]];
     }
 
@@ -1236,17 +1226,16 @@ namespace coral
           // If the object is not of the requested type, try to convert it
           // to the base class, using the right initializer.
           auto &j = initializer.json_serializer;
-          AssertThrow(j.contains("base") &&
-                        (coral::hash<type>() == j.at("base")),
-                      dealii::ExcMessage("Cannot cast object of type " +
-                                         type_name() + " to object of type " +
-                                         boost::core::type_name<type>() + "."));
+          if (!(j.contains("base") && (coral::hash<type>() == j.at("base"))))
+            throw std::runtime_error("Cannot cast object of type " +
+                                     type_name() + " to object of type " +
+                                     boost::core::type_name<type>() + ".");
           auto new_object = initializer.to_base(object);
-          AssertThrow(new_object->has_value(),
-                      dealii::ExcMessage("New object does not have value."));
-          AssertThrow(coral::hash(new_object) == j.at("base"),
-                      dealii::ExcMessage(
-                        "New object does not have the right hash."));
+          if (!new_object->has_value())
+            throw std::runtime_error("New object does not have value.");
+          if (!(coral::hash(new_object) == j.at("base")))
+            throw std::runtime_error(
+              "New object does not have the right hash.");
           ptr = std::any_cast<std::shared_ptr<const type>>(new_object);
         }
       else
@@ -1256,12 +1245,10 @@ namespace coral
           }
         catch (...)
           {
-            AssertThrow(false,
-                        dealii::ExcMessage(
-                          "Could not cast object to shared pointer of type " +
-                          boost::core::type_name<type>() +
-                          " from object of type " +
-                          boost::core::demangle(object->type().name()) + "."));
+            throw std::runtime_error(
+              "Could not cast object to shared pointer of type " +
+              boost::core::type_name<type>() + " from object of type " +
+              boost::core::demangle(object->type().name()) + ".");
           }
       return ptr;
     }
@@ -1282,12 +1269,11 @@ namespace coral
           // Check that coral::hash<T>() is contained in hash().
           const auto my_hash   = hash();
           const auto type_hash = coral::hash<T>();
-          AssertThrow(
-            my_hash.find(type_hash) == 0,
-            dealii::ExcMessage(
+          if (my_hash.find(type_hash) != 0)
+            throw std::runtime_error(
               "Object type does not match. My hash is " + my_hash +
               " and the object hash is " + type_hash +
-              ". They should at least start with the same characters."));
+              ". They should at least start with the same characters.");
           *this = NodeObject(data);
           return *this;
         }
@@ -1323,12 +1309,11 @@ namespace coral
           const auto object_hash = coral::hash(object->type());
           const auto stored_hash =
             std::string(initializer.json_serializer.at("type_hash"));
-          AssertThrow(
-            stored_hash.find(object_hash) == 0,
-            dealii::ExcMessage(
+          if (stored_hash.find(object_hash) != 0)
+            throw std::runtime_error(
               "Object type does not match: we store " + stored_hash +
               ", and cannot set this object equal to " + object_hash +
-              ". The two hashes should at least start with the same characters."));
+              ". The two hashes should at least start with the same characters.");
           return stored_hash;
         }
       else
@@ -1402,8 +1387,8 @@ namespace coral
     std::vector<unsigned int> input_indices;
 
     /**
-     * Output indices mapping to arguments. If the content is -1, then we return
-     * the object itself.
+     * Output indices mapping to arguments. If the content is -1, then we
+     * return the object itself.
      */
     std::vector<int> output_indices;
 
@@ -1442,11 +1427,10 @@ namespace coral
     set_inputs(
       const std::vector<std::pair<NodeObjectPtr, unsigned int>> &inputs)
     {
-      AssertThrow(inputs.size() == input_indices.size(),
-                  dealii::ExcMessage(
-                    "Wrong number of inputs: " + std::to_string(inputs.size()) +
-                    " instead of " + std::to_string(input_indices.size()) +
-                    "."));
+      if (inputs.size() != input_indices.size())
+        throw std::runtime_error(
+          "Wrong number of inputs: " + std::to_string(inputs.size()) +
+          " instead of " + std::to_string(input_indices.size()) + ".");
 
       for (unsigned int i = 0; i < inputs.size(); ++i)
         {
@@ -1467,12 +1451,11 @@ namespace coral
           const bool is_valid =
             (expected_hash == input_hash) || (base_hash == input_hash);
 
-          AssertThrow(is_valid,
-                      dealii::ExcMessage(
-                        "The hash type of input " + std::to_string(i) + " (" +
-                        input_hash + ") does not match the expected hash (" +
-                        expected_hash + ") or its base type (" + base_hash +
-                        ")."));
+          if (!is_valid)
+            throw std::runtime_error(
+              "The hash type of input " + std::to_string(i) + " (" +
+              input_hash + ") does not match the expected hash (" +
+              expected_hash + ") or its base type (" + base_hash + ".");
 
           arguments[input_indices[i]] = input_node->output(input_index);
         }
@@ -1482,11 +1465,10 @@ namespace coral
     set_outputs(
       const std::vector<std::pair<NodeObjectPtr, unsigned int>> &outputs)
     {
-      AssertThrow(outputs.size() == output_indices.size(),
-                  dealii::ExcMessage(
-                    "Wrong number of outputs: " +
-                    std::to_string(outputs.size()) + " instead of " +
-                    std::to_string(output_indices.size()) + "."));
+      if (outputs.size() != output_indices.size())
+        throw std::runtime_error(
+          "Wrong number of outputs: " + std::to_string(outputs.size()) +
+          " instead of " + std::to_string(output_indices.size()) + ".");
 
       for (unsigned int i = 0; i < outputs.size(); ++i)
         {
@@ -1499,11 +1481,11 @@ namespace coral
               .get<std::string>();
           const auto output_hash = arguments[output_indices[i]]->hash();
 
-          AssertThrow(expected_hash == output_hash,
-                      dealii::ExcMessage(
-                        "The hash type of output " + std::to_string(i) + " (" +
-                        output_hash + ") does not match the expected hash (" +
-                        expected_hash + ")."));
+          if (expected_hash != output_hash)
+            throw std::runtime_error("The hash type of output " +
+                                     std::to_string(i) + " (" + output_hash +
+                                     ") does not match the expected hash (" +
+                                     expected_hash + ").");
 
           output_node->arguments[output_index] = arguments[output_indices[i]];
         }
@@ -1529,9 +1511,9 @@ namespace coral
   inline void
   from_json(const json &j, NodeObjectPtr &obj)
   {
-    AssertThrow(j.contains("type_hash"),
-                dealii::ExcMessage(
-                  "The json does not contain a hash_type entry. Bailing out."));
+    if (!j.contains("type_hash"))
+      throw std::runtime_error(
+        "The json does not contain a hash_type entry. Bailing out.");
     obj = make_node(j.at("type_hash").get<std::string>());
     if (j["node_type"] == "elementary_constructor" ||
         j["node_type"] == "empty_constructor")
@@ -1560,7 +1542,7 @@ namespace coral
       }
     catch (const std::bad_any_cast &e)
       {
-        AssertThrow(false, dealii::ExcMessage(e.what()));
+        throw std::runtime_error(e.what());
       }
   }
 

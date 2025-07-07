@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+#include <fstream>
+
 #include "coral.h"
 
 using namespace dealii;
@@ -20,14 +22,14 @@ TEST(NodeObject, ElementaryTypeInt)
   ASSERT_EQ("42", obj->to_string());
 }
 
-TEST(NodeObject, ElementaryTypePoint)
+TEST(NodeObject, TypePoint)
 {
   using type = Point<2>;
-  NodeObject::register_elementary_type<type>();
+  NodeObject::register_type<type>();
   NodeObjectPtr obj = make_node(type(0.0, 1.0));
   ASSERT_TRUE(obj->ready());
   ASSERT_EQ(type(0.0, 1.0), obj->get<type>());
-  ASSERT_EQ("0, 1", obj->to_string());
+  // No to_string for non-elementary types
 }
 
 TEST(NodeObject, TriviallyConstructibleType)

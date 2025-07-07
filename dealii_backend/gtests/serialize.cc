@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 #include "coral.h"
+#include "register_types.h"
 
 using namespace dealii;
 using namespace coral;
@@ -38,12 +39,12 @@ TEST(Serialize, Point)
   NodeObjectPtr obj = make_node(type(0.0, 1.0));
   ASSERT_TRUE(obj->ready());
   ASSERT_EQ(type(0.0, 1.0), obj->get<type>());
-  ASSERT_EQ("0, 1", obj->to_string());
+  ASSERT_EQ("[0.0,1.0]", obj->to_string());
 
   // Serialize to json
   json j = obj;
   ASSERT_TRUE(j["node_type"] == "elementary_constructor");
-  ASSERT_TRUE(j["value"] == "0, 1");
+  ASSERT_TRUE(j["value"] == "[0.0,1.0]");
 
   // Deserialize from json
   auto obj2 = j.template get<NodeObjectPtr>();
