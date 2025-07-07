@@ -1513,7 +1513,7 @@ namespace coral
   {
     if (!j.contains("type_hash"))
       throw std::runtime_error(
-        "The json does not contain a hash_type entry. Bailing out.");
+        "The json does not contain a type_hash entry. Bailing out.");
     obj = make_node(j.at("type_hash").get<std::string>());
     if (j["node_type"] == "elementary_constructor" ||
         j["node_type"] == "empty_constructor")

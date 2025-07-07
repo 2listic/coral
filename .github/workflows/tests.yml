@@ -11,7 +11,7 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: dealii/dealii:v9.5.1-jammy
+      image: dealii/dealii:v9.6.0-noble
       options: --user root
 
     steps:
