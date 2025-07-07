@@ -1,9 +1,8 @@
-#include <nlohmann/json.hpp>
-
 #include <fstream>
 
 #include "coral_network.h"
 #include "gtest/gtest.h"
+#include "json.hpp"
 
 TEST(NetworkTest, ParseAndExecuteNetwork)
 {
