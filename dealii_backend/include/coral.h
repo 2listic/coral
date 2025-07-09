@@ -1079,7 +1079,8 @@ namespace coral
             auto tuple = cast_args<Args...>(args);
 
             ret = std::apply(
-              [ptr](auto &&...unpackedArgs) { ptr(*unpackedArgs...); }, tuple);
+              [ptr](auto &&...unpackedArgs) { return ptr(*unpackedArgs...); },
+              tuple);
             return std::make_shared<std::any>(ptr);
           };
         }
@@ -1509,6 +1510,12 @@ namespace coral
       throw std::runtime_error(
         "The json does not contain a type_hash entry. Bailing out.");
     obj = make_node(j.at("type_hash").get<std::string>());
+    // Make sure the hash matches the expected value
+    if (j["type_hash"] != obj->hash())
+      throw std::runtime_error(
+        "The type_hash does not match the expected value: expected " +
+        j["type_hash"].dump() + ", got " + obj->hash());
+
     if (j["node_type"] == "elementary_constructor" ||
         j["node_type"] == "empty_constructor")
       (*obj)();
