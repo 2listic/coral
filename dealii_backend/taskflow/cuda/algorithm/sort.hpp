@@ -150,7 +150,7 @@ template<unsigned nt, unsigned vt, typename K, typename V>
 struct cudaBlockSort {
 
   static constexpr bool has_values = !std::is_same<V, cudaEmpty>::value;
-  static constexpr unsigned num_passes = log2(nt);
+  static constexpr unsigned num_passes = static_floor_log2<nt>();
 
   /** @private */
   union Storage {
@@ -226,7 +226,7 @@ void cuda_merge_sort_partitions(
   unsigned coop, unsigned spacing, C comp, unsigned* buf
 ) {
 
-  // bufer size is num_partitions + 1
+  // buffer size is num_partitions + 1
   unsigned num_partitions = (count + spacing - 1) / spacing + 1;
 
   const unsigned nt = 128;
