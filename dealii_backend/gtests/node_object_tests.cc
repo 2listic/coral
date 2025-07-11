@@ -72,30 +72,7 @@ TEST(NodeObject, AbstractType)
   ASSERT_TRUE(obj->ready());
 }
 
-// TEST(NodeObject, MethodRegistration)
-// {
-//   struct MyClass
-//   {
-//     void
-//     set_value(int v)
-//     {
-//       value = v;
-//     }
-//     int value;
-//   };
-
-//   NodeObject::register_type<MyClass>();
-//   NodeObject::register_type<int>();
-//   NodeObject::register_method(&MyClass::set_value,
-//                               {"set_value", "my_class", "value"});
-
-//   NodeObjectPtr obj = make_node<MyClass>();
-//   NodeObjectPtr fun = make_node(&MyClass::set_value);
-//   NodeObjectPtr arg = make_node(42);
-//   fun->set_arguments({obj, arg});
-//   (*fun)();
-//   ASSERT_EQ(obj->get<MyClass>().value, 42);
-// }
+// MethodRegistration test moved to failing.cc
 
 TEST(NodeObject, FunctionRegistration)
 {
