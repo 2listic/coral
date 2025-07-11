@@ -1,6 +1,7 @@
 #ifndef coral_network_h
 #define coral_network_h
 
+
 #include <nlohmann/json.hpp>
 #include <taskflow/taskflow.hpp>
 
@@ -20,19 +21,19 @@ namespace coral
   {
   public:
     // Basic connection properties
-    int source_id;
-    int target_id;
-    int source_output;
-    int target_input;
+    unsigned int source_id;
+    unsigned int target_id;
+    unsigned int source_output;
+    unsigned int target_input;
 
     // Default constructor for deserialization
     Connection() = default;
 
     // Constructor with node IDs and ports
-    Connection(int _source_id,
-               int _target_id,
-               int _source_output = 0,
-               int _target_input  = 0)
+    Connection(unsigned int _source_id,
+               unsigned int _target_id,
+               unsigned int _source_output = 0,
+               unsigned int _target_input  = 0)
       : source_id(_source_id)
       , target_id(_target_id)
       , source_output(_source_output)
@@ -63,8 +64,8 @@ namespace coral
         }
 
       Connection conn;
-      conn.source_id = json["source"].get<int>();
-      conn.target_id = json["target"].get<int>();
+      conn.source_id = json["source"].get<unsigned int>();
+      conn.target_id = json["target"].get<unsigned int>();
 
       // Require source_output and target_input fields
       if (!json.contains("source_output") || !json.contains("target_input"))
@@ -73,8 +74,8 @@ namespace coral
             "Connection JSON must contain 'source_output' and 'target_input' fields");
         }
 
-      conn.source_output = json["source_output"].get<int>();
-      conn.target_input  = json["target_input"].get<int>();
+      conn.source_output = json["source_output"].get<unsigned int>();
+      conn.target_input  = json["target_input"].get<unsigned int>();
 
       return conn;
     }
@@ -83,35 +84,35 @@ namespace coral
   class Network
   {
   private:
-    std::map<int, std::shared_ptr<NodeObject>> nodes;
-    std::map<int, tf::Task>                    node_tasks;
+    std::map<unsigned int, std::shared_ptr<NodeObject>> nodes;
+    std::map<unsigned int, tf::Task>                    node_tasks;
 
     // Store connections by their ID
-    std::map<int, Connection> connections;
+    std::map<unsigned int, Connection> connections;
 
     tf::Executor executor;
     tf::Taskflow taskflow;
 
   public:
     void
-    add_node(int id, const std::shared_ptr<NodeObject> &node)
+    add_node(unsigned int id, const std::shared_ptr<NodeObject> &node)
     {
       nodes[id]      = node;
       node_tasks[id] = taskflow.emplace([node]() { (*node)(); })
                          .name("node_" + std::to_string(id));
     }
 
-    int
+    unsigned int
     add_node(const std::shared_ptr<NodeObject> &node)
     {
-      int id = nodes.empty() ? 1 : nodes.rbegin()->first + 1;
+      unsigned int id = nodes.empty() ? 0 : nodes.rbegin()->first + 1;
       add_node(id, node);
       return id;
     }
 
 
     void
-    add_connection(int id, const Connection &conn)
+    add_connection(unsigned int id, const Connection &conn)
     {
       connections[id] = conn;
       // Ensure both source and target nodes exist
@@ -127,6 +128,10 @@ namespace coral
                                    std::to_string(conn.target_id));
         }
 
+      // Set the input of the target node to the output of the source node
+      nodes[conn.target_id]->set_input(
+        conn.target_input, nodes[conn.source_id]->output(conn.source_output));
+
       auto source_task = node_tasks[conn.source_id];
       auto target_task = node_tasks[conn.target_id];
 
@@ -135,31 +140,32 @@ namespace coral
     }
 
     void
-    add_connection(int id,
-                   int source_id,
-                   int target_id,
-                   int source_output,
-                   int target_input)
+    add_connection(unsigned int id,
+                   unsigned int source_id,
+                   unsigned int target_id,
+                   unsigned int source_output,
+                   unsigned int target_input)
     {
       Connection conn(source_id, target_id, source_output, target_input);
       add_connection(id, conn);
     }
 
 
-    int
-    add_connection(int source_id,
-                   int target_id,
-                   int source_output,
-                   int target_input)
+    unsigned int
+    add_connection(unsigned int source_id,
+                   unsigned int target_id,
+                   unsigned int source_output,
+                   unsigned int target_input)
     {
       Connection conn(source_id, target_id, source_output, target_input);
       return add_connection(conn);
     }
 
-    int
+    unsigned int
     add_connection(const Connection &conn)
     {
-      int id = connections.empty() ? 1 : connections.rbegin()->first + 1;
+      unsigned int id =
+        connections.empty() ? 0 : connections.rbegin()->first + 1;
       add_connection(id, conn);
       return id;
     }
@@ -259,14 +265,14 @@ namespace coral
 
 
     [[nodiscard]] auto
-    get_node(int id) const -> std::shared_ptr<NodeObject>
+    get_node(unsigned int id) const -> std::shared_ptr<NodeObject>
     {
       auto it = nodes.find(id);
       return it != nodes.end() ? it->second : nullptr;
     }
 
     [[nodiscard]] auto
-    get_task(int id) const -> tf::Task
+    get_task(unsigned int id) const -> tf::Task
     {
       auto it = node_tasks.find(id);
       if (it == node_tasks.end())
@@ -302,9 +308,9 @@ namespace coral
     // Get all nodes that are connected to a specific node (outgoing
     // connections)
     [[nodiscard]] auto
-    get_connected_nodes(int nodeId) const -> std::vector<int>
+    get_connected_nodes(unsigned int nodeId) const -> std::vector<unsigned int>
     {
-      std::vector<int> result;
+      std::vector<unsigned int> result;
 
       // Iterate through all connections and find those with matching source
       // ID
@@ -320,7 +326,7 @@ namespace coral
 
     // Get all connection objects for a specific source node
     [[nodiscard]] auto
-    get_node_connections(int nodeId) const -> std::vector<Connection>
+    get_node_connections(unsigned int nodeId) const -> std::vector<Connection>
     {
       std::vector<Connection> result;
 
@@ -338,7 +344,7 @@ namespace coral
 
     // Check if two nodes are connected (direct connection from inId to outId)
     [[nodiscard]] auto
-    is_connected(int inId, int outId) const -> bool
+    is_connected(unsigned int inId, unsigned int outId) const -> bool
     {
       // Loop through all connections to find a match
       for (const auto &[conn_id, conn] : connections)

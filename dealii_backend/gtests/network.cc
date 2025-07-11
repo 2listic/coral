@@ -2,9 +2,80 @@
 
 #include <fstream>
 
+#include "coral.h"
 #include "coral_network.h"
 #include "gtest/gtest.h"
 #include "register_types.h"
+
+TEST(NetworkTest, BareMinimal)
+{
+  coral::NodeObject::register_elementary_type<double>();
+
+  auto sum = [](const double &a, const double &b) { return a + b; };
+  coral::NodeObject::register_function(sum,
+                                       {"sum", "output", "input1", "input2"});
+
+  // Output the registry for these node types
+  auto          registry = coral::NodeObject::get_registry();
+  std::ofstream registry_file("bare_minimal_registry.json");
+  registry_file << std::setw(2) << registry << std::endl;
+  registry_file.close();
+
+  // Now create a network and add nodes and connections
+  coral::Network network;
+
+  auto id1 = network.add_node(coral::make_node(1.0));
+  auto id2 = network.add_node(coral::make_node(2.0));
+  auto id3 = network.add_node(coral::make_node(0.0));
+  auto id4 = network.add_node(coral::make_method_node("sum", sum));
+
+  // Output integer
+  network.add_connection(id3, id4, 0, 0);
+
+  // Int 1
+  network.add_connection(id1, id4, 0, 1);
+
+  // Int 2
+  network.add_connection(id2, id4, 0, 2);
+
+  // Verify all the connections
+  ASSERT_EQ(network.n_connections(), 3);
+  ASSERT_EQ(network.n_nodes(), 4);
+  ASSERT_EQ(network.get_node(id1)->get<double>(), 1.0);
+  ASSERT_EQ(network.get_node(id2)->get<double>(), 2.0);
+  ASSERT_EQ(network.get_node(id3)->get<double>(), 0.0);
+
+  const auto n1 = network.get_node(id1);
+  const auto n2 = network.get_node(id2);
+  const auto n3 = network.get_node(id3);
+  const auto n4 = network.get_node(id4);
+
+  // Verify that the nodes are correctly connected
+  ASSERT_EQ(n3->output(0), n4->input(0));
+  ASSERT_EQ(n1->output(0), n4->input(1));
+  ASSERT_EQ(n2->output(0), n4->input(2));
+
+  // Verify the self nodes
+  ASSERT_EQ(n1->output(0), n1);
+  ASSERT_EQ(n2->output(0), n2);
+  ASSERT_EQ(n3->output(0), n3);
+
+  // Verify the pass through node
+  ASSERT_EQ(n4->output(0), n4->input(0));
+
+  network.output_dot("bare_minimal.dot");
+  // dump the json of the network
+  nlohmann::json serialized_json = network.to_json();
+  std::ofstream  json_file("bare_minimal.json");
+  json_file << serialized_json.dump(2);
+  json_file.close();
+
+  std::cout << "Executing network with 3 nodes and 2 connections." << std::endl;
+  // Run the network
+  network.run();
+  std::cout << "Network executed." << std::endl;
+}
+
 
 TEST(NetworkTest, ParseAndExecuteNetwork)
 {

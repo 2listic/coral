@@ -25,7 +25,7 @@ TEST(Serialize, Int)
   ASSERT_TRUE(j["value"] == "42");
 
   // Deserialize from json
-  auto obj2 = j.template get<NodeObjectPtr>();
+  auto obj2 = j.get<NodeObjectPtr>();
 
   ASSERT_EQ(obj->hash(), obj2->hash());
   ASSERT_TRUE(obj2->ready());
@@ -47,7 +47,7 @@ TEST(Serialize, Point)
   ASSERT_TRUE(j["value"] == "[0.0,1.0]");
 
   // Deserialize from json
-  auto obj2 = j.template get<NodeObjectPtr>();
+  auto obj2 = j.get<NodeObjectPtr>();
 
   ASSERT_EQ(obj->hash(), obj2->hash());
   ASSERT_TRUE(obj2->ready());
@@ -69,7 +69,7 @@ TEST(Serialize, Triangulation)
   ASSERT_TRUE(j["node_type"] == "empty_constructor");
 
   // Deserialize from json. This will call the constructor.
-  auto obj2 = j.template get<NodeObjectPtr>();
+  auto obj2 = j.get<NodeObjectPtr>();
 
   ASSERT_EQ(obj->hash(), obj2->hash());
   ASSERT_TRUE(obj2->ready());

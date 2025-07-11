@@ -95,6 +95,7 @@ TEST(dealiiTypes, TriangulationRefineGlobal)
 TEST(dealiiTypes, TriangulationHyperCube)
 {
   register_all_types();
+  auto registry = NodeObject::get_registry();
   // This builds a Triangulation<2> object
   NodeObjectPtr obj = make_node<Triangulation<2>>();
   (*obj)();
@@ -104,11 +105,11 @@ TEST(dealiiTypes, TriangulationHyperCube)
     make_method_node("GridGenerator::generate_from_name_and_arguments<2>",
                      &GridGenerator::generate_from_name_and_arguments<2, 2>);
 
+  EXPECT_TRUE(registry.contains(make_grid->hash()));
   EXPECT_TRUE(
-    make_grid->hash() == "52ebbe41807005b2GridGenerator::generate_from_name_"
-                         "and_arguments<2>" ||
-    make_grid->hash() ==
-      "65897e8ca67dcc40GridGenerator::generate_from_name_and_arguments<2>");
+    registry[make_grid->hash()]["type"] ==
+    "std::function<void(dealii::Triangulation<2, 2>&, std::string const&, std::string const&)>")
+    << registry[make_grid->hash()]["type"] << std::endl;
 
   NodeObjectPtr name      = make_node("hyper_cube");
   NodeObjectPtr arguments = make_node("-1.0: 1.0: false");

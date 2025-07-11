@@ -5,6 +5,7 @@
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
 
+#define JSON_DIAGNOSTICS 1
 #include <nlohmann/json.hpp> // JSON library
 
 #include "coral.h"

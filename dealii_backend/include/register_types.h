@@ -69,10 +69,7 @@ namespace coral
     NodeObject::register_type<DoFHandler<dim, spacedim>,
                               Triangulation<dim, spacedim>>("triangulation");
 
-    NodeObject::register_function<void,
-                                  Triangulation<dim, spacedim> &,
-                                  const std::string &,
-                                  const std::string &>(
+    NodeObject::register_function(
       GridGenerator::generate_from_name_and_arguments<dim, spacedim>,
       {"GridGenerator::generate_from_name_and_arguments<" +
          Utilities::dim_string(dim, spacedim) + ">",

@@ -97,18 +97,22 @@ TEST(NodeObject, AbstractType)
 //   ASSERT_EQ(obj->get<MyClass>().value, 42);
 // }
 
-// TEST(NodeObject, FunctionRegistration)
-// {
-//   std::function<int(int, int)> my_function = [](int a, int b) -> int {
-//     return a + b;
-//   };
+TEST(NodeObject, FunctionRegistration)
+{
+  auto my_function = [](int a, int b) { return a + b; };
 
-//   NodeObject::register_function(my_function, {{"my_function", "a", "b"}});
+  NodeObject::register_type<int>();
+  NodeObject::register_function(my_function,
+                                {{"my_function", "sum", "a", "b"}});
 
-//   NodeObjectPtr obj  = make_node<decltype(my_function)>();
-//   NodeObjectPtr arg1 = make_node(1);
-//   NodeObjectPtr arg2 = make_node(2);
-//   obj->set_arguments({arg1, arg2});
-//   (*obj)();
-//   ASSERT_EQ(obj->get<int>(), 3);
-// }
+  std::cout << NodeObject::get_registry().dump(2) << std::endl;
+
+  NodeObjectPtr obj = coral::make_method_node("my_function", my_function);
+
+  // Check number of inputs and outputs
+  ASSERT_EQ(obj->n_inputs(), 3);
+  ASSERT_EQ(obj->n_outputs(), 1);
+
+  // Check output type
+  ASSERT_EQ(obj->type_name(), "std::function<int(int, int)>");
+}
