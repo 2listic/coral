@@ -48,6 +48,13 @@ ENDIF()
 
 INCLUDE_DIRECTORIES(include ./)
 
+# Disable specific warnings related to the nlohmann/json library
+IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  ADD_COMPILE_OPTIONS(-Wno-array-bounds)
+ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  ADD_COMPILE_OPTIONS(-Wno-array-bounds)
+ENDIF()
+
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 FIND_PACKAGE(deal.II 9.5 REQUIRED
