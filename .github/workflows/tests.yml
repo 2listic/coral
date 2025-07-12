@@ -1,0 +1,27 @@
+name: dealii backend CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  debug:
+
+    runs-on: ubuntu-latest
+    container:
+      image: dealii/dealii:v9.6.0-noble
+      options: --user root
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test debug
+      run: |
+         cd dealii_backend
+         rm -rf build_linux_debug
+         mkdir build_linux_debug 
+         cd build_linux_debug
+         cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug
+         ninja
+         ./gtests/gtests.g
