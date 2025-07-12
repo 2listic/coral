@@ -18,10 +18,19 @@ jobs:
     - uses: actions/checkout@v2
     - name: Test debug
       run: |
-         cd dealii_backend
          rm -rf build_linux_debug
          mkdir build_linux_debug 
          cd build_linux_debug
          cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug
          ninja
          ./gtests/gtests.g
+         
+    - name: Test release
+      run: |
+         rm -rf build_linux_release
+         mkdir build_linux_release
+         cd build_linux_release
+         cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release
+         ninja
+         ./gtests/gtests
+         
