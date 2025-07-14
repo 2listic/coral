@@ -1,3 +1,15 @@
-node_modules
-package-lock.json
+doc/html
+doc/latex
+
 .aider*
+
+compile_commands.json
+CMakeCache.txt
+CMakeFiles/
+
+
+build/
+.cache/
+
+*.dot
+*.xml
