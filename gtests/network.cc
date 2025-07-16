@@ -57,6 +57,25 @@ TEST(NetworkTest, BareMinimal)
   ASSERT_EQ(n2->get<double>(), 2.0);
   ASSERT_EQ(n3->get<double>(), 0.0);
 
+  json n1_json = n1;
+  json n2_json = n2;
+  json n3_json = n3;
+
+  // Verify the JSON "value" of the nodes
+  ASSERT_EQ(n1_json["value"], "1.0");
+  ASSERT_EQ(n2_json["value"], "2.0");
+  ASSERT_EQ(n3_json["value"], "0.0");
+
+  // Make sure that executing the nodes does not change their values
+  (*n1)();
+  (*n2)();
+  (*n3)();
+
+  // Verify the values after execution
+  ASSERT_EQ(n1->get<double>(), 1.0);
+  ASSERT_EQ(n2->get<double>(), 2.0);
+  ASSERT_EQ(n3->get<double>(), 0.0);
+
   // Make sure the self outputs are ok
   ASSERT_EQ(n1->output(0), n1);
   ASSERT_EQ(n2->output(0), n2);

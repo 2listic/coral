@@ -423,6 +423,11 @@ namespace coral
           "this function after all arguments are ready.");
 
       object = initializer.executor(arguments);
+      // Check if we have to copy back the original value
+      if (initializer.json_serializer.contains("value") &&
+          initializer.parse_string)
+        object = initializer.parse_string(
+          initializer.json_serializer["value"].template get<std::string>());
       return object.operator bool();
     }
 
@@ -522,6 +527,14 @@ namespace coral
       initializer.json_serializer["value"] = json(T()).dump();
       initializer.json_serializer["outputs"].push_back(-1);
 
+      // Add value parser
+      initializer.parse_string =
+        [](const std::string &value) -> std::shared_ptr<std::any> {
+        auto t = std::make_shared<T>();
+        *t     = json::parse(value).get<T>();
+        return std::make_shared<std::any>(t);
+      };
+
       // Add to the initializer the emtpy executor.
       initializer.executor =
         [](const std::vector<std::shared_ptr<NodeObject>> &args)
@@ -529,14 +542,6 @@ namespace coral
         if (args.size() != 0)
           throw std::runtime_error("Wrong number of arguments.");
         return std::make_shared<std::any>(std::make_shared<T>());
-      };
-
-      // Add value parser
-      initializer.parse_string =
-        [](const std::string &value) -> std::shared_ptr<std::any> {
-        auto t = std::make_shared<T>();
-        *t     = json::parse(value).get<T>();
-        return std::make_shared<std::any>(t);
       };
 
       // Add value parser
