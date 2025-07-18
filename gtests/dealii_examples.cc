@@ -97,34 +97,58 @@ TEST(dealiiExamples, NetworkStep01)
   auto write_vtk =
     make_method_node("GridOut::write_vtk<2>", &GridOut::write_vtk<2, 2>);
 
-  // connect(make_grid, {{tria, 0}, {grid_name, 0}, {grid_arguments, 0}});
+  // Add nodes to the network
+  unsigned int tria_id           = network.add_node(tria);
+  unsigned int grid_name_id      = network.add_node(grid_name);
+  unsigned int grid_arguments_id = network.add_node(grid_arguments);
+  unsigned int make_grid_id      = network.add_node(make_grid);
+  unsigned int n_ref_id          = network.add_node(n_ref);
+  unsigned int ref_id            = network.add_node(ref);
+  unsigned int filename_id       = network.add_node(filename);
+  unsigned int out_file_id       = network.add_node(out_file);
+  unsigned int grid_out_id       = network.add_node(grid_out);
+  unsigned int write_vtk_id      = network.add_node(write_vtk);
 
-  make_grid->set_arguments({tria, grid_name, grid_arguments});
-  ref->set_arguments({tria, n_ref});
+  // Create connections between nodes
+  // Connect make_grid inputs
+  network.add_connection(tria_id, make_grid_id, 0, 0);      // tria
+  network.add_connection(grid_name_id, make_grid_id, 0, 1); // grid_name
+  network.add_connection(grid_arguments_id,
+                         make_grid_id,
+                         0,
+                         2); // grid_arguments
 
-  // connect(ref, {{make_grid, 0}, {n_ref, 0}});
+  // Connect ref inputs to make_grid output
+  network.add_connection(make_grid_id, ref_id, 0, 0); // tria
+  network.add_connection(n_ref_id, ref_id, 0, 1);     // n_ref
 
-  out_file->set_arguments({filename});
-  // connect(out_file, {{filename, 0}});
+  // Connect out_file input
+  network.add_connection(filename_id, out_file_id, 0, 0); // filename
 
-  write_vtk->set_arguments({grid_out, tria, out_file});
-  // connect(write_vtk, {{grid_out, 0}, {tria, 0}, {out_file, 0}});
+  // Connect write_vtk inputs
+  network.add_connection(grid_out_id, write_vtk_id, 0, 0); // grid_out
+  network.add_connection(ref_id, write_vtk_id, 0, 1);      // tria
+  network.add_connection(out_file_id, write_vtk_id, 0, 2); // out_file
 
-  network.output_dot("taskflow.dot");
+  network.output_dot("step-1_taskflow.dot");
+  {
+    std::fstream ofile("step-1_network.json");
+    ofile << network.to_json().dump(2) << std::endl;
+    ofile.close();
+  }
 
-  // NodeObject::run_network(); // This is what we should have run
+  {
+    std::fstream ofile("step-1_registry.json");
+    ofile << NodeObject::get_registry().dump(2) << std::endl;
+    ofile.close();
+  }
 
-  (*tria)();
-  (*make_grid)();
+  // Execute the network
+  network.run();
 
-  ASSERT_EQ(1, tria->get<Triangulation<2>>().n_active_cells());
-
-  (*ref)(); // Refine two times
+  // // Verify results
+  // ASSERT_EQ(1, tria->get<Triangulation<2>>().n_active_cells());
   ASSERT_EQ(16, tria->get<Triangulation<2>>().n_active_cells());
-
-  (*grid_out)();  // Create a new gridout object
-  (*out_file)();  // Create a new file
-  (*write_vtk)(); // Write the grid to a file
 
   // Check if the file exists
   std::ifstream file("grid-1.vtk");
