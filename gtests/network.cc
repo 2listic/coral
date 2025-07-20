@@ -130,9 +130,12 @@ TEST(NetworkTest, ParseAndDump)
   // Register types
   coral::register_all_types();
 
+  // Fix hashes if needed
+  nlohmann::json fixed_json = coral::fix_hashes(json_data);
+
   // Create and populate the network
   coral::Network network;
-  network.from_json(json_data);
+  network.from_json(fixed_json);
 
   // Dump the network to JSON
   nlohmann::json output_json = network.to_json();
