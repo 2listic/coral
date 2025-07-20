@@ -78,3 +78,18 @@ TEST(TrivialTypes, CopyType)
   ASSERT_EQ(42, obj2.get<int>());
   ASSERT_EQ(42, obj2.get<const int>());
 }
+
+
+TEST(TrivialTypes, RunInitializerInt)
+{
+  NodeObject::register_elementary_type<int>();
+  NodeObject obj = 42;
+  ASSERT_EQ(42, obj.get<int>());
+
+  // Check that the value is set correctly
+  ASSERT_EQ(obj.get_info().at("value"), "42");
+
+  // Check that the initializer does not change the value
+  obj();
+  ASSERT_EQ(42, obj.get<int>());
+}
