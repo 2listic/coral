@@ -72,7 +72,66 @@ TEST(NodeObject, AbstractType)
   ASSERT_TRUE(obj->ready());
 }
 
-// MethodRegistration test moved to failing.cc
+// Test for void method registration
+struct MyClass
+{
+  void
+  set_value(int v)
+  {
+    value = v;
+  }
+  int
+  add_value(int v)
+  {
+    value += v;
+    return value;
+  }
+  int value = 1;
+};
+
+TEST(NodeObject, VoidMethodRegistration)
+{
+  coral::NodeObject::register_type<MyClass>();
+  coral::NodeObject::register_type<int>();
+  coral::NodeObject::register_method(&MyClass::set_value,
+                                     {"set_value", "my_class", "value"});
+
+  coral::NodeObjectPtr obj = coral::make_node(MyClass());
+  coral::NodeObjectPtr fun =
+    coral::make_method_node("set_value", &MyClass::set_value);
+  coral::NodeObjectPtr arg = coral::make_node(42);
+
+  ASSERT_EQ(obj->get<MyClass>().value, 1)
+    << "The initial value of MyClass should be 1";
+
+  // Check that arguments are set ready
+  ASSERT_TRUE(arg->ready());
+  ASSERT_TRUE(obj->ready());
+
+  fun->set_arguments({obj, arg});
+  (*fun)();
+  ASSERT_EQ(obj->get<MyClass>().value, 42);
+}
+
+TEST(NodeObject, NonVoidMethodRegistration)
+{
+  coral::NodeObject::register_type<MyClass>();
+  coral::NodeObject::register_type<int>();
+  coral::NodeObject::register_method(
+    &MyClass::add_value, {"add_value", "my_class", "output", "value"});
+
+  coral::NodeObjectPtr obj = coral::make_node(MyClass());
+  coral::NodeObjectPtr fun =
+    coral::make_method_node("add_value", &MyClass::add_value);
+  coral::NodeObjectPtr out = coral::make_node(0);
+  coral::NodeObjectPtr arg = coral::make_node(42);
+
+  fun->set_arguments({obj, out, arg});
+  (*fun)();
+  ASSERT_EQ(obj->get<MyClass>().value, 43);
+  ASSERT_EQ(out->get<int>(), 43)
+    << "The output node should have the value 43 after adding 42";
+}
 
 TEST(NodeObject, FunctionRegistration)
 {

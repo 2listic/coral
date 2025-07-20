@@ -1,181 +1,145 @@
 {
+  "author": "coral-editor",
+  "date_time_utc": "2025-07-20T20:38:42.000Z",
+  "version": 1,
   "workflow": {
-    "nodes": {
+    "edges": {
+      "0": {
+        "source": 0,
+        "source_output": 0,
+        "target": 3,
+        "target_input": 0
+      },
       "1": {
-        "node_type": "elementary_constructor",
-        "outputs": [
-          "-1"
-        ],
-        "type": "unsigned",
-        "type_hash": "b826a7e2a606584c",
-        "value": "4",
-        "is_valid": true,
-        "xy_flow_obj": {
-          "id": "1",
-          "type": "unsigned",
-          "data": {
-            "node_type": "elementary_constructor",
-            "outputs": [
-              "-1"
-            ],
-            "type": "unsigned",
-            "type_hash": "b826a7e2a606584c",
-            "value": "4",
-            "is_valid": true
-          },
-          "position": {
-            "x": 336,
-            "y": 229.390625
-          },
-          "origin": [
-            0.5,
-            0
-          ],
-          "measured": {
-            "width": 124,
-            "height": 72
-          },
-          "selected": false
-        }
+        "source": 1,
+        "source_output": 0,
+        "target": 3,
+        "target_input": 1
       },
       "2": {
+        "source": 2,
+        "source_output": 0,
+        "target": 3,
+        "target_input": 2
+      },
+      "3": {
+        "source": 3,
+        "source_output": 0,
+        "target": 5,
+        "target_input": 0
+      },
+      "4": {
+        "source": 4,
+        "source_output": 0,
+        "target": 5,
+        "target_input": 1
+      }
+    },
+    "nodes": {
+      "0": {
+        "arguments": [],
+        "inputs": [],
         "node_type": "empty_constructor",
         "outputs": [
-          "-1"
+          -1
         ],
         "type": "dealii::Triangulation<2, 2>",
-        "type_hash": "6a41911123dd260d",
-        "is_valid": true,
-        "xy_flow_obj": {
-          "id": "2",
-          "type": "dealii::Triangulation<2, 2>",
-          "data": {
-            "node_type": "empty_constructor",
-            "outputs": [
-              "-1"
-            ],
-            "type": "dealii::Triangulation<2, 2>",
-            "type_hash": "6a41911123dd260d",
-            "is_valid": true
-          },
-          "position": {
-            "x": 289.75,
-            "y": 145.3359375
-          },
-          "origin": [
-            0.5,
-            0
-          ],
-          "measured": {
-            "width": 176,
-            "height": 48
-          },
-          "selected": false
-        }
+        "type_hash": "c95847e89853e6da"
+      },
+      "1": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "elementary_constructor",
+        "outputs": [
+          -1
+        ],
+        "type": "std::string",
+        "type_hash": "38efd301b92110ef",
+        "value": "\"hyper_cube\""
+      },
+      "2": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "elementary_constructor",
+        "outputs": [
+          -1
+        ],
+        "type": "std::string",
+        "type_hash": "38efd301b92110ef",
+        "value": "\"0: 1: false\""
       },
       "3": {
         "arguments": [
           {
-            "connectionType": "passthrough",
-            "name": "-1",
+            "connection_type": "pass_through",
+            "name": "triangulation",
             "type": "dealii::Triangulation<2, 2>",
-            "type_hash": "cb40d6a582660ec8"
+            "type_hash": "c95847e89853e6da"
           },
           {
-            "connectionType": "input",
+            "connection_type": "input",
+            "name": "grid_generator_function_name",
+            "type": "std::string",
+            "type_hash": "38efd301b92110ef"
+          },
+          {
+            "connection_type": "input",
+            "name": "grid_generator_function_arguments",
+            "type": "std::string",
+            "type_hash": "38efd301b92110ef"
+          }
+        ],
+        "inputs": [
+          0,
+          1,
+          2
+        ],
+        "method_name": "GridGenerator::generate_from_name_and_arguments<2>",
+        "node_type": "void_function",
+        "outputs": [
+          0
+        ],
+        "type": "std::function<void(dealii::Triangulation<2, 2>&, std::string const&, std::string const&)>",
+        "type_hash": "e33bf3b92310db94GridGenerator::generate_from_name_and_arguments<2>"
+      },
+      "4": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "elementary_constructor",
+        "outputs": [
+          -1
+        ],
+        "type": "unsigned",
+        "type_hash": "b826a7e2a606584c",
+        "value": "2"
+      },
+      "5": {
+        "arguments": [
+          {
+            "connection_type": "pass_through",
+            "name": "triangulation",
+            "type": "dealii::Triangulation<2, 2>",
+            "type_hash": "c95847e89853e6da"
+          },
+          {
+            "connection_type": "input",
             "name": "n_refinements",
             "type": "unsigned",
-            "type_hash": "f34b4e70a9003a6b"
+            "type_hash": "b826a7e2a606584c"
           }
         ],
         "inputs": [
           0,
           1
         ],
+        "method_name": "Triangulation<2>::refine_global",
         "node_type": "void_method",
         "outputs": [
           0
         ],
-        "type": "void(dealii::Triangulation<2, 2>)::*)(unsigned)",
-        "type_hash": "cb40d6a582660ec8Triangulation<2>::refine_global",
-        "is_valid": true,
-        "xy_flow_obj": {
-          "id": "3",
-          "type": "Triangulation<2>::refine_global",
-          "data": {
-            "arguments": [
-              {
-                "connectionType": "passthrough",
-                "name": "-1",
-                "type": "dealii::Triangulation<2, 2>",
-                "type_hash": "cb40d6a582660ec8"
-              },
-              {
-                "connectionType": "input",
-                "name": "n_refinements",
-                "type": "unsigned",
-                "type_hash": "b826a7e2a606584c"
-              }
-            ],
-            "inputs": [
-              0,
-              1
-            ],
-            "node_type": "empty_constructor",
-            "outputs": [
-              0
-            ],
-            "type": "void(dealii::Triangulation<2, 2>)::*)(unsigned)",
-            "type_hash": "cb40d6a582660ec8Triangulation<2>::refine_global",
-            "is_valid": true
-          },
-          "position": {
-            "x": 593.75,
-            "y": 131.3359375
-          },
-          "origin": [
-            0.5,
-            0
-          ],
-          "measured": {
-            "width": 312,
-            "height": 126
-          },
-          "selected": false,
-          "dragging": false
-        }
-      }
-    },
-    "edges": {
-      "1": {
-        "source": "2",
-        "target": "3",
-        "source_output": "-1",
-        "target_input": "0",
-        "xy_flow_obj": {
-          "source": "2",
-          "source_handle": "output-self",
-          "target": "3",
-          "target_handle": "input-0",
-          "id": "xy-edge__2output-self-3input-0"
-        }
-      },
-      "2": {
-        "source": "1",
-        "target": "3",
-        "source_output": "-1",
-        "target_input": "1",
-        "xy_flow_obj": {
-          "source": "1",
-          "source_handle": "output-self",
-          "target": "3",
-          "target_handle": "input-1",
-          "id": "xy-edge__1output-self-3input-1"
-        }
+        "type": "void(dealii::Triangulation<2, 2>::*)(unsigned)",
+        "type_hash": "cb40d6a582660ec8Triangulation<2>::refine_global"
       }
     }
-  },
-  "version": 1,
-  "author": "name",
-  "date_time_utc": "2025-07-07T10:39:53.532Z"
+  }
 }

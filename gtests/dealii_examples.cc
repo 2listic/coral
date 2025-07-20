@@ -128,8 +128,7 @@ TEST(dealiiExamples, NetworkStep00)
   // Execute the network
   network.run();
 
-  // // Verify results
-  // ASSERT_EQ(1, tria->get<Triangulation<2>>().n_active_cells());
+  // Verify results
   ASSERT_EQ(16, tria->get<Triangulation<2>>().n_active_cells());
 }
 
