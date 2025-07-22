@@ -71,6 +71,67 @@ TEST(dealiiExamples, step01)
 }
 
 
+// Void function test
+TEST(dealiiExamples, NetworkStep00)
+{
+  register_non_dimensional_types();
+  register_dimensional_types<2, 2>();
+
+  Network network;
+  network.clear_network();
+
+  auto make_grid =
+    make_method_node("GridGenerator::generate_from_name_and_arguments<2>",
+                     &GridGenerator::generate_from_name_and_arguments<2, 2>);
+
+  auto tria           = make_node<Triangulation<2>>();
+  auto grid_name      = make_node("hyper_cube");
+  auto grid_arguments = make_node("0: 1: false");
+  auto ref            = make_method_node("Triangulation<2>::refine_global",
+                              &Triangulation<2>::refine_global);
+  auto n_ref          = make_node(2u);
+
+  // Add nodes to the network
+  unsigned int tria_id           = network.add_node(tria);
+  unsigned int grid_name_id      = network.add_node(grid_name);
+  unsigned int grid_arguments_id = network.add_node(grid_arguments);
+  unsigned int make_grid_id      = network.add_node(make_grid);
+  unsigned int n_ref_id          = network.add_node(n_ref);
+  unsigned int ref_id            = network.add_node(ref);
+
+  // Create connections between nodes
+  // Connect make_grid inputs
+  network.add_connection(tria_id, make_grid_id, 0, 0);      // tria
+  network.add_connection(grid_name_id, make_grid_id, 0, 1); // grid_name
+  network.add_connection(grid_arguments_id,
+                         make_grid_id,
+                         0,
+                         2); // grid_arguments
+
+  // Connect ref inputs to make_grid output
+  network.add_connection(make_grid_id, ref_id, 0, 0); // tria
+  network.add_connection(n_ref_id, ref_id, 0, 1);     // n_ref
+
+  network.output_dot("step-0_taskflow.dot");
+  {
+    std::ofstream ofile("step-0_network.json");
+    ofile << network.to_json().dump(2) << std::endl;
+    ofile.close();
+  }
+
+  {
+    std::ofstream ofile("step-0_registry.json");
+    ofile << NodeObject::get_registry().dump(2) << std::endl;
+    ofile.close();
+  }
+
+  // Execute the network
+  network.run();
+
+  // Verify results
+  ASSERT_EQ(16, tria->get<Triangulation<2>>().n_active_cells());
+}
+
 
 // Void function test
 TEST(dealiiExamples, NetworkStep01)
@@ -132,13 +193,13 @@ TEST(dealiiExamples, NetworkStep01)
 
   network.output_dot("step-1_taskflow.dot");
   {
-    std::fstream ofile("step-1_network.json");
+    std::ofstream ofile("step-1_network.json");
     ofile << network.to_json().dump(2) << std::endl;
     ofile.close();
   }
 
   {
-    std::fstream ofile("step-1_registry.json");
+    std::ofstream ofile("step-1_registry.json");
     ofile << NodeObject::get_registry().dump(2) << std::endl;
     ofile.close();
   }

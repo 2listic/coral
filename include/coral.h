@@ -951,7 +951,7 @@ namespace coral
               throw std::runtime_error("Wrong number of arguments.");
 
             auto tuple = cast_args<Args...>(args);
-            std::cout << "member method: "
+            std::cout << "void function: "
                       << initializer.json_serializer["type"] << std::endl;
             std::apply([ptr](auto &&...unpackedArgs) { ptr(*unpackedArgs...); },
                        tuple);
@@ -978,8 +978,8 @@ namespace coral
             args.erase(args.begin()); // remove the first element
 
             auto tuple = cast_args<Args...>(args);
-            std::cout << "function: " << initializer.json_serializer["type"]
-                      << std::endl;
+            std::cout << "non-void function: "
+                      << initializer.json_serializer["type"] << std::endl;
             ret = std::apply(
               [ptr](auto &&...unpackedArgs) { return ptr(*unpackedArgs...); },
               tuple);
@@ -1292,6 +1292,15 @@ namespace coral
       return magic_enum::enum_cast<NodeType>(
                initializer.json_serializer.at("node_type").get<std::string>())
         .value();
+    }
+
+    /**
+     * Get the number of arguments that this node has.
+     */
+    size_t
+    n_arguments() const
+    {
+      return initializer.json_serializer["arguments"].size();
     }
 
     /**

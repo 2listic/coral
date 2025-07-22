@@ -1,5 +1,12 @@
 
-#include <nlohmann/json.hpp>
+#include "coral.h"
+#include "coral_network.h"
+#include "coral_utilities.h"
+#include "gtest/gtest.h"
+#include "register_types.h"
+
+
+// Network testlohmann/json.hpp>
 
 #include <fstream>
 
@@ -110,7 +117,43 @@ TEST(NetworkTest, BareMinimal)
   ASSERT_EQ(n3->get<double>(), 3.0)
     << "The output node should have the value 3.0";
 }
-// ParseAndDump test moved to failing.cc
+
+TEST(NetworkTest, ParseAndDump)
+{
+  // Load the JSON file
+  std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
+  ASSERT_TRUE(file.is_open()) << "Failed to open JSON file.";
+
+  nlohmann::json json_data;
+  file >> json_data;
+
+  // Register types
+  coral::register_all_types();
+
+  // Fix hashes if needed
+  nlohmann::json fixed_json = coral::fix_hashes(json_data);
+
+  // Create and populate the network
+  coral::Network network;
+  network.from_json(fixed_json);
+
+  // Dump the network to JSON
+  nlohmann::json output_json = network.to_json();
+
+  // Check if the output JSON has the expected structure
+  ASSERT_TRUE(output_json.contains("workflow"))
+    << "Output JSON must contain 'workflow' object";
+  ASSERT_TRUE(output_json["workflow"].contains("nodes"))
+    << "Output JSON must contain 'workflow.nodes' object";
+  ASSERT_TRUE(output_json["workflow"].contains("edges"))
+    << "Output JSON must contain 'workflow.edges' object";
+
+  // Check the number of nodes and edges
+  ASSERT_EQ(output_json["workflow"]["nodes"].size(), 6)
+    << "Should have 6 nodes in the workflow";
+  ASSERT_EQ(output_json["workflow"]["edges"].size(), 5)
+    << "Should have 2 edges in the workflow";
+}
 
 // ParseAndExecuteNetwork test moved to failing.cc
 
@@ -145,4 +188,291 @@ TEST(NetworkTest, ConnectionSerialization)
   EXPECT_EQ(deserialized.target_input, 4);
 }
 
-// NetworkSerialization test moved to failing.cc
+// Test for JSON-based workflow
+TEST(NetworkTest, JsonBasedWorkflow)
+{
+  // Load the JSON file
+  std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
+  ASSERT_TRUE(file.is_open()) << "Failed to open JSON file.";
+
+  nlohmann::json json_data;
+  file >> json_data;
+
+  // Register types
+  coral::register_all_types();
+
+  // Fix hashes if needed
+  nlohmann::json fixed_json = coral::fix_hashes(json_data);
+
+  // Create and populate the network
+  coral::Network network;
+  network.from_json(fixed_json);
+
+  // Basic verification of nodes - should have 6 nodes
+  ASSERT_EQ(network.size(), 6);
+
+  // Verify each node exists and has the right type
+  for (int i = 0; i <= 5; ++i)
+    {
+      auto node = network.get_node(i);
+      ASSERT_TRUE(node != nullptr) << "Node " << i << " should exist";
+    }
+}
+
+// Test for validating edge connections
+TEST(NetworkTest, ValidateEdgeConnections)
+{
+  // Load the JSON file
+  std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
+  ASSERT_TRUE(file.is_open()) << "Failed to open JSON file.";
+
+  nlohmann::json json_data;
+  file >> json_data;
+
+  // Register types
+  coral::register_all_types();
+
+  // Fix hashes if needed
+  nlohmann::json fixed_json = coral::fix_hashes(json_data);
+
+  // Create and populate the network
+  coral::Network network;
+  network.from_json(fixed_json);
+
+  // Validate the network size
+  ASSERT_EQ(network.size(), 6);
+
+  // Output the taskflow as DOT format for debugging
+  network.output_dot("validate_edges_taskflow.dot");
+
+  // Get the taskflow
+  auto &tf = network.get_taskflow();
+
+  // According to mwe.json, there should be 5 edges:
+  // 0. Node 0 -> Node 3 (triangulation to generate_from_name_and_arguments)
+  // 1. Node 1 -> Node 3 (string "hyper_cube" to
+  // generate_from_name_and_arguments)
+  // 2. Node 2 -> Node 3 (string arguments to generate_from_name_and_arguments)
+  // 3. Node 3 -> Node 5 (triangulation after generate to refine_global)
+  // 4. Node 4 -> Node 5 (unsigned value to refine_global)
+  ASSERT_EQ(tf.num_tasks(), 6);
+
+  // Verify the connections using our tracking map
+  ASSERT_EQ(network.n_connections(), 5);
+  EXPECT_TRUE(network.is_connected(0, 3));
+  EXPECT_TRUE(network.is_connected(1, 3));
+  EXPECT_TRUE(network.is_connected(2, 3));
+  EXPECT_TRUE(network.is_connected(3, 5));
+  EXPECT_TRUE(network.is_connected(4, 5));
+}
+
+// Test for verifying node types
+TEST(NetworkTest, VerifyNodeTypes)
+{
+  // Load the JSON file
+  std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
+  ASSERT_TRUE(file.is_open()) << "Failed to open JSON file.";
+
+  nlohmann::json json_data;
+  file >> json_data;
+
+  // Register types
+  coral::register_all_types();
+
+  // Fix hashes if needed
+  nlohmann::json fixed_json = coral::fix_hashes(json_data);
+
+  // Create and populate the network
+  coral::Network network;
+  network.from_json(fixed_json);
+
+  // Verify the nodes exist
+  ASSERT_EQ(network.size(), 6);
+
+  // Check node 0: Should be of type "dealii::Triangulation<2, 2>" with
+  // nodeType "empty_constructor"
+  auto node0 = network.get_node(0);
+  ASSERT_TRUE(node0 != nullptr);
+  EXPECT_EQ(node0->node_type(), coral::NodeType::empty_constructor);
+  EXPECT_EQ(node0->type_name(), "dealii::Triangulation<2, 2>");
+
+  // Check node 1: Should be of type "std::string" with nodeType
+  // "elementary_constructor" and value "hyper_cube"
+  auto node1 = network.get_node(1);
+  ASSERT_TRUE(node1 != nullptr);
+  EXPECT_EQ(node1->node_type(), coral::NodeType::elementary_constructor);
+  EXPECT_EQ(node1->type_name(), "std::string");
+
+  // Check node 2: Should be of type "std::string" with nodeType
+  // "elementary_constructor" and value "0: 1: false"
+  auto node2 = network.get_node(2);
+  ASSERT_TRUE(node2 != nullptr);
+  EXPECT_EQ(node2->node_type(), coral::NodeType::elementary_constructor);
+  EXPECT_EQ(node2->type_name(), "std::string");
+
+  // Check node 3: Should be related to
+  // GridGenerator::generate_from_name_and_arguments
+  auto node3 = network.get_node(3);
+  ASSERT_TRUE(node3 != nullptr);
+  EXPECT_EQ(node3->node_type(), coral::NodeType::void_function);
+  EXPECT_NE(node3->type_name().find("std::function"), std::string::npos);
+
+  // Check node 4: Should be of type "unsigned" with nodeType
+  // "elementary_constructor" and value "2"
+  auto node4 = network.get_node(4);
+  ASSERT_TRUE(node4 != nullptr);
+  EXPECT_EQ(node4->node_type(), coral::NodeType::elementary_constructor);
+  EXPECT_EQ(node4->type_name(), "unsigned");
+
+  // Check node 5: Should be related to Triangulation<2>::refine_global
+  auto node5 = network.get_node(5);
+  ASSERT_TRUE(node5 != nullptr);
+  EXPECT_EQ(node5->node_type(), coral::NodeType::void_method);
+  EXPECT_NE(node5->type_name().find("Triangulation"), std::string::npos);
+}
+
+// Test for connections map tracking
+TEST(NetworkTest, ConnectionsMapTracking)
+{
+  // Load the JSON file
+  std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
+  ASSERT_TRUE(file.is_open()) << "Failed to open JSON file.";
+
+  nlohmann::json json_data;
+  file >> json_data;
+
+  // Register types
+  coral::register_all_types();
+
+  // Fix hashes if needed
+  nlohmann::json fixed_json = coral::fix_hashes(json_data);
+
+  // Create and populate the network
+  coral::Network network;
+  network.from_json(fixed_json);
+
+  // Verify total connection count
+  ASSERT_EQ(network.n_connections(), 5) << "Should have 5 connections";
+
+  // Verify specific connections
+  EXPECT_TRUE(network.is_connected(0, 3)) << "Node 0 should connect to Node 3";
+  EXPECT_TRUE(network.is_connected(1, 3)) << "Node 1 should connect to Node 3";
+  EXPECT_TRUE(network.is_connected(2, 3)) << "Node 2 should connect to Node 3";
+  EXPECT_TRUE(network.is_connected(3, 5)) << "Node 3 should connect to Node 5";
+  EXPECT_TRUE(network.is_connected(4, 5)) << "Node 4 should connect to Node 5";
+  EXPECT_FALSE(network.is_connected(5, 0))
+    << "Node 5 should not connect to Node 0";
+
+  // Verify connection vectors using the target IDs list
+  auto node0_targets = network.get_connected_nodes(0);
+  EXPECT_EQ(node0_targets.size(), 1)
+    << "Node 0 should have 1 outgoing connection";
+  EXPECT_EQ(node0_targets[0], 3) << "Node 0 should connect to Node 3";
+
+  auto node1_targets = network.get_connected_nodes(1);
+  EXPECT_EQ(node1_targets.size(), 1)
+    << "Node 1 should have 1 outgoing connection";
+  EXPECT_EQ(node1_targets[0], 3) << "Node 1 should connect to Node 3";
+
+  auto node2_targets = network.get_connected_nodes(2);
+  EXPECT_EQ(node2_targets.size(), 1)
+    << "Node 2 should have 1 outgoing connection";
+  EXPECT_EQ(node2_targets[0], 3) << "Node 2 should connect to Node 3";
+
+  auto node3_targets = network.get_connected_nodes(3);
+  EXPECT_EQ(node3_targets.size(), 1)
+    << "Node 3 should have 1 outgoing connection";
+  EXPECT_EQ(node3_targets[0], 5) << "Node 3 should connect to Node 5";
+
+  auto node4_targets = network.get_connected_nodes(4);
+  EXPECT_EQ(node4_targets.size(), 1)
+    << "Node 4 should have 1 outgoing connection";
+  EXPECT_EQ(node4_targets[0], 5) << "Node 4 should connect to Node 5";
+
+  auto node5_targets = network.get_connected_nodes(5);
+  EXPECT_TRUE(node5_targets.empty())
+    << "Node 5 should have no outgoing connections";
+
+  // Verify connection objects
+  auto node0_conns = network.get_node_connections(0);
+  EXPECT_EQ(node0_conns.size(), 1) << "Node 0 should have 1 connection object";
+  EXPECT_EQ(node0_conns[0].source_id, 0);
+  EXPECT_EQ(node0_conns[0].target_id, 3);
+
+  // Verify we can access all connections
+  EXPECT_EQ(network.n_connections(), 5) << "Should have 5 connections";
+}
+
+// Test for network serialization
+TEST(NetworkTest, NetworkSerialization)
+{
+  // Load the JSON file
+  std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
+  ASSERT_TRUE(file.is_open()) << "Failed to open JSON file.";
+
+  nlohmann::json json_data;
+  file >> json_data;
+
+  // Register types
+  coral::register_all_types();
+
+  // Fix hashes if needed
+  nlohmann::json fixed_json = coral::fix_hashes(json_data);
+
+  // Create and populate the network
+  coral::Network network;
+  network.from_json(fixed_json);
+
+  // Serialize the network back to JSON
+  auto serialized_json = network.to_json();
+
+  // Verify the serialized JSON has the correct structure
+  ASSERT_TRUE(serialized_json.contains("workflow"))
+    << "Must contain workflow object";
+  ASSERT_TRUE(serialized_json["workflow"].contains("nodes"))
+    << "Must contain nodes object";
+  ASSERT_TRUE(serialized_json["workflow"].contains("edges"))
+    << "Must contain edges object";
+  ASSERT_TRUE(serialized_json.contains("version")) << "Must contain version";
+  ASSERT_TRUE(serialized_json.contains("date_time_utc"))
+    << "Must contain date_time_utc";
+
+  // Verify node count
+  ASSERT_EQ(serialized_json["workflow"]["nodes"].size(), 6)
+    << "Should have 6 nodes";
+
+  // Verify node structure
+  for (const auto &[id, node] : serialized_json["workflow"]["nodes"].items())
+    {
+      ASSERT_TRUE(node.contains("type")) << "Node must have type field";
+      ASSERT_TRUE(node.contains("node_type"))
+        << "Node must have node_type field";
+      ASSERT_TRUE(node.contains("outputs")) << "Node must have outputs field";
+    }
+
+  // Verify edge structure
+  for (const auto &[id, edge] : serialized_json["workflow"]["edges"].items())
+    {
+      ASSERT_TRUE(edge.contains("source")) << "Edge must have source field";
+      ASSERT_TRUE(edge.contains("target")) << "Edge must have target field";
+      ASSERT_TRUE(edge.contains("source_output"))
+        << "Edge must have source_output field";
+      ASSERT_TRUE(edge.contains("target_input"))
+        << "Edge must have target_input field";
+    }
+
+  // Create a new network from the serialized JSON
+  coral::Network new_network;
+  new_network.from_json(serialized_json);
+
+  // Verify the new network has the same nodes and connections
+  EXPECT_EQ(new_network.size(), 6);
+  EXPECT_EQ(new_network.n_connections(), 5);
+
+  // Verify the specific connections
+  EXPECT_TRUE(new_network.is_connected(0, 3));
+  EXPECT_TRUE(new_network.is_connected(1, 3));
+  EXPECT_TRUE(new_network.is_connected(2, 3));
+  EXPECT_TRUE(new_network.is_connected(3, 5));
+  EXPECT_TRUE(new_network.is_connected(4, 5));
+}
