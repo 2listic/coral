@@ -90,16 +90,21 @@ namespace coral
     // Store connections by their ID
     std::map<unsigned int, Connection> connections;
 
-    tf::Executor executor;
     tf::Taskflow taskflow;
 
   public:
     void
     add_node(unsigned int id, const std::shared_ptr<NodeObject> &node)
     {
-      nodes[id]      = node;
-      node_tasks[id] = taskflow.emplace([node]() { (*node)(); })
-                         .name("node_" + std::to_string(id));
+      nodes[id] = node;
+      node_tasks[id] =
+        taskflow
+          .emplace([node, id]() {
+            std::cout << "Running node " << id << ": " << node->type_name()
+                      << std::endl;
+            (*node)();
+          })
+          .name("node_" + std::to_string(id) + ": " + node->type_name());
     }
 
     unsigned int
@@ -245,12 +250,7 @@ namespace coral
     void
     run()
     {
-      executor.run(taskflow).wait();
-    }
-
-    void
-    run_network()
-    {
+      tf::Executor executor;
       executor.run(taskflow).wait();
     }
 
@@ -405,5 +405,29 @@ namespace coral
       return json;
     }
   };
+
+  inline void
+  from_json(const json &j, Network &net)
+  {
+    net.from_json(j);
+  }
+
+  inline void
+  to_json(json &j, const Network &net)
+  {
+    j = net.to_json();
+  }
+
+  inline void
+  to_json(json &j, const Connection &conn)
+  {
+    j = conn.to_json();
+  }
+
+  inline void
+  from_json(const json &j, Connection &conn)
+  {
+    conn = Connection::from_json(j);
+  }
 } // namespace coral
 #endif

@@ -523,15 +523,35 @@ namespace coral
     {
       auto &initializer                        = register_json_header<T>();
       initializer.json_serializer["node_type"] = "elementary_constructor";
-      initializer.node_type                = NodeType::elementary_constructor;
-      initializer.json_serializer["value"] = json(T()).dump();
+      initializer.node_type = NodeType::elementary_constructor;
+
+      // Special handling for std::string
+      if constexpr (std::is_same_v<T, std::string>)
+        {
+          initializer.json_serializer["value"] = ""; // Empty string default
+        }
+      else
+        {
+          initializer.json_serializer["value"] = json(T()).dump();
+        }
+
       initializer.json_serializer["outputs"].push_back(-1);
 
       // Add value parser
       initializer.parse_string =
         [](const std::string &value) -> std::shared_ptr<std::any> {
         auto t = std::make_shared<T>();
-        *t     = json::parse(value).get<T>();
+
+        if constexpr (std::is_same_v<T, std::string>)
+          {
+            *t = value;
+          }
+        else
+          {
+            // For non-string types, use standard JSON parsing
+            *t = json::parse(value).get<T>();
+          }
+
         return std::make_shared<std::any>(t);
       };
 
@@ -548,7 +568,16 @@ namespace coral
       initializer.to_string =
         [](const std::shared_ptr<std::any> &value) -> std::string {
         const T &t = *std::any_cast<std::shared_ptr<T>>(*value);
-        return json(t).dump();
+
+        if constexpr (std::is_same_v<T, std::string>)
+          {
+            return t;
+          }
+        else
+          {
+            // For non-string types, use standard JSON serialization
+            return json(t).dump();
+          }
       };
       return initializer;
     }
@@ -1475,10 +1504,6 @@ namespace coral
   to_json(json &j, const NodeObjectPtr &obj)
   {
     j = obj->get_info();
-    if (obj->ready() && j.contains("value"))
-      {
-        j["value"] = obj->to_string();
-      }
   }
 
   /**
@@ -1503,6 +1528,13 @@ namespace coral
     if (j.contains("value"))
       {
         obj->parse_string(j.at("value").get<std::string>());
+      }
+    auto j2 = obj->get_info();
+    if (j2 != j)
+      {
+        throw std::runtime_error(
+          "The json object does not match the expected value: expected " +
+          j.dump(2) + ", got " + j2.dump(2) + ".");
       }
   }
 

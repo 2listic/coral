@@ -15,6 +15,10 @@
 #include "gtest/gtest.h"
 #include "register_types.h"
 
+using namespace dealii;
+using namespace coral;
+using json = nlohmann::json;
+
 
 // Failing test from network.cc
 TEST(NetworkTest, BareMinimal)
@@ -104,8 +108,8 @@ TEST(NetworkTest, BareMinimal)
 
   network.output_dot("bare_minimal.dot");
   // dump the json of the network
-  nlohmann::json serialized_json = network.to_json();
-  std::ofstream  json_file("bare_minimal.json");
+  json          serialized_json = network;
+  std::ofstream json_file("bare_minimal.json");
   json_file << serialized_json.dump(2);
   json_file.close();
 
@@ -475,4 +479,33 @@ TEST(NetworkTest, NetworkSerialization)
   EXPECT_TRUE(new_network.is_connected(2, 3));
   EXPECT_TRUE(new_network.is_connected(3, 5));
   EXPECT_TRUE(new_network.is_connected(4, 5));
+}
+
+TEST(NetworkTest, ParseAndExecuteNetwork)
+{
+  // Load the JSON file
+  std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
+  ASSERT_TRUE(file.is_open()) << "Failed to open JSON file.";
+
+  json json_data;
+  file >> json_data;
+
+  // Register types
+  coral::register_all_types();
+
+  // Fix hashes if needed
+  json fixed_json = coral::fix_hashes(json_data);
+
+  // Create and populate the network
+  coral::Network network = fixed_json;
+
+  // Output some debug information
+  std::cout << "Network has " << network.size() << " nodes and "
+            << network.n_connections() << " connections\n";
+
+  // Execute the network
+  network.run();
+
+  // Verify results
+  ASSERT_EQ(16, network.get_node(0)->get<Triangulation<2>>().n_active_cells());
 }
