@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <fstream>
+#include <locale>
+
 #include "coral.h"
 #include "coral_network.h" // Added include for Network class
 #include "register_types.h"
@@ -218,4 +221,60 @@ TEST(dealiiExamples, NetworkStep01)
   // Remove the file
   file.close();
   std::remove("grid-1.vtk");
+}
+
+TEST(dealiiExamples, NetworkFromJsonStep00)
+{
+  register_non_dimensional_types();
+  register_dimensional_types<2, 2>();
+
+  Network network;
+  network.clear_network();
+
+  std::ifstream file("step-0_network.json");
+  ASSERT_TRUE(file.is_open()) << "Failed to open JSON file.";
+
+  nlohmann::json json_data;
+  file >> json_data;
+  file.close();
+
+  ASSERT_FALSE(json_data.empty()) << "JSON data is empty.";
+  network.from_json(json_data);
+
+  // Print some debugging information
+  std::cout << "Network has " << network.n_nodes() << " nodes and "
+            << network.n_connections() << " connections\n";
+
+  // Check for node types
+  for (unsigned int i = 0; i < network.n_nodes(); ++i)
+    {
+      auto node = network.get_node(i);
+      std::cout << "Node " << i << ": " << (node ? "exists" : "nullptr")
+                << std::endl;
+
+      if (node->node_type() == NodeType::elementary_constructor)
+        {
+          std::cout << "node " << i << " value: " << node->to_string()
+                    << std::endl;
+        }
+    }
+
+  // Print the triangulation state before running the network
+  auto tria_node = network.get_node(0);
+  ASSERT_NE(tria_node, nullptr) << "Failed to get triangulation node";
+  std::cout << "Before execution, triangulation has "
+            << tria_node->get<Triangulation<2>>().n_active_cells()
+            << " active cells\n";
+
+  // Run the network
+  network.run();
+
+  // Print the triangulation state after running the network
+  std::cout << "After execution, triangulation has "
+            << tria_node->get<Triangulation<2>>().n_active_cells()
+            << " active cells\n";
+
+  // Verify results
+  auto &tria = tria_node->get<Triangulation<2>>();
+  ASSERT_EQ(16, tria.n_active_cells());
 }

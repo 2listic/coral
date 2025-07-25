@@ -52,35 +52,54 @@ namespace coral
         return fixed_json; // Return original if format is invalid
       }
 
+    // Helper function to fix a type hash based on type name
+    auto fix_type_hash = [&registry,
+                          &type_to_hash](json              &obj,
+                                         const std::string &context) {
+      if (!obj.contains("type_hash") || !obj.contains("type"))
+        return;
+
+      std::string current_hash = obj["type_hash"];
+      std::string type_name    = obj["type"];
+
+      // Check if the current hash exists in the registry
+      if (!registry.contains(current_hash))
+        {
+          // Hash not found in registry, try to find by type name
+          if (type_to_hash.find(type_name) != type_to_hash.end())
+            {
+              // Found a match by type name, update the hash
+              std::string correct_hash = type_to_hash[type_name];
+              std::cout << "Fixing hash in " << context << " for type '"
+                        << type_name << "': " << current_hash << " -> "
+                        << correct_hash << "\n";
+
+              obj["type_hash"] = correct_hash;
+            }
+          else
+            {
+              std::cerr
+                << "Warning: " << context << " of type '" << type_name
+                << "' has invalid hash and no matching type found in registry\n";
+            }
+        }
+    };
+
     // Process each node in the network
     for (auto &[node_id, node] : fixed_json["workflow"]["nodes"].items())
       {
-        // Skip if the node doesn't have a type_hash or type
-        if (!node.contains("type_hash") || !node.contains("type"))
-          continue;
+        // Fix the node's own type hash
+        fix_type_hash(node, "node " + node_id);
 
-        std::string current_hash = node["type_hash"];
-        std::string type_name    = node["type"];
-
-        // Check if the current hash exists in the registry
-        if (!registry.contains(current_hash))
+        // Fix hashes in the arguments field if it exists
+        if (node.contains("arguments") && node["arguments"].is_array())
           {
-            // Hash not found in registry, try to find by type name
-            if (type_to_hash.find(type_name) != type_to_hash.end())
+            for (size_t i = 0; i < node["arguments"].size(); ++i)
               {
-                // Found a match by type name, update the hash
-                std::string correct_hash = type_to_hash[type_name];
-                std::cout << "Fixing hash for node " << node_id << " of type '"
-                          << type_name << "': " << current_hash << " -> "
-                          << correct_hash << "\n";
-
-                node["type_hash"] = correct_hash;
-              }
-            else
-              {
-                std::cerr
-                  << "Warning: Node " << node_id << " of type '" << type_name
-                  << "' has invalid hash and no matching type found in registry\n";
+                json &arg = node["arguments"][i];
+                fix_type_hash(arg,
+                              "argument " + std::to_string(i) + " of node " +
+                                node_id);
               }
           }
       }
