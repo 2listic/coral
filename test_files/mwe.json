@@ -1,58 +1,11 @@
 {
-  "author": "coral-editor",
-  "date_time_utc": "2025-07-24T07:35:46.000Z",
-  "version": 1,
   "workflow": {
-    "edges": {
-      "0": {
-        "source": 0,
-        "source_output": 0,
-        "target": 3,
-        "target_input": 0
-      },
-      "1": {
-        "source": 1,
-        "source_output": 0,
-        "target": 3,
-        "target_input": 1
-      },
-      "2": {
-        "source": 2,
-        "source_output": 0,
-        "target": 3,
-        "target_input": 2
-      },
-      "3": {
-        "source": 3,
-        "source_output": 0,
-        "target": 5,
-        "target_input": 0
-      },
-      "4": {
-        "source": 4,
-        "source_output": 0,
-        "target": 5,
-        "target_input": 1
-      }
-    },
     "nodes": {
-      "0": {
-        "arguments": [],
-        "inputs": [],
-        "node_type": "empty_constructor",
-        "outputs": [
-          -1
-        ],
-        "type": "dealii::Triangulation<2, 2>",
-        "type_hash": "c95847e89853e6da"
-      },
       "1": {
         "arguments": [],
         "inputs": [],
         "node_type": "elementary_constructor",
-        "outputs": [
-          -1
-        ],
+        "outputs": [-1],
         "type": "std::string",
         "type_hash": "38efd301b92110ef",
         "value": "hyper_cube"
@@ -60,15 +13,21 @@
       "2": {
         "arguments": [],
         "inputs": [],
+        "node_type": "empty_constructor",
+        "outputs": [-1],
+        "type": "dealii::Triangulation<2, 2>",
+        "type_hash": "c95847e89853e6da"
+      },
+      "3": {
+        "arguments": [],
+        "inputs": [],
         "node_type": "elementary_constructor",
-        "outputs": [
-          -1
-        ],
+        "outputs": [-1],
         "type": "std::string",
         "type_hash": "38efd301b92110ef",
         "value": "0: 1: false"
       },
-      "3": {
+      "4": {
         "arguments": [
           {
             "connection_type": "pass_through",
@@ -89,29 +48,12 @@
             "type_hash": "38efd301b92110ef"
           }
         ],
-        "inputs": [
-          0,
-          1,
-          2
-        ],
+        "inputs": [0, 1, 2],
         "method_name": "GridGenerator::generate_from_name_and_arguments<2>",
         "node_type": "void_function",
-        "outputs": [
-          0
-        ],
+        "outputs": [0],
         "type": "std::function<void(dealii::Triangulation<2, 2>&, std::string const&, std::string const&)>",
         "type_hash": "e33bf3b92310db94GridGenerator::generate_from_name_and_arguments<2>"
-      },
-      "4": {
-        "arguments": [],
-        "inputs": [],
-        "node_type": "elementary_constructor",
-        "outputs": [
-          -1
-        ],
-        "type": "unsigned",
-        "type_hash": "b826a7e2a606584c",
-        "value": "2"
       },
       "5": {
         "arguments": [
@@ -128,18 +70,97 @@
             "type_hash": "b826a7e2a606584c"
           }
         ],
-        "inputs": [
-          0,
-          1
-        ],
+        "inputs": [0, 1],
         "method_name": "Triangulation<2>::refine_global",
         "node_type": "void_method",
-        "outputs": [
-          0
-        ],
+        "outputs": [0],
         "type": "void(dealii::Triangulation<2, 2>::*)(unsigned)",
         "type_hash": "cb40d6a582660ec8Triangulation<2>::refine_global"
+      },
+      "6": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "elementary_constructor",
+        "outputs": [-1],
+        "type": "unsigned",
+        "type_hash": "b826a7e2a606584c",
+        "value": "2"
+      },
+      "7": {
+        "arguments": [
+          {
+            "connection_type": "input",
+            "name": "grid_out",
+            "type": "dealii::GridOut",
+            "type_hash": "d109334b934b9a76"
+          },
+          {
+            "connection_type": "input",
+            "name": "triangulation",
+            "type": "dealii::Triangulation<2, 2>",
+            "type_hash": "c95847e89853e6da"
+          },
+          {
+            "connection_type": "pass_through",
+            "name": "output_file",
+            "type": "std::ostream",
+            "type_hash": "296106717126417c"
+          }
+        ],
+        "inputs": [0, 1, 2],
+        "method_name": "GridOut::write_vtk<2>",
+        "node_type": "void_const_method",
+        "outputs": [2],
+        "type": "void(dealii::GridOut::*)(dealii::Triangulation<2, 2> const&, std::ostream&) const",
+        "type_hash": "83fc561e6bc6214fGridOut::write_vtk<2>"
+      },
+      "8": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "empty_constructor",
+        "outputs": [-1],
+        "type": "dealii::GridOut",
+        "type_hash": "d109334b934b9a76"
+      },
+      "9": {
+        "arguments": [
+          {
+            "connection_type": "input",
+            "name": "file_name",
+            "type": "std::string",
+            "type_hash": "38efd301b92110ef"
+          }
+        ],
+        "base": "296106717126417c",
+        "inputs": [0],
+        "node_type": "constructor",
+        "outputs": [-1],
+        "type": "std::basic_ofstream<char>",
+        "type_hash": "9ea8b452edfba41d"
+      },
+      "10": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "elementary_constructor",
+        "outputs": [-1],
+        "type": "std::string",
+        "type_hash": "38efd301b92110ef",
+        "value": "grid-1.vtk"
       }
+    },
+    "edges": {
+      "0": { "source": 2, "target": 4, "source_output": 0, "target_input": 0 },
+      "1": { "source": 1, "target": 4, "source_output": 0, "target_input": 1 },
+      "2": { "source": 3, "target": 4, "source_output": 0, "target_input": 2 },
+      "3": { "source": 4, "target": 5, "source_output": 0, "target_input": 0 },
+      "4": { "source": 6, "target": 5, "source_output": 0, "target_input": 1 },
+      "5": { "source": 5, "target": 7, "source_output": 0, "target_input": 1 },
+      "6": { "source": 8, "target": 7, "source_output": 0, "target_input": 0 },
+      "7": { "source": 10, "target": 9, "source_output": 0, "target_input": 0 },
+      "8": { "source": 9, "target": 7, "source_output": 0, "target_input": 2 }
     }
-  }
+  },
+  "version": 1,
+  "author": "dealiix-platform",
+  "date_time_utc": "2025-08-27T08:32:54.567Z"
 }

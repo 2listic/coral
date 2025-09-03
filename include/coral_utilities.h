@@ -34,6 +34,7 @@ namespace coral
 
     // Create a map of type names to their correct hashes from the registry
     std::map<std::string, std::string> type_to_hash;
+
     for (const auto &[hash, info] : registry.items())
       {
         if (info.contains("type"))
@@ -102,6 +103,31 @@ namespace coral
                                 node_id);
               }
           }
+
+	if (node.contains("base") && node.contains("type_hash")) {
+	  std::string current_base_hash = node["base"];
+	  std::string current_type_hash = node["type_hash"];
+
+	  if (!registry.contains(current_type_hash)) {
+	    std::cerr << "Fixing base hash " << current_base_hash
+		      << " found type hash " << current_type_hash
+		      << " which is not present in registry.\n";
+	  }
+
+	  if (registry[current_type_hash].contains("base")) {
+            std::cerr << "Fixing base hash " << current_base_hash
+		      << " found type hash " << current_type_hash
+		      << " which does not have base type.\n";
+	  }
+
+	  std::string fixed_base_hash = registry[current_type_hash]["base"];
+	  std::cout << "Fixing type hashed " << current_type_hash
+		    << "base type hash " << current_base_hash
+		    << " -> " << fixed_base_hash << "\n";
+
+	  node["base"] = fixed_base_hash;
+	}
+
       }
 
     return fixed_json;

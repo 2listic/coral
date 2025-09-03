@@ -153,9 +153,9 @@ TEST(NetworkTest, ParseAndDump)
     << "Output JSON must contain 'workflow.edges' object";
 
   // Check the number of nodes and edges
-  ASSERT_EQ(output_json["workflow"]["nodes"].size(), 6)
+  ASSERT_EQ(output_json["workflow"]["nodes"].size(), 10)
     << "Should have 6 nodes in the workflow";
-  ASSERT_EQ(output_json["workflow"]["edges"].size(), 5)
+  ASSERT_EQ(output_json["workflow"]["edges"].size(), 9)
     << "Should have 2 edges in the workflow";
 }
 
