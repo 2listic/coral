@@ -17,53 +17,13 @@
 
 #include "magic_enum/magic_enum_all.hpp" // Reintroduced Magic Enum library
 #include "type_name.h"                   // Single boost file
+#include "utils.h"
 
 /**
  * Refer to README.md for a comprehensive overview of the CORAL library.
  */
 
 using json = nlohmann::json;
-
-inline bool is_json_subset_of(const json& j1, const json& j2) {
-    if (j1.is_null()) {
-        return true;
-    }
-
-    if (j1.type() != j2.type()) {
-        return false;
-    }
-
-    switch (j1.type()) {
-        case json::value_t::object: {
-            for (auto& [key, value] : j1.items()) {
-                if (!j2.contains(key) || !is_json_subset_of(value, j2[key])) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        case json::value_t::array: {
-            // For arrays, check if every element in j1 exists somewhere in j2
-            for (const auto& elem1 : j1) {
-                bool found = false;
-                for (const auto& elem2 : j2) {
-                    if (is_json_subset_of(elem1, elem2)) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        default:
-            return j1 == j2;
-    }
-}
 
 namespace coral
 {
@@ -1571,7 +1531,7 @@ namespace coral
         obj->parse_string(j.at("value").get<std::string>());
       }
     auto j2 = obj->get_info();
-    if (!is_json_subset_of(j2, j))
+    if (!utils::is_json_subset_of(j2, j))
       {
         throw std::runtime_error(
           "The json object does not match the expected value: expected " +
