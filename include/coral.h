@@ -17,6 +17,7 @@
 
 #include "magic_enum/magic_enum_all.hpp" // Reintroduced Magic Enum library
 #include "type_name.h"                   // Single boost file
+#include "utils.h"
 
 /**
  * Refer to README.md for a comprehensive overview of the CORAL library.
@@ -1530,7 +1531,7 @@ namespace coral
         obj->parse_string(j.at("value").get<std::string>());
       }
     auto j2 = obj->get_info();
-    if (j2 != j)
+    if (!utils::is_json_subset_of(j2, j))
       {
         throw std::runtime_error(
           "The json object does not match the expected value: expected " +

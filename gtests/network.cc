@@ -153,9 +153,9 @@ TEST(NetworkTest, ParseAndDump)
     << "Output JSON must contain 'workflow.edges' object";
 
   // Check the number of nodes and edges
-  ASSERT_EQ(output_json["workflow"]["nodes"].size(), 6)
+  ASSERT_EQ(output_json["workflow"]["nodes"].size(), 10)
     << "Should have 6 nodes in the workflow";
-  ASSERT_EQ(output_json["workflow"]["edges"].size(), 5)
+  ASSERT_EQ(output_json["workflow"]["edges"].size(), 9)
     << "Should have 2 edges in the workflow";
 }
 
@@ -212,11 +212,11 @@ TEST(NetworkTest, JsonBasedWorkflow)
   coral::Network network;
   network.from_json(fixed_json);
 
-  // Basic verification of nodes - should have 6 nodes
-  ASSERT_EQ(network.size(), 6);
+  // Basic verification of nodes - should have 10 nodes
+  ASSERT_EQ(network.size(), 10);
 
   // Verify each node exists and has the right type
-  for (int i = 0; i <= 5; ++i)
+  for (int i = 0; i < 10; ++i)
     {
       auto node = network.get_node(i);
       ASSERT_TRUE(node != nullptr) << "Node " << i << " should exist";
@@ -244,7 +244,7 @@ TEST(NetworkTest, ValidateEdgeConnections)
   network.from_json(fixed_json);
 
   // Validate the network size
-  ASSERT_EQ(network.size(), 6);
+  ASSERT_EQ(network.size(), 10);
 
   // Output the taskflow as DOT format for debugging
   network.output_dot("validate_edges_taskflow.dot");
@@ -259,15 +259,23 @@ TEST(NetworkTest, ValidateEdgeConnections)
   // 2. Node 2 -> Node 3 (string arguments to generate_from_name_and_arguments)
   // 3. Node 3 -> Node 5 (triangulation after generate to refine_global)
   // 4. Node 4 -> Node 5 (unsigned value to refine_global)
-  ASSERT_EQ(tf.num_tasks(), 6);
+  // 5. Node 6 -> Node 7 (std::string)
+  // 6. Node 5 -> Node 9
+  // 7. Node 7 -> Node 9
+  // 8. Node 8 -> Node 9
+  ASSERT_EQ(tf.num_tasks(), 10);
 
   // Verify the connections using our tracking map
-  ASSERT_EQ(network.n_connections(), 5);
+  ASSERT_EQ(network.n_connections(), 9);
   EXPECT_TRUE(network.is_connected(0, 3));
   EXPECT_TRUE(network.is_connected(1, 3));
   EXPECT_TRUE(network.is_connected(2, 3));
   EXPECT_TRUE(network.is_connected(3, 5));
   EXPECT_TRUE(network.is_connected(4, 5));
+  EXPECT_TRUE(network.is_connected(6, 7));
+  EXPECT_TRUE(network.is_connected(5, 9));
+  EXPECT_TRUE(network.is_connected(7, 9));
+  EXPECT_TRUE(network.is_connected(8, 9));
 }
 
 // Test for verifying node types
@@ -291,7 +299,7 @@ TEST(NetworkTest, VerifyNodeTypes)
   network.from_json(fixed_json);
 
   // Verify the nodes exist
-  ASSERT_EQ(network.size(), 6);
+  ASSERT_EQ(network.size(), 10);
 
   // Check node 0: Should be of type "dealii::Triangulation<2, 2>" with
   // nodeType "empty_constructor"
@@ -333,6 +341,35 @@ TEST(NetworkTest, VerifyNodeTypes)
   ASSERT_TRUE(node5 != nullptr);
   EXPECT_EQ(node5->node_type(), coral::NodeType::void_method);
   EXPECT_NE(node5->type_name().find("Triangulation"), std::string::npos);
+
+  // Check node 6: Should be of type "std::string" with nodeType
+  // "elementary_constructor"
+  auto node6 = network.get_node(6);
+  ASSERT_TRUE(node6 != nullptr);
+  EXPECT_EQ(node6->node_type(), coral::NodeType::elementary_constructor);
+  EXPECT_EQ(node6->type_name(), "std::string");
+
+  // Check node 7: Should be of type "std::basic_ofstream<char>" with nodeType
+  // "elementary_constructor"
+  auto node7 = network.get_node(7);
+  ASSERT_TRUE(node7 != nullptr);
+  EXPECT_EQ(node7->node_type(), coral::NodeType::constructor);
+  EXPECT_EQ(node7->type_name(), "std::basic_ofstream<char>");
+
+  // Check node 8: Should be of type dealii::GridOut
+  // with nodeType "empty_constructor"
+  auto node8 = network.get_node(8);
+  ASSERT_TRUE(node8 != nullptr);
+  ASSERT_EQ(node8->node_type(), coral::NodeType::empty_constructor);
+  ASSERT_EQ(node8->type_name(), "dealii::GridOut");
+
+  // Check node 9: Shoud be of type
+  // void(dealii::GridOut::*)(dealii::Triangulation<2, 2> const&, std::ostream&) const
+  // with nodeType "void_const_method"
+  auto node9 = network.get_node(9);
+  ASSERT_TRUE(node9 != nullptr);
+  ASSERT_EQ(node9->node_type(), coral::NodeType::void_const_method);
+  ASSERT_EQ(node9->type_name(), "void(dealii::GridOut::*)(dealii::Triangulation<2, 2> const&, std::ostream&) const");
 }
 
 // Test for connections map tracking
@@ -356,7 +393,7 @@ TEST(NetworkTest, ConnectionsMapTracking)
   network.from_json(fixed_json);
 
   // Verify total connection count
-  ASSERT_EQ(network.n_connections(), 5) << "Should have 5 connections";
+  ASSERT_EQ(network.n_connections(), 9) << "Should have 9 connections";
 
   // Verify specific connections
   EXPECT_TRUE(network.is_connected(0, 3)) << "Node 0 should connect to Node 3";
@@ -366,6 +403,12 @@ TEST(NetworkTest, ConnectionsMapTracking)
   EXPECT_TRUE(network.is_connected(4, 5)) << "Node 4 should connect to Node 5";
   EXPECT_FALSE(network.is_connected(5, 0))
     << "Node 5 should not connect to Node 0";
+  EXPECT_TRUE(network.is_connected(6, 7)) << "Node 6 should connect to Node 7";
+  EXPECT_TRUE(network.is_connected(5, 9)) << "Node 5 should connect to Node 9";
+  EXPECT_TRUE(network.is_connected(7, 9)) << "Node 7 should connect to Node 9";
+  EXPECT_TRUE(network.is_connected(8, 9)) << "Node 8 should connect to Node 9";
+  EXPECT_FALSE(network.is_connected(6, 9))
+    << "Node 6 should not connect to node 9";
 
   // Verify connection vectors using the target IDs list
   auto node0_targets = network.get_connected_nodes(0);
@@ -394,8 +437,28 @@ TEST(NetworkTest, ConnectionsMapTracking)
   EXPECT_EQ(node4_targets[0], 5) << "Node 4 should connect to Node 5";
 
   auto node5_targets = network.get_connected_nodes(5);
-  EXPECT_TRUE(node5_targets.empty())
-    << "Node 5 should have no outgoing connections";
+  EXPECT_EQ(node5_targets.size(), 1)
+    << "Node 5 should have 1 outgoing connection";
+  EXPECT_EQ(node5_targets[0], 9) << "Node 5 should connect to Node 9";
+
+  auto node6_targets = network.get_connected_nodes(6);
+  EXPECT_EQ(node6_targets.size(), 1)
+    << "Node 6 should have 1 outgoing connection";
+  EXPECT_EQ(node6_targets[0], 7) << "Node 6 should connect to Node 7";
+
+  auto node7_targets = network.get_connected_nodes(7);
+  EXPECT_EQ(node7_targets.size(), 1)
+    << "Node 7 should have 1 outgoing connection";
+  EXPECT_EQ(node7_targets[0], 9) << "Node 7 should connect to Node 9";
+
+  auto node8_targets = network.get_connected_nodes(8);
+  EXPECT_EQ(node8_targets.size(), 1)
+    << "Node 8 should have 1 outgoing connection";
+  EXPECT_EQ(node8_targets[0], 9) << "Node 8 should connect to Node 9";
+
+  auto node9_targets = network.get_connected_nodes(9);
+  EXPECT_TRUE(node9_targets.empty())
+    << "Node 9 should not have outoing connections";
 
   // Verify connection objects
   auto node0_conns = network.get_node_connections(0);
@@ -403,8 +466,48 @@ TEST(NetworkTest, ConnectionsMapTracking)
   EXPECT_EQ(node0_conns[0].source_id, 0);
   EXPECT_EQ(node0_conns[0].target_id, 3);
 
-  // Verify we can access all connections
-  EXPECT_EQ(network.n_connections(), 5) << "Should have 5 connections";
+  auto node1_conns = network.get_node_connections(1);
+  EXPECT_EQ(node1_conns.size(), 1) << "Node 1 should have 1 connection object";
+  EXPECT_EQ(node1_conns[0].source_id, 1);
+  EXPECT_EQ(node1_conns[0].target_id, 3);
+
+  auto node2_conns = network.get_node_connections(2);
+  EXPECT_EQ(node2_conns.size(), 1) << "Node 2 should have 1 connection object";
+  EXPECT_EQ(node2_conns[0].source_id, 2);
+  EXPECT_EQ(node2_conns[0].target_id, 3);
+
+  auto node3_conns = network.get_node_connections(3);
+  EXPECT_EQ(node3_conns.size(), 1) << "Node 3 should have 1 connection object";
+  EXPECT_EQ(node3_conns[0].source_id, 3);
+  EXPECT_EQ(node3_conns[0].target_id, 5);
+
+  auto node4_conns = network.get_node_connections(4);
+  EXPECT_EQ(node4_conns.size(), 1) << "Node 4 should have 1 connection object";
+  EXPECT_EQ(node4_conns[0].source_id, 4);
+  EXPECT_EQ(node4_conns[0].target_id, 5);
+
+  auto node5_conns = network.get_node_connections(5);
+  EXPECT_EQ(node5_conns.size(), 1) << "Node 5 should have 1 connection object";
+  EXPECT_EQ(node5_conns[0].source_id, 5);
+  EXPECT_EQ(node5_conns[0].target_id, 9);
+
+  auto node6_conns = network.get_node_connections(6);
+  EXPECT_EQ(node6_conns.size(), 1) << "Node 6 should have 1 connection object";
+  EXPECT_EQ(node6_conns[0].source_id, 6);
+  EXPECT_EQ(node6_conns[0].target_id, 7);
+
+  auto node7_conns = network.get_node_connections(7);
+  EXPECT_EQ(node7_conns.size(), 1) << "Node 7 should have 1 connection object";
+  EXPECT_EQ(node7_conns[0].source_id, 7);
+  EXPECT_EQ(node7_conns[0].target_id, 9);
+
+  auto node8_conns = network.get_node_connections(8);
+  EXPECT_EQ(node8_conns.size(), 1) << "Node 8 should have 1 connection object";
+  EXPECT_EQ(node8_conns[0].source_id, 8);
+  EXPECT_EQ(node8_conns[0].target_id, 9);
+
+  auto node9_conns = network.get_node_connections(9);
+  EXPECT_TRUE(node9_conns.empty()) << "Node 9 should not have connection objects";
 }
 
 // Test for network serialization
@@ -442,8 +545,8 @@ TEST(NetworkTest, NetworkSerialization)
     << "Must contain date_time_utc";
 
   // Verify node count
-  ASSERT_EQ(serialized_json["workflow"]["nodes"].size(), 6)
-    << "Should have 6 nodes";
+  ASSERT_EQ(serialized_json["workflow"]["nodes"].size(), 10)
+    << "Should have 10 nodes";
 
   // Verify node structure
   for (const auto &[id, node] : serialized_json["workflow"]["nodes"].items())
@@ -470,8 +573,8 @@ TEST(NetworkTest, NetworkSerialization)
   new_network.from_json(serialized_json);
 
   // Verify the new network has the same nodes and connections
-  EXPECT_EQ(new_network.size(), 6);
-  EXPECT_EQ(new_network.n_connections(), 5);
+  EXPECT_EQ(new_network.size(), 10);
+  EXPECT_EQ(new_network.n_connections(), 9);
 
   // Verify the specific connections
   EXPECT_TRUE(new_network.is_connected(0, 3));
@@ -479,6 +582,10 @@ TEST(NetworkTest, NetworkSerialization)
   EXPECT_TRUE(new_network.is_connected(2, 3));
   EXPECT_TRUE(new_network.is_connected(3, 5));
   EXPECT_TRUE(new_network.is_connected(4, 5));
+  EXPECT_TRUE(new_network.is_connected(6, 7));
+  EXPECT_TRUE(new_network.is_connected(5, 9));
+  EXPECT_TRUE(new_network.is_connected(7, 9));
+  EXPECT_TRUE(new_network.is_connected(8, 9));
 }
 
 TEST(NetworkTest, ParseAndExecuteNetwork)
