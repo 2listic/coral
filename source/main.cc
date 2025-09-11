@@ -9,6 +9,8 @@
 #include <nlohmann/json.hpp> // JSON library
 
 #include "coral.h"
+#include "coral_network.h"
+#include "coral_utilities.h"
 #include "register_types.h"
 #include "taskflow/taskflow.hpp" // Taskflow library
 
@@ -16,15 +18,52 @@ using json = nlohmann::json;
 
 using namespace coral;
 
+void
+dump_registry(const std::string& outname) {
+    auto json = coral::NodeObject::get_registry();
+    std::ofstream output{outname};
+    output << std::setw(4) << json << std::endl;
+}
+
 int
-main()
+main(int argc, char *argv[])
 {
-  coral::register_all_types();
+    if (argc != 2) {
+        std::cerr << "USAGE:\n" << argv[0] << " input.json" << std::endl;
+        return EXIT_FAILURE;
+    }
 
-  auto j = NodeObject::get_registry();
-  std::cout << std::setw(4) << j << std::endl;
+    std::ifstream input{argv[1]};
+    if (!input.good()) {
+        std::cerr << "Could not open " << argv[1] << "." << std::endl;
+        return EXIT_FAILURE;
+    }
+    std::cout << "File " << argv[1] << " opened." << std::endl;
 
-  // Now write the registry to a file
-  std::ofstream file("node_types.json");
-  file << std::setw(4) << j << std::endl;
+    coral::register_all_types();
+    std::cout << "Registered all types." << std::endl;
+
+    json data;
+    input >> data;
+    std::cout << "File " << argv[1] << " read." << std::endl;
+
+    json fixed_data = coral::fix_hashes(data);
+    std::cout << "Hashes fixed." << std::endl;
+
+    coral::Network network;
+    network.from_json(fixed_data);
+    std::cout << "Build network from data." << std::endl;
+
+    std::string network_filename{"network.dot"};
+    network.output_dot(network_filename);
+    std::cout << "Network graph " << network_filename << "." << std::endl;
+
+    std::string outfile{"node_types.json"};
+    dump_registry(outfile);
+    std::cout << "Dumped registered node to " << outfile << "." << std::endl;
+
+    network.run();
+    std::cout << "Network run." << std::endl;
+
+  return EXIT_SUCCESS;
 }
