@@ -146,6 +146,23 @@ A typical workflow using CORAL involves:
 4. Send the resulting json to the backend for execution
 5. Executing the graph to perform the computation
 
+## Prectical Usage
+
+To dump all the registered type on `noed_types.json` just
+
+```
+./dealii_backend.g
+```
+
+To execute a graph `input.json`
+
+```
+./dealii_backend.g input.json
+```
+this will also produce `node_types.json` as above and `network.dot` containing
+the information to plot the graph.
+
+
 ## Author
 
 Luca Heltai <luca.heltai@unipi.it>

@@ -28,10 +28,24 @@ dump_registry(const std::string& outname) {
 int
 main(int argc, char *argv[])
 {
-    if (argc != 2) {
-        std::cerr << "USAGE:\n" << argv[0] << " input.json" << std::endl;
+    if (argc > 2) {
+        std::cerr << "USAGE\n"
+                  << argv[0] << "\n\tProduce node_types.json\n\n"
+                  << argv[0] << " input.json\n\tLoad and execute a graph"
+                  << std::endl;
+
         return EXIT_FAILURE;
     }
+
+    coral::register_all_types();
+    std::cout << "Registered all types." << std::endl;
+
+    std::string outfile{"node_types.json"};
+    dump_registry(outfile);
+    std::cout << "Dumped registered node to " << outfile << "." << std::endl;
+
+    if (argc == 1)
+        return EXIT_SUCCESS;
 
     std::ifstream input{argv[1]};
     if (!input.good()) {
@@ -39,9 +53,6 @@ main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     std::cout << "File " << argv[1] << " opened." << std::endl;
-
-    coral::register_all_types();
-    std::cout << "Registered all types." << std::endl;
 
     json data;
     input >> data;
@@ -57,10 +68,6 @@ main(int argc, char *argv[])
     std::string network_filename{"network.dot"};
     network.output_dot(network_filename);
     std::cout << "Network graph " << network_filename << "." << std::endl;
-
-    std::string outfile{"node_types.json"};
-    dump_registry(outfile);
-    std::cout << "Dumped registered node to " << outfile << "." << std::endl;
 
     network.run();
     std::cout << "Network run." << std::endl;
