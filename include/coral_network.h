@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <sstream>
+#include <filesystem>
 
 #include "coral.h"
 #include "taskflow/core/task.hpp"
@@ -298,9 +299,9 @@ namespace coral
 
     // Added a method to output the network as a DOT file
     void
-    output_dot(const std::string &filename) const
+    output_dot(const std::filesystem::path &filepath) const
     {
-      std::ofstream dot_file(filename);
+      std::ofstream dot_file(filepath);
       taskflow.dump(dot_file);
       dot_file.close();
     }

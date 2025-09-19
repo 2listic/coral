@@ -146,6 +146,21 @@ A typical workflow using CORAL involves:
 4. Send the resulting json to the backend for execution
 5. Executing the graph to perform the computation
 
+## Prectical Usage
+
+The program `dealii_backend.g` has two subcommands:
+
+* `register [register_path]`: simply register all types and dump them to
+`register_path`, a json file which defaults to `node_types.json`.
+* `run [OPTIONS] input_json`: register all types and run the graph described
+in the json file `input_json`. The options are:
+    * `--register [register_path]`: dump the types to `register_path`, which
+    defaults to `nodes_type.json`;
+    * `--graph [graph_path]`: dump the dot file of the network to `graph_path`,
+    which defaults to `network.dot`.
+
+Of course `-h` or `--help` to get a usage guide.
+
 ## Author
 
 Luca Heltai <luca.heltai@unipi.it>
