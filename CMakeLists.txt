@@ -26,7 +26,7 @@
 # Set the name of the project and target
 # If your application follows the structure above, you don't need to 
 # specify anything else. 
-SET(_main_target dealii_backend)
+SET(_main_target coral)
 SET(_main source/main.cc)
 
 # Set the _main variable to empty if you don't want an executable
@@ -46,7 +46,10 @@ ${CMAKE_CURRENT_SOURCE_DIR}/${_main}
 )
 ENDIF()
 
-INCLUDE_DIRECTORIES(include ./)
+INCLUDE_DIRECTORIES(PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
 
 # Disable specific warnings related to the nlohmann/json library
 IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
@@ -133,3 +136,17 @@ if(DOXYGEN_FOUND)
   COMMENT "Generating API documentation with Doxygen" VERBATIM)
   MESSAGE("-- Configured Doxygen")
 endif(DOXYGEN_FOUND)
+
+INSTALL(TARGETS ${_lib}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  INCLUDES DESTINATION include
+)
+
+INSTALL(FILES include/coral.h include/coral_network.h include/coral_utilities.h
+  DESTINATION include
+)
+
+INSTALL(TARGETS ${_exe}
+  RUNTIME DESTINATION bin
+)
