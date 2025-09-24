@@ -1376,7 +1376,7 @@ namespace coral
     /**
      * A list of all known types and their initializers.
      */
-    static std::map<std::string, NodeObjectInitializer> initializers;
+    static inline std::map<std::string, NodeObjectInitializer> initializers;
 
     /**
      * Input indices mapping to arguments.
