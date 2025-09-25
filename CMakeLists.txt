@@ -37,19 +37,12 @@ SET(_main source/main.cc)
 # Normally you shouldn't need to change anything below.
 ############################################################
 # Declare all source files the target consists of:
-file(GLOB _files source/*cc include/*.h)
 
-# Don't compile the main file into the library
-IF(NOT "${_main}" STREQUAL "") 
-LIST(REMOVE_ITEM _files
-${CMAKE_CURRENT_SOURCE_DIR}/${_main}
-)
-ENDIF()
 
-INCLUDE_DIRECTORIES(PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-)
+# INCLUDE_DIRECTORIES(PUBLIC
+#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#   $<INSTALL_INTERFACE:include>
+# )
 
 # Disable specific warnings related to the nlohmann/json library
 IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
@@ -93,9 +86,13 @@ FOREACH(_build_type ${_d2_build_types})
     SET(_lib "${_main_target}_lib${_p}")
     MESSAGE("-- Configuring library ${_lib}")
 
-    ADD_LIBRARY(${_lib} SHARED ${_files})
-    DEAL_II_SETUP_TARGET(${_lib} ${_BUILD_TYPE})
-    TARGET_COMPILE_DEFINITIONS(${_lib} PUBLIC SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+    ADD_LIBRARY(${_lib} INTERFACE)
+    TARGET_INCLUDE_DIRECTORIES(${_lib} INTERFACE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>
+    )
+    # DEAL_II_SETUP_TARGET(${_lib} ${_BUILD_TYPE})
+    TARGET_COMPILE_DEFINITIONS(${_lib} INTERFACE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     SET(TEST_LIBRARIES_${_BUILD_TYPE} ${_lib})
 
     # Setup one executable per dimension/per build type
@@ -136,12 +133,6 @@ if(DOXYGEN_FOUND)
   COMMENT "Generating API documentation with Doxygen" VERBATIM)
   MESSAGE("-- Configured Doxygen")
 endif(DOXYGEN_FOUND)
-
-INSTALL(TARGETS ${_lib}
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  INCLUDES DESTINATION include
-)
 
 INSTALL(FILES include/coral.h include/coral_network.h include/coral_utilities.h
   DESTINATION include

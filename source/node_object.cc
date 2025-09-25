@@ -4,5 +4,5 @@
 
 namespace coral
 {
-  std::map<std::string, NodeObjectInitializer> NodeObject::initializers;
+  // std::map<std::string, NodeObjectInitializer> NodeObject::initializers;
 } // namespace coral
