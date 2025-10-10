@@ -17,15 +17,15 @@
 # CMake script for large project, with one executable
 # and a library of objects
 #
-# The structure of the directory is assumed to be: 
+# The structure of the directory is assumed to be:
 # ./source: containing implementations and one file with "int main()"
 # ./include: containing all class declarations
 # ./gtests: containing gtest unit tests
 ##
 
 # Set the name of the project and target
-# If your application follows the structure above, you don't need to 
-# specify anything else. 
+# If your application follows the structure above, you don't need to
+# specify anything else.
 SET(_main_target dealii_backend)
 SET(_main source/main.cc)
 
@@ -56,7 +56,7 @@ DEAL_II_INITIALIZE_CACHED_VARIABLES()
 
 PROJECT(${_main_target})
 DEAL_II_INITIALIZE_CACHED_VARIABLES()
-OPTION(ENABLE_GOOGLE_TESTING 
+OPTION(ENABLE_GOOGLE_TESTING
 "Enable googletest style tests in this application." ON)
 
 # We add one library and one target for each type of deal.II library
@@ -93,7 +93,7 @@ FOREACH(_build_type ${_d2_build_types})
     #   SET(_exe "${_main_target}_${_dim}d${${_build_type}_postfix}")
     #   MESSAGE("-- Configuring executable ${_exe}")
     #   ADD_EXECUTABLE(${_exe} ${_main})
-    #   TARGET_LINK_LIBRARIES(${_exe} ${_lib})      
+    #   TARGET_LINK_LIBRARIES(${_exe} ${_lib})
     #   TARGET_COMPILE_DEFINITIONS(${_exe} PUBLIC DEAL_DIMENSION=${_dim})
     #   DEAL_II_SETUP_TARGET(${_exe} ${_BUILD_TYPE})
     # ENDFOREACH()
@@ -104,6 +104,10 @@ FOREACH(_build_type ${_d2_build_types})
     ADD_EXECUTABLE(${_exe} ${_main})
     TARGET_LINK_LIBRARIES(${_exe} ${_lib})
     DEAL_II_SETUP_TARGET(${_exe} ${_BUILD_TYPE})
+
+    ADD_EXECUTABLE(test source/test.cc)
+    TARGET_LINK_LIBRARIES(test ${_lib})
+    DEAL_II_SETUP_TARGET(test ${_BUILD_TYPE})
   ENDIF()
 ENDFOREACH()
 

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -252,6 +253,9 @@ namespace coral
     mutable json json_serializer;
   };
 
+  // just for tag dispatch
+  struct build_from_type {};
+
   /**
    * @class NodeObject
    * @brief A class that represents an object of any type.
@@ -365,6 +369,18 @@ namespace coral
       return registry;
     }
 
+    static auto
+    type_to_hash(const std::string& type) -> std::optional<std::string>
+    {
+        json registry = get_registry();
+        for (const auto &[hash, info] : registry.items()) {
+            if (info.contains("type") && info["type"] == type)
+                return hash;
+        }
+
+        return std::nullopt;
+    }
+
     auto
     ready() const -> bool
     {
@@ -463,6 +479,7 @@ namespace coral
 
       auto &initializer                        = initializers[hash_str];
       initializer.json_serializer["type"]      = boost::core::type_name<T>();
+      std::cout << "The type is: " << initializer.json_serializer["type"] << std::endl;
       initializer.json_serializer["type_hash"] = hash_str;
       initializer.json_serializer["arguments"] = json::array();
       initializer.json_serializer["inputs"]    = json::array();
