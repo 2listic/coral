@@ -11,7 +11,9 @@ int main()
 
     std::cout << std::setw(4) << coral::NodeObject::get_registry() << std::endl;
 
-    std::cout << *coral::NodeObject::type_to_hash("int") << std::endl;
+    // std::cout << *coral::NodeObject::type_to_hash("int") << std::endl;
+
+    auto node = coral::NodeObject(coral::build_from_type{}, "int");
 
     return EXIT_SUCCESS;
 }

@@ -10,6 +10,7 @@
 #include <memory>
 #include <optional>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <typeindex>
@@ -353,6 +354,17 @@ namespace coral
       : NodeObject(std::string(hash_str))
     {}
 
+    NodeObject(build_from_type, const std::string& type)
+    {
+        auto maybe_hash = type_to_hash(type);
+        if (!maybe_hash) {
+            std::string message = "Type " + type + " not present in the registry.";
+            throw std::runtime_error(message.c_str());
+        } else {
+            *this = NodeObject(maybe_hash.value());
+        }
+    }
+
     /**
      * Return the registry of all types known to this class. If you try to
      * instantiate a class that is not in the registry, an exception will be
@@ -479,7 +491,6 @@ namespace coral
 
       auto &initializer                        = initializers[hash_str];
       initializer.json_serializer["type"]      = boost::core::type_name<T>();
-      std::cout << "The type is: " << initializer.json_serializer["type"] << std::endl;
       initializer.json_serializer["type_hash"] = hash_str;
       initializer.json_serializer["arguments"] = json::array();
       initializer.json_serializer["inputs"]    = json::array();
