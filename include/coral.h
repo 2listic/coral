@@ -255,7 +255,8 @@ namespace coral
   };
 
   // just for tag dispatch
-  struct build_from_type {};
+  struct build_from_type_t { explicit constexpr build_from_type_t() = default;};
+  static inline constexpr build_from_type_t build_from_type{};
 
   /**
    * @class NodeObject
@@ -354,7 +355,7 @@ namespace coral
       : NodeObject(std::string(hash_str))
     {}
 
-    NodeObject(build_from_type, const std::string& type)
+    NodeObject(build_from_type_t, const std::string& type)
     {
         auto maybe_hash = type_to_hash(type);
         if (!maybe_hash) {
