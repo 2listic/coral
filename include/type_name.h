@@ -216,10 +216,7 @@ namespace boost
       inline std::string
       tn_to_string(std::size_t n)
       {
-        char buffer[32];
-        std::sprintf(buffer, "%lu", static_cast<unsigned long>(n));
-
-        return buffer;
+        return std::to_string(n);
       }
 
 #if defined(BOOST_MSVC)
