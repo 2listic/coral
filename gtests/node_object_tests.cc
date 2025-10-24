@@ -24,7 +24,7 @@ TEST(NodeObject, ElementaryTypeInt)
 
 TEST(NodeObject, TypePoint)
 {
-  using type = Point<2>;
+  using type = Poit<2>;
   NodeObject::register_type<type>();
   NodeObjectPtr obj = make_node(type(0.0, 1.0));
   ASSERT_TRUE(obj->ready());

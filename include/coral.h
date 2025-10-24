@@ -1,6 +1,9 @@
 #ifndef CORAL_H
 #define CORAL_H
 
+#include <iostream>
+#include <csignal>
+
 #include <nlohmann/json.hpp> // JSON library
 
 #include <any>
@@ -282,7 +285,8 @@ namespace coral
     template <typename T>
     NodeObject(const T &data)
       : NodeObject(std::make_shared<T>(data))
-    {}
+    {
+    }
 
     /**
      * Construct NodeObject from a std::shared_ptr<std::any>. The
@@ -291,7 +295,8 @@ namespace coral
      */
     NodeObject(const std::shared_ptr<std::any> &data)
       : NodeObject(coral::hash(data))
-    {}
+    {
+    }
 
     /**
      * Construct a new object from a shared pointer to a type.
@@ -392,6 +397,21 @@ namespace coral
         }
 
         return std::nullopt;
+    }
+
+    template <typename T>
+    static auto
+    get_type() -> std::optional<std::string>
+    {
+      const json registry = get_registry();
+      const std::string hash = coral::hash<T>();
+      if (!registry.contains(hash))
+        return std::nullopt;
+
+      if (!registry[hash].contains("type"))
+        throw std::runtime_error{"The type is registered but the name is missing."};
+      else
+        return registry[hash]["type"];
     }
 
     auto

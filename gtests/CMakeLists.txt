@@ -37,6 +37,8 @@ FOREACH(_build_type ${_d2_build_types})
       ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})   
     DEAL_II_SETUP_TARGET(${_exe} ${_BUILD_TYPE})
     include_directories(${GTEST_INCLUDE_DIRS})
+
+    add_test(NAME tests COMMAND ${_exe})
     
     # gtest_discover_tests(${_exe})
   ENDIF()

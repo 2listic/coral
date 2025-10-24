@@ -55,6 +55,7 @@ DEAL_II_INITIALIZE_CACHED_VARIABLES()
 
 
 PROJECT(${_main_target})
+ENABLE_TESTING()
 DEAL_II_INITIALIZE_CACHED_VARIABLES()
 OPTION(ENABLE_GOOGLE_TESTING
 "Enable googletest style tests in this application." ON)
@@ -105,9 +106,9 @@ FOREACH(_build_type ${_d2_build_types})
     TARGET_LINK_LIBRARIES(${_exe} ${_lib})
     DEAL_II_SETUP_TARGET(${_exe} ${_BUILD_TYPE})
 
-    ADD_EXECUTABLE(test source/test.cc)
-    TARGET_LINK_LIBRARIES(test ${_lib})
-    DEAL_II_SETUP_TARGET(test ${_BUILD_TYPE})
+    ADD_EXECUTABLE(helper source/test.cc)
+    TARGET_LINK_LIBRARIES(helper ${_lib})
+    DEAL_II_SETUP_TARGET(helper ${_BUILD_TYPE})
   ENDIF()
 ENDFOREACH()
 
