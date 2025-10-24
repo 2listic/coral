@@ -5,7 +5,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(dealII_coral, m, py::mod_gil_not_used())
+PYBIND11_MODULE(coral, m, py::mod_gil_not_used())
 {
     using namespace dealii;
 
