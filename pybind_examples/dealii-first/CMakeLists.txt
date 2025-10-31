@@ -4,7 +4,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "Generate compile_commands.json"
 project(coral)
 
 set(PYBIND11_FINDPYTHON ON)
-find_package(pybind11 REQUIRED)
+find_package(pybind11 3.0 REQUIRED)
 find_package(deal.II 9.5 REQUIRED 
     HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR})
 
