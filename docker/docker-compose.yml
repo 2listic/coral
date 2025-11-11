@@ -1,6 +1,6 @@
 services:
   coral:
-    image: coral-dev:latest
+    image: coral-dev:0.2
     container_name: coral
     volumes:
-      - .:/app
+      - ..:/app
