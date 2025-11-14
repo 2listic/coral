@@ -1,4 +1,5 @@
-#!/bin/bash
+#/bin/bash
 
-echo "source /app/venv/bin/activate" >> ~/.bashrc
-echo "source /app/setenv.sh" >> ~/.bashrc
+PYBIND11_CMAKE_DIR=$(python3 -m pybind11 --cmakedir) && \
+echo "export CMAKE_PREFIX_PATH=${PYBIND11_CMAKE_DIR}:${CMAKE_PREFIX_PATH}" >> ~/.bashrc
+
