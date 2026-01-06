@@ -60,6 +60,13 @@ namespace coral
           std::string(type.info().name());
       return base + suffix;
     }
+
+    template <typename Base, typename Derived>
+    std::shared_ptr<Base>
+    shared_ptr_to_base(const std::shared_ptr<Derived> &ptr)
+    {
+      return std::static_pointer_cast<Base>(ptr);
+    }
   } // namespace detail
 
   /**
@@ -687,6 +694,12 @@ namespace coral
       initializer.json_serializer["base"] =
         base_initializer.json_serializer["type_hash"];
 
+      // Register entt conversion shared_ptr<Derived> -> shared_ptr<Base>
+      using stored_derived = std::shared_ptr<
+        std::remove_cv_t<std::remove_reference_t<T>>>;
+      entt::meta_factory<stored_derived>().template conv<
+        &detail::shared_ptr_to_base<B, T>>();
+
       // Add the conversion to the base class.
       initializer.to_base =
         [](std::shared_ptr<entt::meta_any> a) -> std::shared_ptr<entt::meta_any> {
@@ -756,6 +769,12 @@ namespace coral
 
       initializer.json_serializer["base"] =
         base_initializer.json_serializer["type_hash"];
+
+      // Register entt conversion shared_ptr<Derived> -> shared_ptr<Base>
+      using stored_derived = std::shared_ptr<
+        std::remove_cv_t<std::remove_reference_t<T>>>;
+      entt::meta_factory<stored_derived>().template conv<
+        &detail::shared_ptr_to_base<B, T>>();
 
       // Add the conversion to the base class.
       initializer.to_base =
