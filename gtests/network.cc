@@ -1,19 +1,10 @@
 
 #include "coral.h"
 #include "coral_network.h"
-#include "coral_utilities.h"
 #include "gtest/gtest.h"
 #include "register_types.h"
-
-
-// Network testlohmann/json.hpp>
 
 #include <fstream>
-
-#include "coral.h"
-#include "coral_network.h"
-#include "gtest/gtest.h"
-#include "register_types.h"
 
 using namespace dealii;
 using namespace coral;
@@ -134,12 +125,9 @@ TEST(NetworkTest, ParseAndDump)
   // Register types
   coral::register_all_types();
 
-  // Fix hashes if needed
-  nlohmann::json fixed_json = coral::fix_hashes(json_data);
-
   // Create and populate the network
   coral::Network network;
-  network.from_json(fixed_json);
+  network.from_json(json_data);
 
   // Dump the network to JSON
   nlohmann::json output_json = network.to_json();
@@ -205,12 +193,9 @@ TEST(NetworkTest, JsonBasedWorkflow)
   // Register types
   coral::register_all_types();
 
-  // Fix hashes if needed
-  nlohmann::json fixed_json = coral::fix_hashes(json_data);
-
   // Create and populate the network
   coral::Network network;
-  network.from_json(fixed_json);
+  network.from_json(json_data);
 
   // Basic verification of nodes - should have 10 nodes
   ASSERT_EQ(network.size(), 10);
@@ -236,12 +221,9 @@ TEST(NetworkTest, ValidateEdgeConnections)
   // Register types
   coral::register_all_types();
 
-  // Fix hashes if needed
-  nlohmann::json fixed_json = coral::fix_hashes(json_data);
-
   // Create and populate the network
   coral::Network network;
-  network.from_json(fixed_json);
+  network.from_json(json_data);
 
   // Validate the network size
   ASSERT_EQ(network.size(), 10);
@@ -291,12 +273,9 @@ TEST(NetworkTest, VerifyNodeTypes)
   // Register types
   coral::register_all_types();
 
-  // Fix hashes if needed
-  nlohmann::json fixed_json = coral::fix_hashes(json_data);
-
   // Create and populate the network
   coral::Network network;
-  network.from_json(fixed_json);
+  network.from_json(json_data);
 
   // Verify the nodes exist
   ASSERT_EQ(network.size(), 10);
@@ -385,12 +364,9 @@ TEST(NetworkTest, ConnectionsMapTracking)
   // Register types
   coral::register_all_types();
 
-  // Fix hashes if needed
-  nlohmann::json fixed_json = coral::fix_hashes(json_data);
-
   // Create and populate the network
   coral::Network network;
-  network.from_json(fixed_json);
+  network.from_json(json_data);
 
   // Verify total connection count
   ASSERT_EQ(network.n_connections(), 9) << "Should have 9 connections";
@@ -523,12 +499,9 @@ TEST(NetworkTest, NetworkSerialization)
   // Register types
   coral::register_all_types();
 
-  // Fix hashes if needed
-  nlohmann::json fixed_json = coral::fix_hashes(json_data);
-
   // Create and populate the network
   coral::Network network;
-  network.from_json(fixed_json);
+  network.from_json(json_data);
 
   // Serialize the network back to JSON
   auto serialized_json = network.to_json();
@@ -600,11 +573,8 @@ TEST(NetworkTest, ParseAndExecuteNetwork)
   // Register types
   coral::register_all_types();
 
-  // Fix hashes if needed
-  json fixed_json = coral::fix_hashes(json_data);
-
   // Create and populate the network
-  coral::Network network = fixed_json;
+  coral::Network network = json_data;
 
   // Output some debug information
   std::cout << "Network has " << network.size() << " nodes and "

@@ -4,7 +4,6 @@
 
 #include "coral.h"
 #include "coral_network.h"
-#include "coral_utilities.h"
 #include "gtest/gtest.h"
 #include "register_types.h"
 
