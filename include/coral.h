@@ -12,7 +12,14 @@
 #include <type_traits>
 #include <vector>
 
+#if defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wmissing-braces"
+#endif
 #include <entt/entt.hpp>
+#if defined(__GNUC__)
+#  pragma GCC diagnostic pop
+#endif
 #include "magic_enum/magic_enum_all.hpp" // Reintroduced Magic Enum library
 #include "type_name.h"                   // Single boost file
 #include "utils.h"
@@ -81,10 +88,28 @@ namespace coral
     using stored_type = std::shared_ptr<underlying_type>;
 
     const auto resolved_underlying = entt::resolve<underlying_type>();
-    const auto base_identifier =
-      resolved_underlying ?
-        detail::type_identifier(resolved_underlying) :
-        std::string(entt::type_id<underlying_type>().name());
+    std::string base_identifier;
+
+    if constexpr (std::is_same_v<underlying_type, std::basic_string<char>>)
+      {
+        base_identifier = "std::string";
+      }
+    else if constexpr (std::is_same_v<underlying_type, std::basic_ofstream<char>>)
+      {
+        base_identifier = "std::ofstream";
+      }
+    else if constexpr (std::is_same_v<underlying_type, std::basic_ostream<char>>)
+      {
+        base_identifier = "std::ostream";
+      }
+    else
+      {
+        base_identifier =
+          resolved_underlying ?
+            detail::type_identifier(resolved_underlying) :
+            std::string(entt::type_id<underlying_type>().name());
+      }
+
     const char *base_name_ptr = detail::store_identifier(base_identifier);
     const auto  type_id       = entt::hashed_string{base_name_ptr}.value();
     entt::meta_factory<stored_type>().type(type_id, base_name_ptr);
@@ -615,7 +640,7 @@ namespace coral
       // Add value parser
       initializer.to_string =
         [](const std::shared_ptr<entt::meta_any> &value) -> std::string {
-        const auto ptr = value->try_cast<std::shared_ptr<T>>();
+        const auto ptr = value->template try_cast<std::shared_ptr<T>>();
         if (ptr == nullptr)
           throw std::runtime_error(
             "Could not cast meta_any to requested shared_ptr type.");
@@ -714,7 +739,7 @@ namespace coral
         [](std::shared_ptr<entt::meta_any> a) -> std::shared_ptr<entt::meta_any> {
         std::cout << "Cast to derived class " << boost::core::type_name<T>()
                   << "\n";
-        const auto ptr = a->try_cast<std::shared_ptr<T>>();
+        const auto ptr = a->template try_cast<std::shared_ptr<T>>();
         if (ptr == nullptr)
           throw std::runtime_error("Could not cast derived type to base.");
         std::cout << "Cast to base class " << boost::core::type_name<B>()
@@ -787,7 +812,7 @@ namespace coral
       // Add the conversion to the base class.
       initializer.to_base =
         [](std::shared_ptr<entt::meta_any> a) -> std::shared_ptr<entt::meta_any> {
-        const auto ptr = a->try_cast<std::shared_ptr<T>>();
+        const auto ptr = a->template try_cast<std::shared_ptr<T>>();
         if (ptr == nullptr)
           throw std::runtime_error("Could not cast derived type to base.");
         return std::make_shared<entt::meta_any>(
@@ -1136,7 +1161,8 @@ namespace coral
           if (!(coral::hash(new_object) == j.at("base").get<std::string>()))
             throw std::runtime_error(
               "New object does not have the right hash.");
-          const auto cast_ptr = new_object->try_cast<std::shared_ptr<type>>();
+          const auto cast_ptr =
+            new_object->template try_cast<std::shared_ptr<type>>();
           if (cast_ptr == nullptr)
             throw std::runtime_error("Could not cast converted object to " +
                                      std::string(boost::core::type_name<type>()));
@@ -1144,7 +1170,8 @@ namespace coral
         }
       else
         {
-          const auto cast_ptr = object->try_cast<std::shared_ptr<type>>();
+          const auto cast_ptr =
+            object->template try_cast<std::shared_ptr<type>>();
           if (cast_ptr == nullptr)
             throw std::runtime_error(
               "Could not cast object to shared pointer of type " +
@@ -1303,7 +1330,7 @@ namespace coral
             throw std::runtime_error(
               "New object does not have the right hash.");
           const auto cast_ptr =
-            new_object->try_cast<std::shared_ptr<const type>>();
+            new_object->template try_cast<std::shared_ptr<const type>>();
           if (cast_ptr == nullptr)
             throw std::runtime_error("Could not cast converted object to " +
                                      std::string(boost::core::type_name<type>()));
@@ -1311,7 +1338,8 @@ namespace coral
         }
       else
         {
-          const auto cast_ptr = object->try_cast<std::shared_ptr<const type>>();
+          const auto cast_ptr =
+            object->template try_cast<std::shared_ptr<const type>>();
           if (cast_ptr == nullptr)
             throw std::runtime_error(
               "Could not cast object to shared pointer of type " +
