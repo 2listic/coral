@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <vector>
 
 #if defined(__GNUC__)
@@ -46,6 +47,13 @@ namespace coral
 
   namespace detail
   {
+    inline auto
+    type_aliases() -> std::unordered_map<std::size_t, std::string> &
+    {
+      static std::unordered_map<std::size_t, std::string> aliases;
+      return aliases;
+    }
+
     inline const char *
     store_identifier(const std::string &id)
     {
@@ -87,28 +95,16 @@ namespace coral
       std::remove_cv_t<std::remove_reference_t<T>>;
     using stored_type = std::shared_ptr<underlying_type>;
 
-    const auto resolved_underlying = entt::resolve<underlying_type>();
-    std::string base_identifier;
+    const auto alias_it =
+      detail::type_aliases().find(typeid(underlying_type).hash_code());
 
-    if constexpr (std::is_same_v<underlying_type, std::basic_string<char>>)
-      {
-        base_identifier = "std::string";
-      }
-    else if constexpr (std::is_same_v<underlying_type, std::basic_ofstream<char>>)
-      {
-        base_identifier = "std::ofstream";
-      }
-    else if constexpr (std::is_same_v<underlying_type, std::basic_ostream<char>>)
-      {
-        base_identifier = "std::ostream";
-      }
-    else
-      {
-        base_identifier =
-          resolved_underlying ?
-            detail::type_identifier(resolved_underlying) :
-            std::string(entt::type_id<underlying_type>().name());
-      }
+    const auto resolved_underlying = entt::resolve<underlying_type>();
+    std::string base_identifier =
+      (alias_it != detail::type_aliases().end()) ?
+        alias_it->second :
+        (resolved_underlying ?
+           detail::type_identifier(resolved_underlying) :
+           std::string(entt::type_id<underlying_type>().name()));
 
     const char *base_name_ptr = detail::store_identifier(base_identifier);
     const auto  type_id       = entt::hashed_string{base_name_ptr}.value();
@@ -135,6 +131,17 @@ namespace coral
     -> std::string
   {
     return detail::type_identifier(obj.type(), suffix);
+  }
+
+  /**
+   * Allow callers to override the canonical name used for a given type.
+   */
+  template <typename T>
+  inline void
+  set_type_alias(const std::string &alias)
+  {
+    using underlying_type = std::remove_cv_t<std::remove_reference_t<T>>;
+    detail::type_aliases()[typeid(underlying_type).hash_code()] = alias;
   }
 
   inline auto

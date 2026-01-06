@@ -44,6 +44,11 @@ namespace coral
   inline void
   register_non_dimensional_types()
   {
+    // Canonicalize some common standard-library types across compilers.
+    coral::set_type_alias<std::string>("std::string");
+    coral::set_type_alias<std::ostream>("std::ostream");
+    coral::set_type_alias<std::ofstream>("std::ofstream");
+
     NodeObject::register_elementary_type<std::string>();
     NodeObject::register_elementary_type<unsigned int>();
     NodeObject::register_elementary_type<int>();
