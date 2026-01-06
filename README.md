@@ -77,7 +77,7 @@ The core design principles of CORAL are:
 
 The `NodeObject` class is the central component of CORAL. Each NodeObject:
 
-- Wraps any C++ type using std::any and shared pointers
+- Wraps any C++ type using entt::meta_any and shared pointers
 - Maintains type information through a hash-based type system
 - Provides inputs and outputs for connecting to other nodes
 - Can execute computation through its operator() method
