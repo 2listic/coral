@@ -92,6 +92,14 @@ namespace coral
     if (suffix.empty())
       return base_identifier;
 
+    // For function/method types, prefer the supplied suffix (usually a name)
+    // over the full signature to keep identifiers readable and stable.
+    if (base_identifier.find('(') != std::string::npos)
+      {
+        detail::store_identifier(suffix);
+        return suffix;
+      }
+
     const auto identifier = base_identifier + suffix;
     detail::store_identifier(identifier);
     return identifier;
@@ -166,13 +174,13 @@ namespace coral
       {
         // If Arg is callable, hash the std::function type
         using FuncType = decltype(std::function{std::declval<Arg>()});
-        hash           = coral::hash<FuncType>();
+        hash           = coral::hash<FuncType>(method_name);
       }
     else
       {
-        hash = coral::hash<Arg>();
+        hash = coral::hash<Arg>(method_name);
       }
-    return std::make_shared<NodeObject>(hash + method_name);
+    return std::make_shared<NodeObject>(hash);
   }
 
   /**
