@@ -32,18 +32,6 @@ namespace coral
     // Get the registry from NodeObject
     json registry = NodeObject::get_registry();
 
-    // Create a map of type names to their correct hashes from the registry
-    std::map<std::string, std::string> type_to_hash;
-
-    for (const auto &[hash, info] : registry.items())
-      {
-        if (info.contains("type"))
-          {
-            std::string type_name   = info["type"];
-            type_to_hash[type_name] = hash;
-          }
-      }
-
     // Ensure the workflow structure exists
     if (!fixed_json.contains("workflow") ||
         !fixed_json["workflow"].contains("nodes"))
@@ -53,80 +41,65 @@ namespace coral
         return fixed_json; // Return original if format is invalid
       }
 
-    // Helper function to fix a type hash based on type name
-    auto fix_type_hash = [&registry,
-                          &type_to_hash](json              &obj,
-                                         const std::string &context) {
-      if (!obj.contains("type_hash") || !obj.contains("type"))
+    // Helper function to validate a type identifier against the registry
+    auto validate_type = [&registry](json &obj, const std::string &context) {
+      if (!obj.contains("type"))
         return;
 
-      std::string current_hash = obj["type_hash"];
-      std::string type_name    = obj["type"];
+      std::string current_type = obj["type"];
 
-      // Check if the current hash exists in the registry
-      if (!registry.contains(current_hash))
+      if (!registry.contains(current_type))
         {
-          // Hash not found in registry, try to find by type name
-          if (type_to_hash.find(type_name) != type_to_hash.end())
-            {
-              // Found a match by type name, update the hash
-              std::string correct_hash = type_to_hash[type_name];
-              std::cout << "Fixing hash in " << context << " for type '"
-                        << type_name << "': " << current_hash << " -> "
-                        << correct_hash << "\n";
-
-              obj["type_hash"] = correct_hash;
-            }
-          else
-            {
-              std::cerr
-                << "Warning: " << context << " of type '" << type_name
-                << "' has invalid hash and no matching type found in registry\n";
-            }
+          std::cerr << "Warning: " << context << " has unknown type id '"
+                    << current_type << "'\n";
         }
     };
 
     // Process each node in the network
     for (auto &[node_id, node] : fixed_json["workflow"]["nodes"].items())
       {
-        // Fix the node's own type hash
-        fix_type_hash(node, "node " + node_id);
+        // Validate the node's own type id
+        validate_type(node, "node " + node_id);
 
-        // Fix hashes in the arguments field if it exists
+        // Validate hashes in the arguments field if it exists
         if (node.contains("arguments") && node["arguments"].is_array())
           {
             for (size_t i = 0; i < node["arguments"].size(); ++i)
               {
                 json &arg = node["arguments"][i];
-                fix_type_hash(arg,
-                              "argument " + std::to_string(i) + " of node " +
-                                node_id);
+                validate_type(arg,
+                              "argument " + std::to_string(i) + " of node " + node_id);
               }
           }
 
-	if (node.contains("base") && node.contains("type_hash")) {
-	  std::string current_base_hash = node["base"];
-	  std::string current_type_hash = node["type_hash"];
+        if (node.contains("base") && node.contains("type"))
+          {
+            std::string current_base_hash = node["base"];
+            std::string current_type_hash = node["type"];
 
-	  if (!registry.contains(current_type_hash)) {
-	    std::cerr << "Fixing base hash " << current_base_hash
-		      << " found type hash " << current_type_hash
-		      << " which is not present in registry.\n";
-	  }
+            if (!registry.contains(current_type_hash))
+              {
+                std::cerr << "Base check: unknown type id " << current_type_hash
+                          << " while validating node " << node_id << "\n";
+                continue;
+              }
 
-	  if (registry[current_type_hash].contains("base")) {
-            std::cerr << "Fixing base hash " << current_base_hash
-		      << " found type hash " << current_type_hash
-		      << " which does not have base type.\n";
-	  }
+            if (!registry[current_type_hash].contains("base"))
+              {
+                std::cerr << "Base check: type " << current_type_hash
+                          << " has no base in registry but node provides one\n";
+                continue;
+              }
 
-	  std::string fixed_base_hash = registry[current_type_hash]["base"];
-	  std::cout << "Fixing type hashed " << current_type_hash
-		    << "base type hash " << current_base_hash
-		    << " -> " << fixed_base_hash << "\n";
-
-	  node["base"] = fixed_base_hash;
-	}
+            std::string fixed_base_hash = registry[current_type_hash]["base"];
+            if (fixed_base_hash != current_base_hash)
+              {
+                std::cout << "Fixing type " << current_type_hash
+                          << " base hash " << current_base_hash << " -> "
+                          << fixed_base_hash << "\n";
+                node["base"] = fixed_base_hash;
+              }
+          }
 
       }
 

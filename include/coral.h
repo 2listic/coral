@@ -255,6 +255,11 @@ namespace coral
   struct NodeObjectInitializer
   {
     /**
+     * Human-readable type name (not serialized).
+     */
+    std::string type_name;
+
+    /**
      * The type of the node.
      */
     NodeType node_type = NodeType::none;
@@ -507,8 +512,8 @@ namespace coral
         initializers[hash_str] = {};
 
       auto &initializer                        = initializers[hash_str];
-      initializer.json_serializer["type"]      = boost::core::type_name<T>();
-      initializer.json_serializer["type_hash"] = hash_str;
+      initializer.type_name                    = boost::core::type_name<T>();
+      initializer.json_serializer["type"]      = hash_str;
       initializer.json_serializer["arguments"] = json::array();
       initializer.json_serializer["inputs"]    = json::array();
       initializer.json_serializer["outputs"]   = json::array();
@@ -541,10 +546,7 @@ namespace coral
       for (unsigned int i = 0; i < args.size(); ++i)
         {
           initializer.json_serializer["arguments"][i]["name"] = arg_names[i];
-          initializer.json_serializer["arguments"][i]["type"] =
-            args[i]->type_name();
-          initializer.json_serializer["arguments"][i]["type_hash"] =
-            args[i]->hash();
+          initializer.json_serializer["arguments"][i]["type"] = args[i]->hash();
           initializer.json_serializer["arguments"][i]["connection_type"] =
             magic_enum::enum_name(arg_connection_types[i]);
           if ((arg_connection_types[i] & ConnectionType::input) !=
@@ -674,7 +676,7 @@ namespace coral
         [&initializer](std::vector<std::shared_ptr<NodeObject>>)
         -> std::shared_ptr<entt::meta_any> {
         std::cout << "empty_constructor: "
-                  << initializer.json_serializer["type"] << std::endl;
+                  << initializer.type_name << std::endl;
         return std::make_shared<entt::meta_any>(std::shared_ptr<T>());
       };
       return initializer;
@@ -697,10 +699,9 @@ namespace coral
       auto &base_initializer = register_abstract_type<B>();
 
       base_initializer.json_serializer["derived"].push_back(
-        initializer.json_serializer["type_hash"]);
+        initializer.json_serializer["type"]);
 
-      initializer.json_serializer["base"] =
-        base_initializer.json_serializer["type_hash"];
+      initializer.json_serializer["base"] = base_initializer.json_serializer["type"];
 
       // Register entt conversion shared_ptr<Derived> -> shared_ptr<Base>
       using stored_derived = std::shared_ptr<
@@ -749,7 +750,7 @@ namespace coral
         if (args.size() != sizeof...(Args))
           throw std::runtime_error("Wrong number of arguments.");
         auto tuple = cast_args<Args...>(args);
-        std::cout << "constructor: " << initializer.json_serializer["type"]
+        std::cout << "constructor: " << initializer.type_name
                   << std::endl;
         return std::apply(
           [](auto &&...unpackedArgs) {
@@ -773,10 +774,9 @@ namespace coral
       auto &base_initializer = register_abstract_type<B>();
 
       base_initializer.json_serializer["derived"].push_back(
-        initializer.json_serializer["type_hash"]);
+        initializer.json_serializer["type"]);
 
-      initializer.json_serializer["base"] =
-        base_initializer.json_serializer["type_hash"];
+      initializer.json_serializer["base"] = base_initializer.json_serializer["type"];
 
       // Register entt conversion shared_ptr<Derived> -> shared_ptr<Base>
       using stored_derived = std::shared_ptr<
@@ -855,13 +855,13 @@ namespace coral
           auto &initializer =
             register_json_header<ThisMethod, T &, Args...>(arg_names,
                                                            method_name);
-          initializer.json_serializer["node_type"]   = "void_method";
-          initializer.node_type                      = NodeType::void_method;
-          initializer.json_serializer["method_name"] = method_name;
+          initializer.json_serializer["node_type"] = "void_method";
+          initializer.node_type                    = NodeType::void_method;
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr, &initializer](std::vector<std::shared_ptr<NodeObject>> args)
+            [ptr, &initializer, method_name](
+              std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 1 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
@@ -869,8 +869,8 @@ namespace coral
             args.erase(args.begin()); // remove the first element
 
             auto tuple = cast_args<Args...>(args);
-            std::cout << initializer.json_serializer["method_name"] << ": "
-                      << initializer.json_serializer["type"] << std::endl;
+            std::cout << method_name << ": " << initializer.type_name
+                      << std::endl;
             std::apply(
               [&obj, ptr](auto &&...unpackedArgs) {
                 (obj.*ptr)(*unpackedArgs...);
@@ -885,13 +885,13 @@ namespace coral
           auto &initializer =
             register_json_header<ThisMethod, T &, ReturnType &, Args...>(
               arg_names, method_name);
-          initializer.json_serializer["node_type"]   = "method";
-          initializer.node_type                      = NodeType::method;
-          initializer.json_serializer["method_name"] = method_name;
+          initializer.json_serializer["node_type"] = "method";
+          initializer.node_type                    = NodeType::method;
 
           // Add to the initializer the emtpy executor.
           initializer.executor =
-            [ptr, &initializer](std::vector<std::shared_ptr<NodeObject>> args)
+            [ptr, &initializer, method_name](
+              std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 2 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
@@ -903,8 +903,8 @@ namespace coral
             std::vector<std::shared_ptr<NodeObject>> function_args(
               args.begin() + 2, args.end());
 
-            std::cout << initializer.json_serializer["method_name"] << ": "
-                      << initializer.json_serializer["type"] << std::endl;
+            std::cout << method_name << ": " << initializer.type_name
+                      << std::endl;
             auto tuple = cast_args<Args...>(function_args);
             ret        = std::apply(
               [&obj, ptr](auto &&...unpackedArgs) {
@@ -949,11 +949,11 @@ namespace coral
                                                                  method_name);
           initializer.json_serializer["node_type"] = "void_const_method";
           initializer.node_type = NodeType::void_const_method;
-          initializer.json_serializer["method_name"] = method_name;
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr, &initializer](std::vector<std::shared_ptr<NodeObject>> args)
+            [ptr, &initializer, method_name](
+              std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 1 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
@@ -961,8 +961,7 @@ namespace coral
             args.erase(args.begin()); // remove the first element
 
             auto tuple = cast_args<Args...>(args);
-            std::cout << "method: " << initializer.json_serializer["type"]
-                      << std::endl;
+            std::cout << "method: " << initializer.type_name << std::endl;
             std::apply(
               [&obj, ptr](auto &&...unpackedArgs) {
                 (obj.*ptr)(*unpackedArgs...);
@@ -977,13 +976,13 @@ namespace coral
           auto &initializer =
             register_json_header<ThisMethod, const T &, ReturnType &, Args...>(
               arg_names, method_name);
-          initializer.json_serializer["node_type"]   = "const_method";
-          initializer.node_type                      = NodeType::const_method;
-          initializer.json_serializer["method_name"] = method_name;
+          initializer.json_serializer["node_type"] = "const_method";
+          initializer.node_type                    = NodeType::const_method;
 
           // Add to the initializer the emtpy executor.
           initializer.executor =
-            [ptr, &initializer](std::vector<std::shared_ptr<NodeObject>> args)
+            [ptr, &initializer, method_name](
+              std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 2 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
@@ -991,8 +990,7 @@ namespace coral
             auto &ret = args[1]->get<ReturnType>();
             args.erase(args.begin()); // remove the class
             args.erase(args.begin()); // remove the return type
-            std::cout << "method: " << initializer.json_serializer["type"]
-                      << std::endl;
+            std::cout << "method: " << initializer.type_name << std::endl;
             auto tuple = cast_args<Args...>(args);
             ret        = std::apply(
               [&obj, ptr](auto &&...unpackedArgs) {
@@ -1039,20 +1037,20 @@ namespace coral
             throw std::runtime_error("Wrong number of arguments.");
           auto &initializer =
             register_json_header<ThisMethod, Args...>(arg_names, method_name);
-          initializer.json_serializer["node_type"]   = "void_function";
-          initializer.node_type                      = NodeType::void_function;
-          initializer.json_serializer["method_name"] = method_name;
+          initializer.json_serializer["node_type"] = "void_function";
+          initializer.node_type                    = NodeType::void_function;
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr, &initializer](std::vector<std::shared_ptr<NodeObject>> args)
+            [ptr, &initializer, method_name](
+              std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
 
             auto tuple = cast_args<Args...>(args);
-            std::cout << "void function: "
-                      << initializer.json_serializer["type"] << std::endl;
+            std::cout << "void function: " << method_name << " ["
+                      << initializer.type_name << "]" << std::endl;
             std::apply([ptr](auto &&...unpackedArgs) { ptr(*unpackedArgs...); },
                        tuple);
             return std::make_shared<entt::meta_any>(
@@ -1065,13 +1063,13 @@ namespace coral
           auto &initializer =
             register_json_header<ThisMethod, ReturnType &, Args...>(
               arg_names, method_name);
-          initializer.json_serializer["node_type"]   = "function";
-          initializer.node_type                      = NodeType::function;
-          initializer.json_serializer["method_name"] = method_name;
+          initializer.json_serializer["node_type"] = "function";
+          initializer.node_type                    = NodeType::function;
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr, &initializer](std::vector<std::shared_ptr<NodeObject>> args)
+            [ptr, &initializer, method_name](
+              std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 1 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
@@ -1079,8 +1077,8 @@ namespace coral
             args.erase(args.begin()); // remove the first element
 
             auto tuple = cast_args<Args...>(args);
-            std::cout << "non-void function: "
-                      << initializer.json_serializer["type"] << std::endl;
+            std::cout << "non-void function: " << method_name << " ["
+                      << initializer.type_name << "]" << std::endl;
             ret = std::apply(
               [ptr](auto &&...unpackedArgs) { return ptr(*unpackedArgs...); },
               tuple);
@@ -1346,12 +1344,12 @@ namespace coral
         {
           // Check that we store a compatible type first.
           // Check that coral::hash<T>() is contained in hash().
-          const auto my_hash   = hash();
-          const auto type_hash = coral::hash<T>();
-          if (my_hash.find(type_hash) != 0)
+          const auto my_hash  = hash();
+          const auto type_id  = coral::hash<T>();
+          if (my_hash.find(type_id) != 0)
             throw std::runtime_error(
               "Object type does not match. My hash is " + my_hash +
-              " and the object hash is " + type_hash +
+              " and the object hash is " + type_id +
               ". They should at least start with the same characters.");
           *this = NodeObject(data);
           return *this;
@@ -1386,8 +1384,7 @@ namespace coral
           // The object is initialized. Check if this is consistent with
           // the initializer, and return its hash.
           const auto object_hash = coral::hash(object);
-          const auto stored_hash =
-            std::string(initializer.json_serializer.at("type_hash"));
+          const auto stored_hash = std::string(initializer.json_serializer.at("type"));
           if (stored_hash.find(object_hash) != 0)
             throw std::runtime_error(
               "Object type does not match: we store " + stored_hash +
@@ -1397,14 +1394,14 @@ namespace coral
         }
       else
         {
-          return initializer.json_serializer.at("type_hash");
+          return initializer.json_serializer.at("type");
         }
     }
 
     std::string
     type_name() const
     {
-      return initializer.json_serializer.at("type");
+      return initializer.type_name;
     }
 
     NodeType
@@ -1512,9 +1509,9 @@ namespace coral
                     initializer.json_serializer["arguments"].size()) +
                   ".");
               arguments[output_indices[i]] = std::make_shared<NodeObject>(
-                initializer
-                  .json_serializer["arguments"][output_indices[i]]["type_hash"]
-                  .get<std::string>());
+                initializer.json_serializer["arguments"][output_indices[i]]
+                  ["type"]
+                    .get<std::string>());
             }
         }
     }
@@ -1536,7 +1533,7 @@ namespace coral
 
           const auto expected_hash =
             initializer
-              .json_serializer["arguments"][input_indices[i]]["type_hash"]
+              .json_serializer["arguments"][input_indices[i]]["type"]
               .get<std::string>();
           const auto input_hash = input_node->output(input_index)->hash();
 
@@ -1567,16 +1564,16 @@ namespace coral
           "Wrong number of outputs: " + std::to_string(outputs.size()) +
           " instead of " + std::to_string(output_indices.size()) + ".");
 
-      for (unsigned int i = 0; i < outputs.size(); ++i)
-        {
-          const auto &output_node  = outputs[i].first;
-          const auto &output_index = outputs[i].second;
+          for (unsigned int i = 0; i < outputs.size(); ++i)
+            {
+              const auto &output_node  = outputs[i].first;
+              const auto &output_index = outputs[i].second;
 
-          const auto expected_hash =
-            initializer
-              .json_serializer["arguments"][output_indices[i]]["type_hash"]
-              .get<std::string>();
-          const auto output_hash = arguments[output_indices[i]]->hash();
+              const auto expected_hash =
+                initializer
+                  .json_serializer["arguments"][output_indices[i]]["type"]
+                  .get<std::string>();
+              const auto output_hash = arguments[output_indices[i]]->hash();
 
           if (expected_hash != output_hash)
             throw std::runtime_error("The hash type of output " +
@@ -1604,15 +1601,15 @@ namespace coral
   inline void
   from_json(const json &j, NodeObjectPtr &obj)
   {
-    if (!j.contains("type_hash"))
+    if (!j.contains("type"))
       throw std::runtime_error(
-        "The json does not contain a type_hash entry. Bailing out.");
-    obj = make_node(j.at("type_hash").get<std::string>());
+        "The json does not contain a type entry. Bailing out.");
+    obj = make_node(j.at("type").get<std::string>());
     // Make sure the hash matches the expected value
-    if (j["type_hash"] != obj->hash())
+    if (j["type"] != obj->hash())
       throw std::runtime_error(
-        "The type_hash does not match the expected value: expected " +
-        j["type_hash"].dump() + ", got " + obj->hash());
+        "The type does not match the expected value: expected " +
+        j["type"].dump() + ", got " + obj->hash());
 
     if (j["node_type"] == "elementary_constructor" ||
         j["node_type"] == "empty_constructor")

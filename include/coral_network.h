@@ -216,7 +216,7 @@ namespace coral
         {
           int id = std::stoi(key); // Convert string key to int
 
-          // Prepare node data - ensure type_hash exists for proper
+          // Prepare node data - ensure type exists for proper
           // deserialization
           nlohmann::json node_data = value;
           try
