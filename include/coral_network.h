@@ -6,12 +6,12 @@
 #include <taskflow/taskflow.hpp>
 
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <map>
 #include <memory>
 #include <sstream>
-#include <filesystem>
 
 #include "coral.h"
 #include "taskflow/core/task.hpp"
@@ -86,6 +86,7 @@ namespace coral
   {
   private:
     std::map<unsigned int, std::shared_ptr<NodeObject>> nodes;
+    std::map<unsigned int, std::string>                 nodes_name;
     std::map<unsigned int, tf::Task>                    node_tasks;
 
     // Store connections by their ID
@@ -95,17 +96,22 @@ namespace coral
 
   public:
     void
-    add_node(unsigned int id, const std::shared_ptr<NodeObject> &node)
+    add_node(unsigned int                       id,
+             const std::shared_ptr<NodeObject> &node,
+             const std::string                 &node_name = "")
     {
-      nodes[id] = node;
+      nodes[id]      = node;
+      nodes_name[id] = node_name;
       node_tasks[id] =
         taskflow
-          .emplace([node, id]() {
-            std::cout << "Running node " << id << ": " << node->type_name()
-                      << std::endl;
+          .emplace([node, id, node_name]() {
+            std::cout << "Running node " << id << ": " << node_name
+                      << " (type = " << node->type_name() << ")" << std::endl;
             (*node)();
           })
-          .name("node_" + std::to_string(id) + ": " + node->type_name());
+          .name(node_name == "" ?
+                  "node_" + std::to_string(id) + ": " + node->type_name() :
+                  node_name);
     }
 
     unsigned int
@@ -219,9 +225,16 @@ namespace coral
           // Prepare node data - ensure type exists for proper
           // deserialization
           nlohmann::json node_data = value;
+          if (!node_data.contains("type"))
+            {
+              throw std::runtime_error(
+                "Node " + key +
+                " does not contain a 'type' field: " + node_data.dump(2));
+            }
+          std::string node_name = node_data.value("name", "");
           try
             {
-              add_node(id, node_data.get<NodeObjectPtr>());
+              add_node(id, node_data.get<NodeObjectPtr>(), node_name);
             }
           catch (const std::exception &e)
             {
