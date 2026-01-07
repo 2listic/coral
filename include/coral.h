@@ -492,9 +492,11 @@ namespace coral
     operator()() -> bool
     {
       bool is_ready = true;
-      for (const auto &arg : arguments)
+      for (size_t i = 0; i < arguments.size(); ++i)
         {
-          if (!arg->ready())
+          if ((connections[i] & ConnectionType::input) == ConnectionType::none)
+            continue;
+          if (!arguments[i]->ready())
             {
               is_ready = false;
               break;
@@ -919,15 +921,21 @@ namespace coral
               arg_names, method_name);
           initializer.json_serializer["node_type"] = "method";
           initializer.node_type                    = NodeType::method;
+          const bool output_is_elementary =
+            is_registered_elementary_type<ReturnType>();
+          if (output_is_elementary)
+            set_output_only(initializer, 1);
 
           // Add to the initializer the emtpy executor.
           initializer.executor =
-            [ptr, &initializer, method_name](
+            [ptr, &initializer, method_name, output_is_elementary](
               std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 2 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
             auto &obj = args[0]->get<T>();
+            if (output_is_elementary && !args[1]->ready())
+              (*args[1])();
             auto &ret = args[1]->get<ReturnType>();
 
             // Create a copy of args without the first two elements for function
@@ -1010,15 +1018,21 @@ namespace coral
               arg_names, method_name);
           initializer.json_serializer["node_type"] = "const_method";
           initializer.node_type                    = NodeType::const_method;
+          const bool output_is_elementary =
+            is_registered_elementary_type<ReturnType>();
+          if (output_is_elementary)
+            set_output_only(initializer, 1);
 
           // Add to the initializer the emtpy executor.
           initializer.executor =
-            [ptr, &initializer, method_name](
+            [ptr, &initializer, method_name, output_is_elementary](
               std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 2 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
             auto &obj = args[0]->get<T>();
+            if (output_is_elementary && !args[1]->ready())
+              (*args[1])();
             auto &ret = args[1]->get<ReturnType>();
             args.erase(args.begin()); // remove the class
             args.erase(args.begin()); // remove the return type
@@ -1097,14 +1111,20 @@ namespace coral
               arg_names, method_name);
           initializer.json_serializer["node_type"] = "function";
           initializer.node_type                    = NodeType::function;
+          const bool output_is_elementary =
+            is_registered_elementary_type<ReturnType>();
+          if (output_is_elementary)
+            set_output_only(initializer, 0);
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr, &initializer, method_name](
+            [ptr, &initializer, method_name, output_is_elementary](
               std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 1 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
+            if (output_is_elementary && !args[0]->ready())
+              (*args[0])();
             auto &ret = args[0]->get<ReturnType>();
             args.erase(args.begin()); // remove the first element
 
@@ -1500,6 +1520,45 @@ namespace coral
      * A list of all known types and their initializers.
      */
     static inline std::map<std::string, NodeObjectInitializer> initializers;
+
+    template <typename T>
+    static bool
+    is_registered_elementary_type()
+    {
+      using PlainType = std::remove_cv_t<std::remove_reference_t<T>>;
+      const auto hash_str = coral::hash<PlainType>();
+      const auto it       = initializers.find(hash_str);
+      return (it != initializers.end()) &&
+             (it->second.node_type == NodeType::elementary_constructor);
+    }
+
+    static void
+    set_output_only(NodeObjectInitializer &initializer, unsigned int arg_index)
+    {
+      auto &args = initializer.json_serializer["arguments"];
+      if (arg_index >= args.size())
+        return;
+
+      args[arg_index]["connection_type"] =
+        magic_enum::enum_name(ConnectionType::output);
+
+      auto &inputs = initializer.json_serializer["inputs"];
+      for (auto it = inputs.begin(); it != inputs.end();)
+        {
+          if (it->get<unsigned int>() == arg_index)
+            it = inputs.erase(it);
+          else
+            ++it;
+        }
+
+      auto &outputs = initializer.json_serializer["outputs"];
+      for (const auto &entry : outputs)
+        {
+          if (entry.get<int>() == static_cast<int>(arg_index))
+            return;
+        }
+      outputs.push_back(static_cast<int>(arg_index));
+    }
 
     /**
      * Input indices mapping to arguments.
