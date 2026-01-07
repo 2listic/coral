@@ -128,10 +128,9 @@ namespace coral
       nodes_name[id] = name;
       if (node_tasks.find(id) != node_tasks.end())
         {
-          node_tasks[id].name(name == "" ?
-                                "node_" + std::to_string(id) + ": " +
-                                  nodes[id]->type_name() :
-                                name);
+          node_tasks[id].name(name == "" ? "node_" + std::to_string(id) + ": " +
+                                             nodes[id]->type_name() :
+                                           name);
         }
     }
 
@@ -166,7 +165,8 @@ namespace coral
           const auto &target_node = nodes.at(conn.target_id);
           auto        output_ptr  = source_node->output(conn.source_output);
 
-          if (output_ptr == source_node && get_node_name(conn.source_id).empty())
+          if (output_ptr == source_node &&
+              get_node_name(conn.source_id).empty())
             {
               const auto &info = target_node->get_info();
               if (info.contains("inputs") && info.contains("arguments") &&
@@ -177,10 +177,9 @@ namespace coral
                   if (arg_index < info["arguments"].size() &&
                       info["arguments"][arg_index].contains("name"))
                     {
-                      set_node_name(
-                        conn.source_id,
-                        info["arguments"][arg_index]["name"]
-                          .get<std::string>());
+                      set_node_name(conn.source_id,
+                                    info["arguments"][arg_index]["name"]
+                                      .get<std::string>());
                     }
                 }
             }
@@ -251,7 +250,7 @@ namespace coral
     json
     get_registry() const
     {
-      std::set<std::string>                           active_types;
+      std::set<std::string>                              active_types;
       std::map<std::string, std::shared_ptr<NodeObject>> type_to_node;
       for (const auto &[id, node] : nodes)
         {
@@ -261,8 +260,8 @@ namespace coral
             type_to_node[node->hash()] = node;
         }
 
-      json           full = NodeObject::get_registry();
-      json           result = json::object();
+      json full   = NodeObject::get_registry();
+      json result = json::object();
       for (const auto &type_hash : active_types)
         {
           if (full.contains(type_hash))
@@ -474,7 +473,23 @@ namespace coral
       nlohmann::json json;
 
       for (const auto &[node_id, node] : nodes)
-        json[std::to_string(node_id)] = node;
+        {
+          nlohmann::json node_json;
+          node_json["type"] = node->hash();
+
+          const auto name = get_node_name(node_id);
+          if (!name.empty())
+            node_json["name"] = name;
+
+          if (node->node_type() == NodeType::elementary_constructor)
+            {
+              const auto &info = node->get_info();
+              if (info.contains("value"))
+                node_json["value"] = info["value"];
+            }
+
+          json[std::to_string(node_id)] = node_json;
+        }
 
       return json;
     }

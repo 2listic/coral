@@ -571,9 +571,27 @@ TEST(NetworkTest, NetworkSerialization)
   for (const auto &[id, node] : serialized_json["workflow"]["nodes"].items())
     {
       ASSERT_TRUE(node.contains("type")) << "Node must have type field";
-      ASSERT_TRUE(node.contains("node_type"))
-        << "Node must have node_type field";
-      ASSERT_TRUE(node.contains("outputs")) << "Node must have outputs field";
+      EXPECT_FALSE(node.contains("node_type"))
+        << "Node should not include node_type in serialized form";
+      EXPECT_FALSE(node.contains("outputs"))
+        << "Node should not include outputs in serialized form";
+      EXPECT_FALSE(node.contains("arguments"))
+        << "Node should not include arguments in serialized form";
+      EXPECT_FALSE(node.contains("inputs"))
+        << "Node should not include inputs in serialized form";
+
+      const auto node_ptr = network.get_node(std::stoi(id));
+      ASSERT_NE(node_ptr, nullptr);
+      if (node_ptr->node_type() == coral::NodeType::elementary_constructor)
+        {
+          EXPECT_TRUE(node.contains("value"))
+            << "Elementary nodes should carry a value";
+        }
+      else
+        {
+          EXPECT_FALSE(node.contains("value"))
+            << "Non-elementary nodes should not carry a value";
+        }
     }
 
   // Verify edge structure

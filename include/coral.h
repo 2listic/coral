@@ -1646,19 +1646,35 @@ namespace coral
         "The type does not match the expected value: expected " +
         j["type"].dump() + ", got " + obj->hash());
 
-    if (j["node_type"] == "elementary_constructor" ||
-        j["node_type"] == "empty_constructor")
+    const auto &reg = obj->get_info();
+
+    // If the input JSON contains fields that also exist in the registry
+    // description, they must match exactly (except for "value", which is
+    // allowed to differ when provided).
+    for (const auto &[key, val] : j.items())
+      {
+        if (key == "value")
+          continue;
+        if (reg.contains(key) && reg.at(key) != val)
+          throw std::runtime_error(
+            "The json object field '" + key +
+            "' does not match the registered value: expected " +
+            reg.at(key).dump() + ", got " + val.dump());
+      }
+
+    const auto node_type = reg.value("node_type", "");
+
+    if (node_type == "elementary_constructor" ||
+        node_type == "empty_constructor")
       (*obj)();
     if (j.contains("value"))
       {
         obj->parse_string(j.at("value").get<std::string>());
-      }
-    auto j2 = obj->get_info();
-    if (!utils::is_json_subset_of(j2, j))
-      {
-        throw std::runtime_error(
-          "The json object does not match the expected value: expected " +
-          j.dump(2) + ", got " + j2.dump(2) + ".");
+        if (obj->ready())
+          {
+            // Refresh serialized value to match the parsed object.
+            (void)obj->get_info();
+          }
       }
   }
 
