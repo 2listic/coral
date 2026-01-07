@@ -122,6 +122,26 @@ namespace coral
       return id;
     }
 
+    void
+    set_node_name(unsigned int id, const std::string &name)
+    {
+      nodes_name[id] = name;
+      if (node_tasks.find(id) != node_tasks.end())
+        {
+          node_tasks[id].name(name == "" ?
+                                "node_" + std::to_string(id) + ": " +
+                                  nodes[id]->type_name() :
+                                name);
+        }
+    }
+
+    std::string
+    get_node_name(unsigned int id) const
+    {
+      auto it = nodes_name.find(id);
+      return it == nodes_name.end() ? std::string() : it->second;
+    }
+
 
     void
     add_connection(unsigned int id, const Connection &conn)
@@ -138,6 +158,36 @@ namespace coral
         {
           throw std::runtime_error("Target node not found: " +
                                    std::to_string(conn.target_id));
+        }
+
+      try
+        {
+          const auto &source_node = nodes.at(conn.source_id);
+          const auto &target_node = nodes.at(conn.target_id);
+          auto        output_ptr  = source_node->output(conn.source_output);
+
+          if (output_ptr == source_node && get_node_name(conn.source_id).empty())
+            {
+              const auto &info = target_node->get_info();
+              if (info.contains("inputs") && info.contains("arguments") &&
+                  conn.target_input < info["inputs"].size())
+                {
+                  const auto arg_index =
+                    info["inputs"][conn.target_input].get<unsigned int>();
+                  if (arg_index < info["arguments"].size() &&
+                      info["arguments"][arg_index].contains("name"))
+                    {
+                      set_node_name(
+                        conn.source_id,
+                        info["arguments"][arg_index]["name"]
+                          .get<std::string>());
+                    }
+                }
+            }
+        }
+      catch (const std::exception &)
+        {
+          // Naming is best-effort; ignore errors
         }
 
       // Set the input of the target node to the output of the source node
@@ -193,6 +243,39 @@ namespace coral
     n_nodes() const
     {
       return nodes.size();
+    }
+
+    /**
+     * Return a registry containing only the node types used in this network.
+     */
+    json
+    get_registry() const
+    {
+      std::set<std::string>                           active_types;
+      std::map<std::string, std::shared_ptr<NodeObject>> type_to_node;
+      for (const auto &[id, node] : nodes)
+        {
+          (void)id;
+          active_types.insert(node->hash());
+          if (type_to_node.find(node->hash()) == type_to_node.end())
+            type_to_node[node->hash()] = node;
+        }
+
+      json           full = NodeObject::get_registry();
+      json           result = json::object();
+      for (const auto &type_hash : active_types)
+        {
+          if (full.contains(type_hash))
+            result[type_hash] = full[type_hash];
+          else if (auto it = type_to_node.find(type_hash);
+                   it != type_to_node.end())
+            {
+              // Fallback to the node's own info if not present in the global
+              // registry
+              result[type_hash] = it->second->get_info();
+            }
+        }
+      return result;
     }
 
     void

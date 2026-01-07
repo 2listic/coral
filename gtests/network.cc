@@ -1,10 +1,10 @@
 
+#include <fstream>
+
 #include "coral.h"
 #include "coral_network.h"
 #include "gtest/gtest.h"
 #include "register_types.h"
-
-#include <fstream>
 
 using namespace dealii;
 using namespace coral;
@@ -111,6 +111,49 @@ TEST(NetworkTest, BareMinimal)
 
   ASSERT_EQ(n3->get<double>(), 3.0)
     << "The output node should have the value 3.0";
+}
+
+TEST(NetworkTest, ExplicitNodeNaming)
+{
+  coral::NodeObject::register_elementary_type<double>();
+  auto sum = [](const double &a, const double &b) { return a + b; };
+  coral::NodeObject::register_function(sum,
+                                       {"sum", "output", "input1", "input2"});
+
+  coral::Network network;
+  auto           id1 = network.add_node(coral::make_node(1.0));
+  auto           id2 = network.add_node(coral::make_node(2.0));
+  auto           id3 = network.add_node(coral::make_node(0.0));
+  auto           id4 = network.add_node(coral::make_method_node("sum", sum));
+
+  network.set_node_name(id3, "output");
+  network.set_node_name(id4, "adder");
+
+  network.set_node_name(id1, "one");
+  network.set_node_name(id2, "two");
+
+  ASSERT_EQ(network.get_node_name(id1), "one");
+  ASSERT_EQ(network.get_node_name(id2), "two");
+  ASSERT_EQ(network.get_node_name(id3), "output");
+  ASSERT_EQ(network.get_node_name(id4), "adder");
+}
+
+TEST(NetworkTest, AutoNameOnConnection)
+{
+  coral::NodeObject::register_elementary_type<double>();
+  auto pass = [](const double &a) { return a; };
+  coral::NodeObject::register_function(pass, {"pass", "out", "in"});
+
+  coral::Network network;
+  auto           src_id = network.add_node(coral::make_node(0.0)); // unnamed
+  auto target_id = network.add_node(coral::make_method_node("pass", pass));
+
+  // Connect unnamed source self-output (-1) to target input 1 (argument "in").
+  network.add_connection(src_id, target_id, 0, 1);
+  json network_json = network;
+  std::cout << network_json.dump(2) << std::endl;
+
+  ASSERT_EQ(network.get_node_name(src_id), "in");
 }
 
 TEST(NetworkTest, ParseAndDump)
@@ -343,12 +386,14 @@ TEST(NetworkTest, VerifyNodeTypes)
   ASSERT_EQ(node8->type_name(), "dealii::GridOut");
 
   // Check node 9: Shoud be of type
-  // void(dealii::GridOut::*)(dealii::Triangulation<2, 2> const&, std::ostream&) const
-  // with nodeType "void_const_method"
+  // void(dealii::GridOut::*)(dealii::Triangulation<2, 2> const&, std::ostream&)
+  // const with nodeType "void_const_method"
   auto node9 = network.get_node(9);
   ASSERT_TRUE(node9 != nullptr);
   ASSERT_EQ(node9->node_type(), coral::NodeType::void_const_method);
-  ASSERT_EQ(node9->type_name(), "void(dealii::GridOut::*)(dealii::Triangulation<2, 2> const&, std::ostream&) const");
+  ASSERT_EQ(
+    node9->type_name(),
+    "void(dealii::GridOut::*)(dealii::Triangulation<2, 2> const&, std::ostream&) const");
 }
 
 // Test for connections map tracking
@@ -483,7 +528,8 @@ TEST(NetworkTest, ConnectionsMapTracking)
   EXPECT_EQ(node8_conns[0].target_id, 9);
 
   auto node9_conns = network.get_node_connections(9);
-  EXPECT_TRUE(node9_conns.empty()) << "Node 9 should not have connection objects";
+  EXPECT_TRUE(node9_conns.empty())
+    << "Node 9 should not have connection objects";
 }
 
 // Test for network serialization
@@ -559,6 +605,24 @@ TEST(NetworkTest, NetworkSerialization)
   EXPECT_TRUE(new_network.is_connected(5, 9));
   EXPECT_TRUE(new_network.is_connected(7, 9));
   EXPECT_TRUE(new_network.is_connected(8, 9));
+}
+
+TEST(NetworkTest, RegistrySubset)
+{
+  coral::NodeObject::register_elementary_type<int>();
+  coral::NodeObject::register_elementary_type<double>();
+
+  coral::Network network;
+  network.add_node(coral::make_node(1));
+  network.add_node(coral::make_node(2.5));
+
+  auto registry = network.get_registry();
+  ASSERT_EQ(registry.size(), 2);
+  EXPECT_TRUE(registry.contains(coral::hash<int>()));
+  EXPECT_TRUE(registry.contains(coral::hash<double>()));
+  EXPECT_EQ(registry[coral::hash<int>()]["node_type"], "elementary_constructor");
+  EXPECT_EQ(registry[coral::hash<double>()]["node_type"],
+            "elementary_constructor");
 }
 
 TEST(NetworkTest, ParseAndExecuteNetwork)
