@@ -34,68 +34,58 @@ TEST(NetworkTest, BareMinimal)
 
   auto id1 = network.add_node(coral::make_node(1.0));
   auto id2 = network.add_node(coral::make_node(2.0));
-  auto id3 = network.add_node(coral::make_node(0.0));
   auto id4 = network.add_node(coral::make_method_node("sum", sum));
 
-  // Output integer
-  network.add_connection(id3, id4, 0, 0);
-
   // Int 1
-  network.add_connection(id1, id4, 0, 1);
+  network.add_connection(id1, id4, 0, 0);
 
   // Int 2
-  network.add_connection(id2, id4, 0, 2);
+  network.add_connection(id2, id4, 0, 1);
 
   // Verify all the connections
-  ASSERT_EQ(network.n_connections(), 3);
-  ASSERT_EQ(network.n_nodes(), 4);
+  ASSERT_EQ(network.n_connections(), 2);
+  ASSERT_EQ(network.n_nodes(), 3);
 
   const auto n1 = network.get_node(id1);
   const auto n2 = network.get_node(id2);
-  const auto n3 = network.get_node(id3);
   const auto n4 = network.get_node(id4);
+  const auto n4_output = n4->output(0);
 
   ASSERT_EQ(n1->get<double>(), 1.0);
   ASSERT_EQ(n2->get<double>(), 2.0);
-  ASSERT_EQ(n3->get<double>(), 0.0);
 
   json n1_json = n1;
   json n2_json = n2;
-  json n3_json = n3;
+  json n4_output_json = n4_output;
 
   // Verify the JSON "value" of the nodes
   ASSERT_EQ(n1_json["value"], "1.0");
   ASSERT_EQ(n2_json["value"], "2.0");
-  ASSERT_EQ(n3_json["value"], "0.0");
+  ASSERT_EQ(n4_output_json["value"], "0.0");
 
   // Make sure that executing the nodes does not change their values
   (*n1)();
   (*n2)();
-  (*n3)();
 
   // Verify the values after execution
   ASSERT_EQ(n1->get<double>(), 1.0);
   ASSERT_EQ(n2->get<double>(), 2.0);
-  ASSERT_EQ(n3->get<double>(), 0.0);
 
   // Make sure the self outputs are ok
   ASSERT_EQ(n1->output(0), n1);
   ASSERT_EQ(n2->output(0), n2);
-  ASSERT_EQ(n3->output(0), n3);
 
   // Make sure that asking for the value from the output node gives the
   // expected result
   ASSERT_EQ(n1->output(0)->get<double>(), 1.0);
   ASSERT_EQ(n2->output(0)->get<double>(), 2.0);
-  ASSERT_EQ(n3->output(0)->get<double>(), 0.0);
 
   // Check the connections of the sum node
-  ASSERT_EQ(n4->input(0), n3->output(0));
-  ASSERT_EQ(n4->input(1), n1->output(0));
-  ASSERT_EQ(n4->input(2), n2->output(0));
+  ASSERT_EQ(n4->input(0), n1->output(0));
+  ASSERT_EQ(n4->input(1), n2->output(0));
 
-  // Verify the pass through node
-  ASSERT_EQ(n4->output(0), n4->input(0));
+  // Verify the output node is not a pass-through input
+  ASSERT_NE(n4->output(0), n4->input(0));
 
   network.output_dot("bare_minimal.dot");
   // dump the json of the network
@@ -109,7 +99,7 @@ TEST(NetworkTest, BareMinimal)
   network.run();
   std::cout << "Network executed." << std::endl;
 
-  ASSERT_EQ(n3->get<double>(), 3.0)
+  ASSERT_EQ(n4->output(0)->get<double>(), 3.0)
     << "The output node should have the value 3.0";
 }
 
@@ -148,8 +138,8 @@ TEST(NetworkTest, AutoNameOnConnection)
   auto           src_id = network.add_node(coral::make_node(0.0)); // unnamed
   auto target_id = network.add_node(coral::make_method_node("pass", pass));
 
-  // Connect unnamed source self-output (-1) to target input 1 (argument "in").
-  network.add_connection(src_id, target_id, 0, 1);
+  // Connect unnamed source self-output (-1) to target input 0 (argument "in").
+  network.add_connection(src_id, target_id, 0, 0);
   json network_json = network;
   std::cout << network_json.dump(2) << std::endl;
 
