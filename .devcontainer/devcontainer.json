@@ -12,6 +12,14 @@
 		"ms-vscode.cmake-tools",
 		"ms-vscode.cpptools",
 		"shan.code-settings-sync",
+		"openai.chatgpt",
+		"matepek.vscode-catch2-test-adapter"
 	],
+	"settings": {
+		"cmake.buildDirectory": "${workspaceFolder}/build-container",
+		"cmake.configureArgs": [
+			"-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE"
+		]
+	},
 	"remoteUser": "dealii"
 }
