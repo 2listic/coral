@@ -216,10 +216,11 @@ namespace boost
       inline std::string
       tn_to_string(std::size_t n)
       {
-        char buffer[32];
-        const auto written =
-          std::snprintf(buffer, sizeof(buffer), "%lu",
-                        static_cast<unsigned long>(n));
+        char       buffer[32];
+        const auto written = std::snprintf(buffer,
+                                           sizeof(buffer),
+                                           "%lu",
+                                           static_cast<unsigned long>(n));
 
         if (written < 0)
           return {};
