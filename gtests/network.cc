@@ -46,16 +46,16 @@ TEST(NetworkTest, BareMinimal)
   ASSERT_EQ(network.n_connections(), 2);
   ASSERT_EQ(network.n_nodes(), 3);
 
-  const auto n1 = network.get_node(id1);
-  const auto n2 = network.get_node(id2);
-  const auto n4 = network.get_node(id4);
+  const auto n1        = network.get_node(id1);
+  const auto n2        = network.get_node(id2);
+  const auto n4        = network.get_node(id4);
   const auto n4_output = n4->output(0);
 
   ASSERT_EQ(n1->get<double>(), 1.0);
   ASSERT_EQ(n2->get<double>(), 2.0);
 
-  json n1_json = n1;
-  json n2_json = n2;
+  json n1_json        = n1;
+  json n2_json        = n2;
   json n4_output_json = n4_output;
 
   // Verify the JSON "value" of the nodes
@@ -628,7 +628,8 @@ TEST(NetworkTest, RegistrySubset)
   ASSERT_EQ(registry.size(), 2);
   EXPECT_TRUE(registry.contains(coral::hash<int>()));
   EXPECT_TRUE(registry.contains(coral::hash<double>()));
-  EXPECT_EQ(registry[coral::hash<int>()]["node_type"], "elementary_constructor");
+  EXPECT_EQ(registry[coral::hash<int>()]["node_type"],
+            "elementary_constructor");
   EXPECT_EQ(registry[coral::hash<double>()]["node_type"],
             "elementary_constructor");
 }
