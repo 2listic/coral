@@ -155,7 +155,7 @@ TEST(NodeObject, FunctionRegistration)
 
 TEST(NodeObject, LambdaNoInputIntOutput)
 {
-  auto guide = [answer]() -> int { return 42; };
+  auto guide = []() -> int { return 42; };
 
   NodeObject::register_elementary_type<int>();
   NodeObject::register_function(guide,
