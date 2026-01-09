@@ -413,13 +413,7 @@ namespace coral
       const auto &args   = initializer.json_serializer["arguments"];
       const auto  n_args = args.size();
       arguments.resize(n_args);
-      connections.resize(n_args);
-      for (unsigned int i = 0; i < n_args; ++i)
-        {
-          connections[i] = magic_enum::enum_cast<ConnectionType>(
-                             args[i].at("connection_type").get<std::string>())
-                             .value();
-        }
+      initialize_connections();
       initialize_inputs();
       initialize_outputs();
     }
@@ -528,6 +522,8 @@ namespace coral
           " instead of " +
           std::to_string(initializer.json_serializer["arguments"].size()) +
           ".");
+      if (connections.size() != initializer.json_serializer["arguments"].size())
+        initialize_connections();
       this->arguments = args;
     }
 
@@ -1607,6 +1603,21 @@ namespace coral
                   ["type"]
                     .get<std::string>());
             }
+        }
+    }
+
+    void
+    initialize_connections()
+    {
+      const auto &json_args = initializer.json_serializer["arguments"];
+      connections.resize(json_args.size(), ConnectionType::none);
+      for (unsigned int i = 0; i < json_args.size(); ++i)
+        {
+          if (json_args[i].contains("connection_type"))
+            connections[i] = magic_enum::enum_cast<ConnectionType>(
+                               json_args[i].at("connection_type")
+                                 .get<std::string>())
+                               .value();
         }
     }
 
