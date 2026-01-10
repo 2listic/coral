@@ -54,9 +54,9 @@ TEST(Network, BareMinimal)
   ASSERT_EQ(n1->get<double>(), 1.0);
   ASSERT_EQ(n2->get<double>(), 2.0);
 
-  json n1_json        = n1;
-  json n2_json        = n2;
-  json n3_json        = n4->output(0);
+  json n1_json = n1;
+  json n2_json = n2;
+  json n3_json = n4->get_output(0);
 
   // Verify the JSON "value" of the nodes
   ASSERT_EQ(n1_json["value"], "1.0");
@@ -72,20 +72,20 @@ TEST(Network, BareMinimal)
   ASSERT_EQ(n2->get<double>(), 2.0);
 
   // Make sure the self outputs are ok
-  ASSERT_EQ(n1->output(0), n1);
-  ASSERT_EQ(n2->output(0), n2);
+  ASSERT_EQ(n1->get_output(0), n1);
+  ASSERT_EQ(n2->get_output(0), n2);
 
   // Make sure that asking for the value from the output node gives the
   // expected result
-  ASSERT_EQ(n1->output(0)->get<double>(), 1.0);
-  ASSERT_EQ(n2->output(0)->get<double>(), 2.0);
+  ASSERT_EQ(n1->get_output(0)->get<double>(), 1.0);
+  ASSERT_EQ(n2->get_output(0)->get<double>(), 2.0);
 
   // Check the connections of the sum node
-  ASSERT_EQ(n4->input(0), n1->output(0));
-  ASSERT_EQ(n4->input(1), n2->output(0));
+  ASSERT_EQ(n4->get_input(0), n1->get_output(0));
+  ASSERT_EQ(n4->get_input(1), n2->get_output(0));
 
   // Verify the output node is not a pass-through input
-  ASSERT_NE(n4->output(0), n4->input(0));
+  ASSERT_NE(n4->get_output(0), n4->get_input(0));
 
   network.output_dot("bare_minimal.dot");
   // dump the json of the network
@@ -99,7 +99,7 @@ TEST(Network, BareMinimal)
   network.run();
   std::cout << "Network executed." << std::endl;
 
-  ASSERT_EQ(n4->output(0)->get<double>(), 3.0)
+  ASSERT_EQ(n4->get_output(0)->get<double>(), 3.0)
     << "The output node should have the value 3.0";
 }
 
@@ -529,11 +529,11 @@ TEST(Network, RegistrySubset)
 
   auto registry = network.get_registry();
   ASSERT_EQ(registry.size(), 2);
-  EXPECT_TRUE(registry.contains(coral::hash<int>()));
-  EXPECT_TRUE(registry.contains(coral::hash<double>()));
-  EXPECT_EQ(registry[coral::hash<int>()]["node_type"],
+  EXPECT_TRUE(registry.contains(coral::detail::hash<int>()));
+  EXPECT_TRUE(registry.contains(coral::detail::hash<double>()));
+  EXPECT_EQ(registry[coral::detail::hash<int>()]["node_type"],
             "elementary_constructor");
-  EXPECT_EQ(registry[coral::hash<double>()]["node_type"],
+  EXPECT_EQ(registry[coral::detail::hash<double>()]["node_type"],
             "elementary_constructor");
 }
 

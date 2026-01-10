@@ -16,6 +16,7 @@
 #include "coral.h"
 #include "coral_network.h"
 
+/** \cond INTERNAL */
 namespace nlohmann
 {
   template <int dim>
@@ -29,6 +30,8 @@ namespace nlohmann
         j.push_back(p[i]);
     }
 
+
+
     static void
     from_json(const json &j, dealii::Point<dim> &p)
     {
@@ -38,6 +41,8 @@ namespace nlohmann
   };
 } // namespace nlohmann
 
+/** \endcond */
+
 namespace coral
 {
   using namespace dealii;
@@ -46,9 +51,9 @@ namespace coral
   register_non_dimensional_types()
   {
     // Canonicalize some common standard-library types across compilers.
-    coral::set_type_alias<std::string>("std::string");
-    coral::set_type_alias<std::ostream>("std::ostream");
-    coral::set_type_alias<std::ofstream>("std::ofstream");
+    coral::detail::set_type_alias<std::string>("std::string");
+    coral::detail::set_type_alias<std::ostream>("std::ostream");
+    coral::detail::set_type_alias<std::ofstream>("std::ofstream");
 
     NodeObject::register_elementary_type<std::string>();
     NodeObject::register_elementary_type<unsigned int>();
@@ -67,6 +72,8 @@ namespace coral
       "file_name");
     Network::register_node();
   }
+
+
 
   template <int dim, int spacedim>
   inline void
@@ -102,6 +109,8 @@ namespace coral
        "triangulation",
        "output_file"});
   }
+
+
 
   inline void
   register_all_types()

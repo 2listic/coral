@@ -133,6 +133,218 @@ The library provides comprehensive JSON serialization for:
 
 This enables workflows to be saved, loaded, and shared between applications.
 
+## API Reference (User-Facing)
+
+This section lists the public entry points, grouped by class and purpose.
+Each entry is shown with a short example. All symbols are referenced with
+their fully qualified names for Doxygen navigation.
+
+### NodeObject (core node API)
+
+#### Construction and helpers
+
+- \ref coral::make_node (value or type)
+- \ref coral::make_method_node (function or method)
+
+```cpp
+coral::NodeObjectPtr a = coral::make_node(42);
+coral::NodeObjectPtr b = coral::make_node<std::string>();
+auto sum = [](int x, int y) { return x + y; };
+coral::NodeObjectPtr f = coral::make_method_node("sum_ints", sum);
+```
+
+#### Execution and value access
+
+- \ref coral::NodeObject::operator()()
+- \ref coral::NodeObject::ready
+- \ref coral::NodeObject::get
+- \ref coral::NodeObject::get_shared
+- \ref coral::NodeObject::parse_string
+- \ref coral::NodeObject::to_string
+
+```cpp
+coral::NodeObject::register_elementary_type<int>();
+coral::NodeObjectPtr n = coral::make_node(7);
+if (n->ready())
+  (void)(*n)();
+int value = n->get<int>();
+auto ptr = n->get_shared<int>();
+std::string as_text = n->to_string();
+n->parse_string("8");
+```
+
+#### Wiring: inputs and outputs
+
+- \ref coral::NodeObject::get_input
+- \ref coral::NodeObject::get_output
+- \ref coral::NodeObject::bind_input
+- \ref coral::NodeObject::bind_output
+- \ref coral::NodeObject::bind_inputs
+- \ref coral::connect
+
+```cpp
+auto add = [](int a, int b) { return a + b; };
+coral::NodeObject::register_function(add, {"add_ints", "sum", "a", "b"});
+coral::NodeObjectPtr add_node = coral::make_method_node("add_ints", add);
+coral::NodeObjectPtr a = coral::make_node(1);
+coral::NodeObjectPtr b = coral::make_node(2);
+coral::NodeObjectPtr out = coral::make_node(0);
+add_node->bind_input(0, a);
+add_node->bind_input(1, b);
+add_node->bind_output(0, out);
+coral::connect(add_node, {{a, 0}, {b, 0}});
+```
+
+#### Binding state and topology queries
+
+- \ref coral::NodeObject::is_bindable
+- \ref coral::NodeObject::is_input_bound
+- \ref coral::NodeObject::is_output_bound
+- \ref coral::NodeObject::is_passthrough_input
+- \ref coral::NodeObject::has_unbound_inputs
+- \ref coral::NodeObject::has_unbound_outputs
+
+```cpp
+bool can_bind = add_node->is_bindable(0);
+bool in0 = add_node->is_input_bound(0);
+bool out0 = add_node->is_output_bound(0);
+bool pass0 = add_node->is_passthrough_input(0);
+bool any_in = add_node->has_unbound_inputs();
+bool any_out = add_node->has_unbound_outputs();
+```
+
+#### Introspection and serialization
+
+- \ref coral::NodeObject::hash
+- \ref coral::NodeObject::type_name
+- \ref coral::NodeObject::node_type
+- \ref coral::NodeObject::n_arguments
+- \ref coral::NodeObject::n_inputs
+- \ref coral::NodeObject::n_outputs
+- \ref coral::NodeObject::get_info
+- \ref coral::NodeObject::get_registry
+
+```cpp
+std::string h = n->hash();
+std::string tn = n->type_name();
+coral::NodeType kind = n->node_type();
+size_t args = n->n_arguments();
+size_t ins = n->n_inputs();
+size_t outs = n->n_outputs();
+nlohmann::json info = n->get_info();
+nlohmann::json registry = coral::NodeObject::get_registry();
+```
+
+#### Type registration
+
+- \ref coral::NodeObject::register_elementary_type
+- \ref coral::NodeObject::register_type
+- \ref coral::NodeObject::register_abstract_type
+- \ref coral::NodeObject::register_derived_type
+- \ref coral::NodeObject::register_function
+- \ref coral::NodeObject::register_method
+- \ref coral::NodeObject::register_json_header
+
+```cpp
+coral::NodeObject::register_elementary_type<int>();
+coral::NodeObject::register_type<dealii::Triangulation<2>>();
+struct Base {};
+struct Derived : Base {};
+struct Example
+{
+  void set_value(int) {}
+};
+coral::NodeObject::register_abstract_type<Base>();
+coral::NodeObject::register_derived_type<Base, Derived>();
+auto fn = [](int x) { return x + 1; };
+coral::NodeObject::register_function(fn, {"inc_int", "out", "in"});
+coral::NodeObject::register_method(&Example::set_value,
+                                   {"set_value", "obj", "value"});
+coral::NodeObject::register_json_header<int>("custom_int");
+```
+
+### Network (graph API)
+
+#### Construction, mutation, execution
+
+- \ref coral::Network::add_node
+- \ref coral::Network::add_connection
+- \ref coral::Network::remove_nodes_and_connections
+- \ref coral::Network::run
+- \ref coral::Network::clear_network
+
+```cpp
+coral::Network net;
+auto id_a = net.add_node(coral::make_node(1.0), "a");
+auto id_b = net.add_node(coral::make_node(2.0), "b");
+auto id_sum = net.add_node(coral::make_method_node("sum_ints", sum), "sum");
+net.add_connection(id_a, id_sum, 0, 0);
+net.add_connection(id_b, id_sum, 0, 1);
+net.run();
+```
+
+#### Inputs/outputs and inspection
+
+- \ref coral::Network::get_inputs
+- \ref coral::Network::get_outputs
+- \ref coral::Network::get_input
+- \ref coral::Network::get_output
+- \ref coral::Network::get_node
+- \ref coral::Network::get_node_name
+- \ref coral::Network::set_node_name
+- \ref coral::Network::n_nodes
+- \ref coral::Network::n_connections
+- \ref coral::Network::size
+- \ref coral::Network::is_connected
+- \ref coral::Network::get_connected_nodes
+- \ref coral::Network::get_node_connections
+- \ref coral::Network::get_registry
+
+```cpp
+auto inputs = net.get_inputs();
+auto outputs = net.get_outputs();
+auto out0 = net.get_output(0);
+auto node = net.get_node(id_sum);
+net.set_node_name(id_sum, "sum");
+bool linked = net.is_connected(id_a, id_sum);
+auto targets = net.get_connected_nodes(id_a);
+auto conns = net.get_node_connections(id_a);
+nlohmann::json reg = net.get_registry();
+```
+
+#### Serialization and debug helpers
+
+- \ref coral::Network::from_json
+- \ref coral::Network::to_json
+- \ref coral::Network::output_dot
+
+```cpp
+nlohmann::json serialized = net.to_json();
+coral::Network copy;
+copy.from_json(serialized);
+net.output_dot("network.dot");
+```
+
+#### Network node registration
+
+- \ref coral::Network::register_node
+
+```cpp
+coral::Network::register_node();
+```
+
+### Register* helpers (type bundles)
+
+- \ref coral::register_non_dimensional_types
+- \ref coral::register_dimensional_types
+- \ref coral::register_all_types
+
+```cpp
+coral::register_non_dimensional_types();
+coral::register_dimensional_types<2, 2>();
+coral::register_all_types();
+```
+
 ## Example Usage
 
 A typical workflow using CORAL involves:
@@ -150,13 +362,13 @@ A typical workflow using CORAL involves:
 
 The program `dealii_backend.g` has two subcommands:
 
-* `register [register_path]`: simply register all types and dump them to
+- `register [register_path]`: simply register all types and dump them to
 `register_path`, a json file which defaults to `node_types.json`.
-* `run [OPTIONS] input_json`: register all types and run the graph described
+- `run [OPTIONS] input_json`: register all types and run the graph described
 in the json file `input_json`. The options are:
-    * `--register [register_path]`: dump the types to `register_path`, which
+  - `--register [register_path]`: dump the types to `register_path`, which
     defaults to `nodes_type.json`;
-    * `--graph [graph_path]`: dump the dot file of the network to `graph_path`,
+  - `--graph [graph_path]`: dump the dot file of the network to `graph_path`,
     which defaults to `network.dot`.
 
 Of course `-h` or `--help` to get a usage guide.

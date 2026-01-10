@@ -3,14 +3,11 @@
 
 #include <nlohmann/json.hpp> // JSON library
 
-#include <filesystem>
-#include <fstream>
 #include <functional>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <set>
-#include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -24,8 +21,8 @@
 #if defined(__GNUC__)
 #  pragma GCC diagnostic pop
 #endif
-#include "magic_enum/magic_enum_all.hpp" // Reintroduced Magic Enum library
-#include "type_name.h"                   // Single boost file
+#include "magic_enum/magic_enum_all.hpp"
+#include "type_name.h"
 #include "utils.h"
 
 /**
@@ -44,13 +41,21 @@ namespace coral
 
   using NodeObjectPtr = std::shared_ptr<NodeObject>;
 
-  template <typename... Args>
-  inline std::tuple<
-    std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
-  cast_args(const std::vector<std::shared_ptr<NodeObject>> &args);
-
   namespace detail
   {
+    template <typename... Args>
+    inline std::tuple<
+      std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
+    cast_args(const std::vector<std::shared_ptr<NodeObject>> &args);
+
+    std::shared_ptr<entt::meta_any> &
+    meta_any_ref(NodeObject &node);
+
+    const std::shared_ptr<entt::meta_any> &
+    meta_any_ref(const NodeObject &node);
+
+    // Thread-safety: registration/aliasing is not thread-safe; do this
+    // single-threaded before concurrent use.
     inline auto
     type_aliases() -> std::unordered_map<std::size_t, std::string> &
     {
@@ -58,12 +63,16 @@ namespace coral
       return aliases;
     }
 
+    // Thread-safety: identifiers are stored in a shared static set without
+    // synchronization.
     inline const char *
     store_identifier(const std::string &id)
     {
       static std::set<std::string> identifiers;
       return identifiers.insert(id).first->c_str();
     }
+
+
 
     inline auto
     type_identifier(const entt::meta_type &type, const std::string &suffix = "")
@@ -79,91 +88,125 @@ namespace coral
       return base + suffix;
     }
 
+
+
     template <typename Base, typename Derived>
     std::shared_ptr<Base>
     shared_ptr_to_base(const std::shared_ptr<Derived> &ptr)
     {
       return std::static_pointer_cast<Base>(ptr);
     }
+
+    /** \cond INTERNAL */
+    // Utility to detect if Arg is callable (can be wrapped by std::function).
+    template <typename Arg, typename = void>
+    struct is_callable : std::false_type
+    {};
+
+    template <typename Arg>
+    struct is_callable<
+      Arg,
+      std::void_t<decltype(std::function{std::declval<Arg>()})>>
+      : std::true_type
+    {};
+
+    /** \endcond */
   } // namespace detail
 
-  /**
-   * Provide a string that can be used as a hash for a type.
-   */
-  template <typename T>
-  inline auto
-  hash(const std::string &suffix = "") -> std::string
+  namespace detail
   {
-    using underlying_type = std::remove_cv_t<std::remove_reference_t<T>>;
-    using stored_type     = std::shared_ptr<underlying_type>;
+    /** \cond INTERNAL */
+    /**
+     * Provide a string that can be used as a hash for a type.
+     */
+    template <typename T>
+    inline auto
+    hash(const std::string &suffix = "") -> std::string
+    {
+      using underlying_type = std::remove_cv_t<std::remove_reference_t<T>>;
+      using stored_type     = std::shared_ptr<underlying_type>;
 
-    const auto alias_it =
-      detail::type_aliases().find(typeid(underlying_type).hash_code());
+      const auto alias_it =
+        type_aliases().find(typeid(underlying_type).hash_code());
 
-    const auto  resolved_underlying = entt::resolve<underlying_type>();
-    std::string base_identifier =
-      (alias_it != detail::type_aliases().end()) ?
-        alias_it->second :
-        (resolved_underlying ?
-           detail::type_identifier(resolved_underlying) :
-           std::string(entt::type_id<underlying_type>().name()));
+      const auto  resolved_underlying = entt::resolve<underlying_type>();
+      std::string base_identifier =
+        (alias_it != type_aliases().end()) ?
+          alias_it->second :
+          (resolved_underlying ?
+             type_identifier(resolved_underlying) :
+             std::string(entt::type_id<underlying_type>().name()));
 
-    const char *base_name_ptr = detail::store_identifier(base_identifier);
-    const char *type_name_ptr = base_name_ptr;
-    if (!suffix.empty() && base_identifier.find('(') != std::string::npos)
-      type_name_ptr = detail::store_identifier(suffix);
-    const auto type_id = entt::hashed_string{type_name_ptr}.value();
-    entt::meta_factory<stored_type>().type(type_id, type_name_ptr);
+      const char *base_name_ptr = store_identifier(base_identifier);
+      const char *type_name_ptr = base_name_ptr;
+      if (!suffix.empty() && base_identifier.find('(') != std::string::npos)
+        type_name_ptr = store_identifier(suffix);
+      const auto type_id = entt::hashed_string{type_name_ptr}.value();
+      entt::meta_factory<stored_type>().type(type_id, type_name_ptr);
 
-    if (suffix.empty())
-      return base_identifier;
+      if (suffix.empty())
+        return base_identifier;
 
-    // For function/method types, prefer the supplied suffix (usually a name)
-    // over the full signature to keep identifiers readable and stable.
-    if (base_identifier.find('(') != std::string::npos)
-      {
-        detail::store_identifier(suffix);
-        return suffix;
-      }
+      // For function/method types, prefer the supplied suffix (usually a name)
+      // over the full signature to keep identifiers readable and stable.
+      if (base_identifier.find('(') != std::string::npos)
+        {
+          store_identifier(suffix);
+          return suffix;
+        }
 
-    const auto identifier = base_identifier + suffix;
-    detail::store_identifier(identifier);
-    return identifier;
-  }
+      const auto identifier = base_identifier + suffix;
+      store_identifier(identifier);
+      return identifier;
+    }
 
-  inline auto
-  hash(const entt::meta_any &obj, const std::string &suffix = "") -> std::string
-  {
-    return detail::type_identifier(obj.type(), suffix);
-  }
 
-  /**
-   * Allow callers to override the canonical name used for a given type.
-   */
-  template <typename T>
-  inline void
-  set_type_alias(const std::string &alias)
-  {
-    using underlying_type = std::remove_cv_t<std::remove_reference_t<T>>;
-    detail::type_aliases()[typeid(underlying_type).hash_code()] = alias;
-  }
 
-  inline auto
-  hash(const std::shared_ptr<entt::meta_any> &obj,
-       const std::string                     &suffix = "") -> std::string
-  {
-    return (obj && *obj) ? hash(*obj, suffix) : suffix;
-  }
+    inline auto
+    hash(const entt::meta_any &obj, const std::string &suffix = "")
+      -> std::string
+    {
+      return type_identifier(obj.type(), suffix);
+    }
 
-  /**
-   * Provide a string that can be used as a hash for a type.
-   */
-  template <typename T>
-  inline auto
-  hash(const T && /*unused*/, const std::string &suffix = "") -> std::string
-  {
-    return hash<std::remove_cv_t<std::remove_reference_t<T>>>(suffix);
-  }
+
+
+    /**
+     * Allow callers to override the canonical name used for a given type.
+     */
+    template <typename T>
+    inline void
+    set_type_alias(const std::string &alias)
+    {
+      using underlying_type = std::remove_cv_t<std::remove_reference_t<T>>;
+      type_aliases()[typeid(underlying_type).hash_code()] = alias;
+    }
+
+
+
+    inline auto
+    hash(const std::shared_ptr<entt::meta_any> &obj,
+         const std::string                     &suffix = "") -> std::string
+    {
+      return (obj && *obj) ? hash(*obj, suffix) : suffix;
+    }
+
+
+
+    /**
+     * Provide a string that can be used as a hash for a value instance.
+     */
+    template <typename T>
+    inline auto
+    hash(const T && /*unused*/, const std::string &suffix = "") -> std::string
+    {
+      return hash<std::remove_cv_t<std::remove_reference_t<T>>>(suffix);
+    }
+
+
+
+    /** \endcond */
+  } // namespace detail
 
   /**
    * Construct a pointer to a NodeObject from the arguments of the constructor.
@@ -175,6 +218,8 @@ namespace coral
     return std::make_shared<NodeObject>(args...);
   }
 
+
+
   /**
    * Construct a pointer to a NodeObject from a type T.
    */
@@ -182,20 +227,9 @@ namespace coral
   inline auto
   make_node() -> NodeObjectPtr
   {
-    return std::make_shared<NodeObject>(hash<T>());
+    return std::make_shared<NodeObject>(detail::hash<T>());
   }
 
-
-  // Utility to detect if Arg is callable (can be wrapped by std::function)
-  template <typename Arg, typename = void>
-  struct is_callable : std::false_type
-  {};
-
-  template <typename Arg>
-  struct is_callable<Arg,
-                     std::void_t<decltype(std::function{std::declval<Arg>()})>>
-    : std::true_type
-  {};
 
 
   /**
@@ -206,15 +240,15 @@ namespace coral
   make_method_node(const std::string &method_name, Arg &&) -> NodeObjectPtr
   {
     std::string hash = "";
-    if constexpr (is_callable<Arg>::value)
+    if constexpr (detail::is_callable<Arg>::value)
       {
         // If Arg is callable, hash the std::function type
         using FuncType = decltype(std::function{std::declval<Arg>()});
-        hash           = coral::hash<FuncType>(method_name);
+        hash           = detail::hash<FuncType>(method_name);
       }
     else
       {
-        hash = coral::hash<Arg>(method_name);
+        hash = detail::hash<Arg>(method_name);
       }
     return std::make_shared<NodeObject>(hash);
   }
@@ -224,15 +258,30 @@ namespace coral
    */
   enum class ConnectionType : unsigned int
   {
-    //! Invalid connection type
+
+    /**
+     * Invalid connection type
+     */
     none = 0x000,
-    //! Input only
+
+    /**
+     * Input only
+     */
     input = 0x001,
-    //! Output only
+
+    /**
+     * Output only
+     */
     output = 0x002,
-    //! Input and output
+
+    /**
+     * Input and output
+     */
     pass_through = 0x003,
-    //! Special connection to indicate that this input/output is the node itself
+
+    /**
+     * Special connection to indicate that this input/output is the node itself
+     */
     self = 0x006,
   };
 
@@ -241,31 +290,149 @@ namespace coral
    */
   enum class NodeType : unsigned int
   {
-    //! The node has not been initialized with an object
+
+    /**
+     * The node has not been initialized with an object
+     */
     none,
-    //! This is an abstract type. It will never be instantiated
+
+    /**
+     * This is an abstract type. It will never be instantiated
+     */
     abstract,
-    //! Trivially copyable and constructible types
+
+    /**
+     * Trivially copyable and constructible types
+     */
     elementary_constructor,
-    //! Non trivially copyable, but trivially constructible types
+
+    /**
+     * Non trivially copyable, but trivially constructible types
+     */
     empty_constructor,
-    //! Non trivially copyable, and non trivially constructible types
+
+    /**
+     * Non trivially copyable, and non trivially constructible types
+     */
     constructor,
-    //! void member function
+
+    /**
+     * void member function
+     */
     void_method,
-    //! void const member function
+
+    /**
+     * void const member function
+     */
     void_const_method,
-    //! non void member function
+
+    /**
+     * non void member function
+     */
     method,
-    //! non void const member function
+
+    /**
+     * non void const member function
+     */
     const_method,
-    //! void function
+
+    /**
+     * void function
+     */
     void_function,
-    //! non void function
+
+    /**
+     * non void function
+     */
     function,
-    //! Network node
+
+    /**
+     * Network node
+     */
     network,
   };
+
+  namespace detail
+  {
+
+    /** \cond INTERNAL */
+    /**
+     * Store all std::functions needed to build a NodeObject.
+     *
+     * This type is internal and not part of the public API surface.
+     */
+    struct NodeObjectInitializer
+    {
+      /**
+       * Human-readable type name (not serialized).
+       */
+      std::string type_name;
+
+      /**
+       * Node type enum.
+       */
+      NodeType node_type = NodeType::none;
+
+      /**
+       * Execution function for this node.
+       */
+      std::function<std::shared_ptr<entt::meta_any>(
+        const NodeObjectPtr &,
+        std::vector<std::shared_ptr<NodeObject>> args)>
+        executor =
+          [](const NodeObjectPtr &, std::vector<std::shared_ptr<NodeObject>>)
+        -> std::shared_ptr<entt::meta_any> {
+        std::cout << "empty node. ";
+        return std::make_shared<entt::meta_any>();
+      };
+
+      /**
+       * Parse a string into the stored value.
+       */
+      std::function<std::shared_ptr<entt::meta_any>(std::string)> parse_string;
+
+      /**
+       * Convert the stored value to a string.
+       */
+      std::function<std::string(std::shared_ptr<entt::meta_any>)> to_string;
+
+      /**
+       * Convert to base class where needed.
+       */
+      std::function<std::shared_ptr<entt::meta_any>(
+        std::shared_ptr<entt::meta_any>)>
+        to_base = [](std::shared_ptr<entt::meta_any> a)
+        -> std::shared_ptr<entt::meta_any> { return a; };
+
+      /**
+       * JSON serialization template for this node type.
+       */
+      mutable json json_serializer;
+    };
+
+    /**
+     * Serialized node interface (arguments/inputs/outputs).
+     */
+    struct NodeInterface
+    {
+      /**
+       * Argument descriptions.
+       */
+      json arguments = json::array();
+
+      /**
+       * Input indices.
+       */
+      json inputs = json::array();
+
+      /**
+       * Output indices.
+       */
+      json outputs = json::array();
+    };
+
+    /** \endcond */
+  } // namespace detail
 
   /**
    * Distinguish input arguments of a function from being input or input/output
@@ -290,69 +457,13 @@ namespace coral
    * Store all std::functions that need to be used to build a NodeObject, and
    * the corresponding json serialization.
    */
-  struct NodeObjectInitializer
-  {
-    /**
-     * Human-readable type name (not serialized).
-     */
-    std::string type_name;
-
-    /**
-     * The type of the node.
-     */
-    NodeType node_type = NodeType::none;
-
-    /**
-     * The execution function associated with this node. This function will be
-     * called when the node is executed. The behavior of this function depends
-     * on the type of the node.
-     */
-    std::function<std::shared_ptr<entt::meta_any>(
-      std::vector<std::shared_ptr<NodeObject>> args)>
-      executor = [](std::vector<std::shared_ptr<NodeObject>>)
-      -> std::shared_ptr<entt::meta_any> {
-      std::cout << "empty node. ";
-      return std::make_shared<entt::meta_any>();
-    };
-
-    /**
-     * For supported types, we can also parse a string to a value.
-     */
-    std::function<std::shared_ptr<entt::meta_any>(std::string)> parse_string;
-
-    /**
-     * For supported types, we can also output the value as a string.
-     */
-    std::function<std::string(std::shared_ptr<entt::meta_any>)> to_string;
-
-    /**
-     * For derived types, we give a way to convert to the base class.
-     */
-    std::function<std::shared_ptr<entt::meta_any>(
-      std::shared_ptr<entt::meta_any>)>
-      to_base = [](std::shared_ptr<entt::meta_any> a)
-      -> std::shared_ptr<entt::meta_any> { return a; };
-
-    /**
-     * The json serialization of the object->
-     */
-    mutable json json_serializer;
-  };
-
-  struct NodeInterface
-  {
-    json arguments = json::array();
-    json inputs    = json::array();
-    json outputs   = json::array();
-  };
-
   auto
-  build_network_interface(const std::shared_ptr<Network> &net) -> NodeInterface;
-
+  build_network_interface(const std::shared_ptr<Network> &net)
+    -> detail::NodeInterface;
 
   /**
    * @class NodeObject
-   * @brief A class that represents an object of any type.
+   * A class that represents an object of any type.
    *
    * The object itself is stored in a std::shared_ptr<entt::meta_any>. To allow
    * for serialization and to build non trivially constructible classes, the
@@ -362,84 +473,54 @@ namespace coral
    * The object is built only when calling the operator() function. This allows
    * you to connect arguments to this object, in case the building of the object
    * requires other objects.
+   *
+   * @code
+   * coral::NodeObject::register_elementary_type<int>();
+   * coral::NodeObjectPtr value = coral::make_node(3);
+   * if (value->ready())
+   *   (void)(*value)();
+   * int v = value->get<int>();
+   * @endcode
    */
   class NodeObject : public std::enable_shared_from_this<NodeObject>
   {
   public:
     friend class Network;
+    friend std::shared_ptr<entt::meta_any> &
+    detail::meta_any_ref(NodeObject &);
+    friend const std::shared_ptr<entt::meta_any> &
+    detail::meta_any_ref(const NodeObject &);
     NodeObject() = default;
 
     /**
      * Construct a new object from trivially constructible and copyable types.
      */
     template <typename T>
-    NodeObject(const T &data)
-      : NodeObject(std::make_shared<T>(data))
-    {}
+    NodeObject(const T &data);
 
     /**
      * Construct NodeObject from a std::shared_ptr<entt::meta_any>. The
      * std::shared_ptr<entt::meta_any> is supposed to contain a shared pointer
      * to a registered type.
      */
-    NodeObject(const std::shared_ptr<entt::meta_any> &data)
-      : NodeObject(coral::hash(data))
-    {}
+    NodeObject(const std::shared_ptr<entt::meta_any> &data);
 
     /**
      * Construct a new object from a shared pointer to a type.
      */
     template <typename T>
-    NodeObject(std::shared_ptr<T> data)
-    {
-      object        = std::make_shared<entt::meta_any>(data);
-      auto hash_str = coral::hash<T>();
-      try
-        {
-          initializer = initializers.at(hash_str);
-        }
-      catch (const std::out_of_range &e)
-        {
-          throw std::runtime_error(
-            "Type " + std::string(typeid(T).name()) +
-            " is not registered. Before using it, you should call "
-            "one of the NodeObject::register_*<" +
-            std::string(typeid(T).name()) + ">(...) functions.");
-        }
-      initialize_arguments();
-      initialize_inputs();
-      initialize_outputs();
-      setup_network_if_needed();
-    }
+    NodeObject(std::shared_ptr<T> data);
 
     /**
      * Try to construct a new object from a hash string. If the hash is not
      * found, we store the actual string.
      */
-    NodeObject(const std::string &hash_str)
-    {
-      try
-        {
-          initializer = initializers.at(hash_str);
-        }
-      catch (const std::out_of_range &e)
-        {
-          // If we did not find the hash, this is actually an std::string
-          // object->
-          *this = NodeObject(std::make_shared<std::string>(hash_str));
-        }
-      initialize_arguments();
-      initialize_inputs();
-      initialize_outputs();
-      setup_network_if_needed();
-    }
+    NodeObject(const std::string &hash_str);
 
     /**
      * Build a NodeObject from a hash string.
      */
-    NodeObject(const char *hash_str)
-      : NodeObject(std::string(hash_str))
-    {}
+    NodeObject(const char *hash_str);
 
     /**
      * Return the registry of all types known to this class. If you try to
@@ -447,86 +528,28 @@ namespace coral
      * thrown.
      */
     static auto
-    get_registry() -> json
-    {
-      json registry;
-      for (const auto &[hash_str, initializer] : NodeObject::initializers)
-        {
-          registry[hash_str] = initializer.json_serializer;
-        }
-      return registry;
-    }
+    get_registry() -> json;
 
     static auto
-    is_network_type(const std::string &hash_str) -> bool
-    {
-      return !network_type_hash.empty() && hash_str == network_type_hash;
-    }
-
-    using NetworkExecutor = std::function<std::shared_ptr<
-      entt::meta_any>(NodeObject &, std::vector<std::shared_ptr<NodeObject>>)>;
+    is_network_type(const std::string &hash_str) -> bool;
 
     static auto
     build_network_interface(const std::shared_ptr<entt::meta_any> &value)
-      -> NodeInterface
-    {
-      if (!network_interface_builder)
-        return {};
-      return network_interface_builder(value);
-    }
-
-    static void
-    set_network_executor(NetworkExecutor executor)
-    {
-      network_executor = std::move(executor);
-    }
+      -> detail::NodeInterface;
 
     void
     override_interface(const json &arguments,
                        const json &inputs,
-                       const json &outputs)
-    {
-      initializer.json_serializer["arguments"] = arguments;
-      initializer.json_serializer["inputs"]    = inputs;
-      initializer.json_serializer["outputs"]   = outputs;
-      initialize_arguments();
-      initialize_inputs();
-      initialize_outputs();
-    }
+                       const json &outputs);
 
     auto
-    ready() const -> bool
-    {
-      return object && (*object);
-    }
+    ready() const -> bool;
 
     void
-    parse_string(const std::string &value_str)
-    {
-      if (initializer.parse_string)
-        object = initializer.parse_string(value_str);
-      else
-        {
-          throw std::runtime_error(
-            "No parse_string function is available for this type.");
-        }
-    }
+    parse_string(const std::string &value_str);
 
     auto
-    to_string() const -> std::string
-    {
-      if (initializer.to_string)
-        {
-          if (!ready())
-            throw std::runtime_error("Object is not ready for conversion to "
-                                     "string. Please call operator() first.");
-          return initializer.to_string(object);
-        }
-      else
-        {
-          throw std::runtime_error("Unsupported type for JSON conversion");
-        }
-    }
+    to_string() const -> std::string;
 
     /**
      * Run the executor function of the object->
@@ -536,63 +559,13 @@ namespace coral
      * if it failed when running or if some of the arguments were not ready.)
      */
     auto
-    operator()() -> bool
-    {
-      std::vector<size_t> not_ready_arguments;
-      for (size_t i = 0; i < arguments.size(); ++i)
-        {
-          if ((arguments_types[i] & ConnectionType::input) ==
-              ConnectionType::none)
-            continue;
-          if (!arguments[i]->ready())
-            {
-              not_ready_arguments.push_back(i);
-            }
-        }
-      if (!not_ready_arguments.empty())
-        {
-          std::string error_msg = "Arguments are not ready. You can only call "
-                                  "this function after all arguments are ready. "
-                                  "Not ready argument indices: ";
-          for (size_t i = 0; i < not_ready_arguments.size(); ++i)
-            {
-              error_msg += std::to_string(not_ready_arguments[i]);
-              if (i < not_ready_arguments.size() - 1)
-                error_msg += ", ";
-            }
-          throw std::runtime_error(error_msg);
-        }
-
-      if (initializer.node_type == NodeType::elementary_constructor &&
-          initializer.to_string && object && *object)
-        initializer.json_serializer["value"] = initializer.to_string(object);
-
-      object = initializer.executor(arguments);
-      // Check if we have to copy back the original value
-      if (initializer.json_serializer.contains("value") &&
-          initializer.parse_string)
-        object = initializer.parse_string(
-          initializer.json_serializer["value"].template get<std::string>());
-      return object.operator bool();
-    }
+    operator()() -> bool;
 
     /**
      * Set the arguments of the node executor.
      */
     void
-    set_arguments(const std::vector<std::shared_ptr<NodeObject>> &args)
-    {
-      if (args.size() != initializer.json_serializer["arguments"].size())
-        throw std::runtime_error(
-          "Wrong number of arguments: " + std::to_string(args.size()) +
-          " instead of " +
-          std::to_string(initializer.json_serializer["arguments"].size()) +
-          ".");
-      if (arguments_types.size() !=
-          initializer.json_serializer["arguments"].size())
-        initialize_arguments();
-      this->arguments = args;
-    }
+    set_arguments(const std::vector<std::shared_ptr<NodeObject>> &args);
 
     /**
      * Register a new type in the json registry. This method does not add
@@ -601,21 +574,7 @@ namespace coral
     template <typename T>
     static auto
     register_json_header(const std::string &suffix = "")
-      -> NodeObjectInitializer &
-    {
-      auto hash_str = coral::hash<T>(suffix);
-      if (initializers.find(hash_str) != initializers.end())
-        // Reset the initializer
-        initializers[hash_str] = {};
-
-      auto &initializer                        = initializers[hash_str];
-      initializer.type_name                    = boost::core::type_name<T>();
-      initializer.json_serializer["type"]      = hash_str;
-      initializer.json_serializer["arguments"] = json::array();
-      initializer.json_serializer["inputs"]    = json::array();
-      initializer.json_serializer["outputs"]   = json::array();
-      return initializer;
-    }
+      -> detail::NodeObjectInitializer &;
 
     /**
      * Register a new type in the json registry, for types that require
@@ -625,36 +584,15 @@ namespace coral
     static auto
     register_json_header(const std::vector<std::string> &arg_names,
                          const std::string              &suffix = "")
-      -> NodeObjectInitializer &
-    {
-      auto &initializer = register_json_header<T>(suffix);
+      -> detail::NodeObjectInitializer &;
 
-      // Now take care of the arguments.
-      std::vector<std::shared_ptr<NodeObject>> args = {std::make_shared<
-        NodeObject>(
-        std::shared_ptr<std::remove_cv_t<std::remove_reference_t<Args>>>())...};
-
-      std::vector<ConnectionType> arg_connection_types = {
-        connection_type<Args>()...};
-
-      if (args.size() != arg_names.size())
-        throw std::runtime_error("Wrong number of arguments.");
-
-      for (unsigned int i = 0; i < args.size(); ++i)
-        {
-          initializer.json_serializer["arguments"][i]["name"] = arg_names[i];
-          initializer.json_serializer["arguments"][i]["type"] = args[i]->hash();
-          initializer.json_serializer["arguments"][i]["connection_type"] =
-            magic_enum::enum_name(arg_connection_types[i]);
-          if ((arg_connection_types[i] & ConnectionType::input) !=
-              ConnectionType::none)
-            initializer.json_serializer["inputs"].push_back(i);
-          if ((arg_connection_types[i] & ConnectionType::output) !=
-              ConnectionType::none)
-            initializer.json_serializer["outputs"].push_back(i);
-        }
-      return initializer;
-    }
+    /**
+     * Register a non-trivially constructible type T with constructor arguments.
+     */
+    template <typename T, typename... Args>
+    static auto
+    register_type(const std::vector<std::string> &arg_names)
+      -> detail::NodeObjectInitializer &;
 
     /**
      * Register an elementary type. This is a type that does not require any
@@ -664,7 +602,7 @@ namespace coral
      */
     template <typename T>
     static auto
-    register_elementary_type() -> NodeObjectInitializer &
+    register_elementary_type() -> detail::NodeObjectInitializer &
     {
       auto &initializer                        = register_json_header<T>();
       initializer.json_serializer["node_type"] = "elementary_constructor";
@@ -702,7 +640,8 @@ namespace coral
 
       // Add to the initializer the emtpy executor.
       initializer.executor =
-        [](const std::vector<std::shared_ptr<NodeObject>> &args)
+        [](const NodeObjectPtr &,
+           const std::vector<std::shared_ptr<NodeObject>> &args)
         -> std::shared_ptr<entt::meta_any> {
         if (args.size() != 0)
           throw std::runtime_error("Wrong number of arguments.");
@@ -738,7 +677,7 @@ namespace coral
      */
     template <typename T>
     static auto
-    register_type() -> NodeObjectInitializer &
+    register_type() -> detail::NodeObjectInitializer &
     {
       auto &initializer                        = register_json_header<T>();
       initializer.json_serializer["node_type"] = "empty_constructor";
@@ -747,7 +686,8 @@ namespace coral
 
       // Add to the initializer the emtpy executor.
       initializer.executor =
-        [](const std::vector<std::shared_ptr<NodeObject>> &args)
+        [](const NodeObjectPtr &,
+           const std::vector<std::shared_ptr<NodeObject>> &args)
         -> std::shared_ptr<entt::meta_any> {
         if (args.size() != 0)
           throw std::runtime_error("Wrong number of arguments.");
@@ -762,7 +702,7 @@ namespace coral
      */
     template <typename T>
     static auto
-    register_abstract_type() -> NodeObjectInitializer &
+    register_abstract_type() -> detail::NodeObjectInitializer &
     {
       auto &initializer                        = register_json_header<T>();
       initializer.json_serializer["node_type"] = "abstract";
@@ -770,7 +710,8 @@ namespace coral
 
       // Add to the initializer the emtpy executor.
       initializer.executor =
-        [&initializer](std::vector<std::shared_ptr<NodeObject>>)
+        [&initializer](const NodeObjectPtr &,
+                       std::vector<std::shared_ptr<NodeObject>>)
         -> std::shared_ptr<entt::meta_any> {
         std::cout << "empty_constructor: " << initializer.type_name
                   << std::endl;
@@ -780,109 +721,26 @@ namespace coral
     }
 
     /**
-     * Register a trivially constructible type T, derived from type B.
-     *
-     * If a function requires a base class, and you want to pass a derived
-     * class, you can register the derived class with this function. This will
-     * allow the function to accept the derived class as an argument.
+     * Register a non-trivially constructible type T derived from type B.
      */
     template <typename B, typename T>
     static auto
-    register_derived_type() -> NodeObjectInitializer &
+    register_derived_type() -> detail::NodeObjectInitializer &
     {
       auto &initializer = register_type<T>();
       initializer.json_serializer["outputs"].push_back(-1);
 
       auto &base_initializer = register_abstract_type<B>();
-
       base_initializer.json_serializer["derived"].push_back(
         initializer.json_serializer["type"]);
-
       initializer.json_serializer["base"] =
         base_initializer.json_serializer["type"];
 
-      // Register entt conversion shared_ptr<Derived> -> shared_ptr<Base>
       using stored_derived =
         std::shared_ptr<std::remove_cv_t<std::remove_reference_t<T>>>;
       entt::meta_factory<stored_derived>()
         .template conv<&detail::shared_ptr_to_base<B, T>>();
 
-      // Add the conversion to the base class.
-      initializer.to_base = [](std::shared_ptr<entt::meta_any> a)
-        -> std::shared_ptr<entt::meta_any> {
-        std::cout << "Cast to derived class " << boost::core::type_name<T>()
-                  << "\n";
-        const auto ptr = a->template try_cast<std::shared_ptr<T>>();
-        if (ptr == nullptr)
-          throw std::runtime_error("Could not cast derived type to base.");
-        std::cout << "Cast to base class " << boost::core::type_name<B>()
-                  << "\n";
-        auto ptrB = std::static_pointer_cast<B>(*ptr);
-        std::cout << "Return meta_any of base class"
-                  << "\n";
-        return std::make_shared<entt::meta_any>(ptrB);
-      };
-      return initializer;
-    }
-
-    /**
-     * Register a non-trivially constructible type. This is a type that does
-     * require arguments to be constructed, and that it is not trivially
-     * copyable. This is the case for example of dealii::FE_Q<2>(), that
-     * requires the degree of the finite element to be instantiated.
-     */
-    template <typename T, typename... Args>
-    static auto
-    register_type(const std::vector<std::string> &arg_names)
-      -> NodeObjectInitializer &
-    {
-      auto &initializer = register_json_header<T, Args...>(arg_names);
-      initializer.json_serializer["node_type"] = "constructor";
-      initializer.node_type                    = NodeType::constructor;
-      initializer.json_serializer["outputs"].push_back(-1);
-
-      // And the executor.
-      initializer.executor =
-        [&initializer](std::vector<std::shared_ptr<NodeObject>> args)
-        -> std::shared_ptr<entt::meta_any> {
-        if (args.size() != sizeof...(Args))
-          throw std::runtime_error("Wrong number of arguments.");
-        auto tuple = cast_args<Args...>(args);
-        std::cout << "constructor: " << initializer.type_name << std::endl;
-        return std::apply(
-          [](auto &&...unpackedArgs) {
-            return std::make_shared<entt::meta_any>(
-              std::make_shared<T>(*unpackedArgs...));
-          },
-          tuple);
-      };
-      return initializer;
-    }
-
-    /**
-     * Register a non-trivially constructible type T derived from type B.
-     */
-    template <typename B, typename T, typename... Args>
-    static auto
-    register_derived_type(const std::vector<std::string> &arg_names)
-      -> NodeObjectInitializer &
-    {
-      auto &initializer      = register_type<T, Args...>(arg_names);
-      auto &base_initializer = register_abstract_type<B>();
-
-      base_initializer.json_serializer["derived"].push_back(
-        initializer.json_serializer["type"]);
-
-      initializer.json_serializer["base"] =
-        base_initializer.json_serializer["type"];
-
-      // Register entt conversion shared_ptr<Derived> -> shared_ptr<Base>
-      using stored_derived =
-        std::shared_ptr<std::remove_cv_t<std::remove_reference_t<T>>>;
-      entt::meta_factory<stored_derived>()
-        .template conv<&detail::shared_ptr_to_base<B, T>>();
-
-      // Add the conversion to the base class.
       initializer.to_base = [](std::shared_ptr<entt::meta_any> a)
         -> std::shared_ptr<entt::meta_any> {
         const auto ptr = a->template try_cast<std::shared_ptr<T>>();
@@ -891,15 +749,22 @@ namespace coral
         return std::make_shared<entt::meta_any>(
           std::static_pointer_cast<B>(*ptr));
       };
+
       return initializer;
     }
+
+    template <typename B, typename T, typename... Args>
+    static auto
+    register_derived_type(const std::vector<std::string> &arg_names)
+      -> detail::NodeObjectInitializer &;
 
     /**
      * Same as above, for objects that require a single argument.
      */
     template <typename T, typename Arg>
     static auto
-    register_type(const std::string &arg_name) -> NodeObjectInitializer &
+    register_type(const std::string &arg_name)
+      -> detail::NodeObjectInitializer &
     {
       return register_type<T, Arg>(std::vector<std::string>{{arg_name}});
     }
@@ -910,11 +775,7 @@ namespace coral
     template <typename B, typename T, typename Arg>
     static auto
     register_derived_type(const std::string &arg_name)
-      -> NodeObjectInitializer &
-    {
-      return register_derived_type<B, T, Arg>(
-        std::vector<std::string>{{arg_name}});
-    }
+      -> detail::NodeObjectInitializer &;
 
     template <typename T, typename ReturnType, typename... Args>
     using MethodPtr = ReturnType (T::*)(Args...);
@@ -958,15 +819,17 @@ namespace coral
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr, &initializer, method_name](
-              std::vector<std::shared_ptr<NodeObject>> args)
+            [ptr,
+             &initializer,
+             method_name](const NodeObjectPtr &,
+                          std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 1 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
             auto &obj = args[0]->get<T>();
             args.erase(args.begin()); // remove the first element
 
-            auto tuple = cast_args<Args...>(args);
+            auto tuple = detail::cast_args<Args...>(args);
             std::cout << method_name << ": " << initializer.type_name
                       << std::endl;
             std::apply(
@@ -993,6 +856,7 @@ namespace coral
           // Add to the initializer the emtpy executor.
           initializer.executor =
             [ptr, &initializer, method_name, output_is_elementary](
+              const NodeObjectPtr &,
               std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 2 + sizeof...(Args))
@@ -1009,7 +873,7 @@ namespace coral
 
             std::cout << method_name << ": " << initializer.type_name
                       << std::endl;
-            auto tuple = cast_args<Args...>(function_args);
+            auto tuple = detail::cast_args<Args...>(function_args);
             ret        = std::apply(
               [&obj, ptr](auto &&...unpackedArgs) {
                 return (obj.*ptr)(*unpackedArgs...);
@@ -1056,15 +920,17 @@ namespace coral
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr, &initializer, method_name](
-              std::vector<std::shared_ptr<NodeObject>> args)
+            [ptr,
+             &initializer,
+             method_name](const NodeObjectPtr &,
+                          std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 1 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
             auto &obj = args[0]->get<T>();
             args.erase(args.begin()); // remove the first element
 
-            auto tuple = cast_args<Args...>(args);
+            auto tuple = detail::cast_args<Args...>(args);
             std::cout << "method: " << initializer.type_name << std::endl;
             std::apply(
               [&obj, ptr](auto &&...unpackedArgs) {
@@ -1090,6 +956,7 @@ namespace coral
           // Add to the initializer the emtpy executor.
           initializer.executor =
             [ptr, &initializer, method_name, output_is_elementary](
+              const NodeObjectPtr &,
               std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 2 + sizeof...(Args))
@@ -1101,7 +968,7 @@ namespace coral
             args.erase(args.begin()); // remove the class
             args.erase(args.begin()); // remove the return type
             std::cout << "method: " << initializer.type_name << std::endl;
-            auto tuple = cast_args<Args...>(args);
+            auto tuple = detail::cast_args<Args...>(args);
             ret        = std::apply(
               [&obj, ptr](auto &&...unpackedArgs) {
                 (obj.*ptr)(*unpackedArgs...);
@@ -1152,13 +1019,15 @@ namespace coral
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr, &initializer, method_name](
-              std::vector<std::shared_ptr<NodeObject>> args)
+            [ptr,
+             &initializer,
+             method_name](const NodeObjectPtr &,
+                          std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
 
-            auto tuple = cast_args<Args...>(args);
+            auto tuple = detail::cast_args<Args...>(args);
             std::cout << "void function: " << method_name << " ["
                       << initializer.type_name << "]" << std::endl;
             std::apply([ptr](auto &&...unpackedArgs) { ptr(*unpackedArgs...); },
@@ -1183,6 +1052,7 @@ namespace coral
           // Add the method to the initializer
           initializer.executor =
             [ptr, &initializer, method_name, output_is_elementary](
+              const NodeObjectPtr &,
               std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 1 + sizeof...(Args))
@@ -1192,7 +1062,7 @@ namespace coral
             auto &ret = args[0]->get<ReturnType>();
             args.erase(args.begin()); // remove the first element
 
-            auto tuple = cast_args<Args...>(args);
+            auto tuple = detail::cast_args<Args...>(args);
             std::cout << "non-void function: " << method_name << " ["
                       << initializer.type_name << "]" << std::endl;
             ret = std::apply(
@@ -1208,20 +1078,12 @@ namespace coral
     template <typename ReturnType, typename... Args>
     static void
     register_function(ReturnType (*ptr)(Args...),
-                      std::vector<std::string> arg_names)
-    {
-      std::function<ReturnType(Args...)> func = ptr;
-      register_function(func, arg_names);
-    }
+                      std::vector<std::string> arg_names);
 
     // Helper to deduce template arguments automatically
     template <typename Lambda>
     static void
-    register_function(Lambda func, std::vector<std::string> arg_names)
-    {
-      auto f = std::function{func};
-      register_function(f, arg_names);
-    }
+    register_function(Lambda func, std::vector<std::string> arg_names);
 
     /**
      * Get a shared pointer of the stored object->
@@ -1231,337 +1093,166 @@ namespace coral
      */
     template <typename T>
     auto
-    get_shared() -> std::shared_ptr<T>
-    {
-      if (!ready())
-        throw std::runtime_error("Object is not ready.");
-      using type = std::remove_cv_t<std::remove_reference_t<T>>;
-      std::shared_ptr<type> ptr;
-
-      if (hash() != coral::hash<type>())
-        {
-          auto &j = initializer.json_serializer;
-          if (!(j.contains("base") &&
-                (coral::hash<type>() == j.at("base").get<std::string>())))
-            throw std::runtime_error("Cannot cast object of type " +
-                                     type_name() + " to object of type " +
-                                     boost::core::type_name<type>() + ".");
-          auto new_object = initializer.to_base(object);
-          if (!(new_object && *new_object))
-            throw std::runtime_error("New object does not have value.");
-          if (!(coral::hash(new_object) == j.at("base").get<std::string>()))
-            throw std::runtime_error(
-              "New object does not have the right hash.");
-          const auto cast_ptr =
-            new_object->template try_cast<std::shared_ptr<type>>();
-          if (cast_ptr == nullptr)
-            throw std::runtime_error(
-              "Could not cast converted object to " +
-              std::string(boost::core::type_name<type>()));
-          ptr = *cast_ptr;
-        }
-      else
-        {
-          const auto cast_ptr =
-            object->template try_cast<std::shared_ptr<type>>();
-          if (cast_ptr == nullptr)
-            throw std::runtime_error(
-              "Could not cast object to shared pointer of type " +
-              std::string(boost::core::type_name<type>()) +
-              " from object of type " + boost::core::demangle([&]() {
-                const char *named = object->type().name();
-                if (named != nullptr && named[0] != '\0')
-                  return named;
-                const auto info_name = object->type().info().name();
-                static thread_local std::string info_name_str;
-                info_name_str = std::string(info_name);
-                return info_name_str.c_str();
-              }()) +
-              ".");
-          ptr = *cast_ptr;
-        }
-      return ptr;
-    }
+    get_shared() -> std::shared_ptr<T>;
 
     /**
      * Get a writeable reference to the stored object->
      */
     template <typename T>
     T &
-    get()
-    {
-      if (!ready())
-        throw std::runtime_error("Object is not ready.");
-      return *(get_shared<T>());
-    }
+    get();
 
     /**
      * Get a const reference to the stored object->
      */
     template <typename T>
     const T &
-    get() const
-    {
-      if (!ready())
-        throw std::runtime_error("Object is not ready.");
-      return *(get_shared<T>());
-    }
-
-    /**
-     * Expose the underlying std::shared_ptr<entt::meta_any> object->
-     */
-    operator const std::shared_ptr<entt::meta_any> &() const
-    {
-      return object;
-    }
+    get() const;
 
     /**
      * Return a Pointer to the ith output.
      */
     NodeObjectPtr
-    output(const unsigned int index)
-    {
-      if (!(index < output_indices.size()))
-        throw std::runtime_error("Index out of bounds.");
-      if (output_indices[index] == -1)
-        {
-          return shared_from_this(); // Return this object for 'self'
-        }
-      return arguments[output_indices[index]];
-    }
+    get_output(const unsigned int index);
 
     /**
-     * Return a Pointer to the ith output.
+     * Returns true if the input at @p index is bound to a node.
+     */
+    bool
+    is_input_bound(const unsigned int index) const;
+
+    /**
+     * Returns true if the input at @p index is a pass-through input.
+     */
+    bool
+    is_passthrough_input(const unsigned int index) const;
+
+    /**
+     * Returns true if the output at @p index is bound to a node.
+     */
+    bool
+    is_output_bound(const unsigned int index) const;
+
+    /**
+     * Returns true if the output at @p index can be rebound.
+     */
+    bool
+    is_bindable(const unsigned int index) const;
+
+    /**
+     * Bind the ith output to a new NodeObject.
+     *
+     * @code
+     * node->bind_output(0, output_node);
+     * @endcode
      */
     void
-    set_output(const unsigned int index, const NodeObjectPtr &value)
-    {
-      if (!(index < output_indices.size()))
-        throw std::runtime_error("Index out of bounds.");
-      if (output_indices[index] == -1)
-        throw std::runtime_error("Cannot set output for 'self'.");
+    bind_output(const unsigned int index, const NodeObjectPtr &value);
 
-      arguments[output_indices[index]] = value;
-    }
+    /**
+     * Returns true if any inputs are unbound.
+     */
+    bool
+    has_unbound_inputs() const;
+
+    /**
+     * Returns true if any outputs are unbound.
+     */
+    bool
+    has_unbound_outputs() const;
 
     /**
      * Return a Pointer to the @p index -th input.
      */
     NodeObjectPtr
-    input(const unsigned int index)
-    {
-      if (!(index < input_indices.size()))
-        throw std::runtime_error(
-          "Index out of bounds: you asked for input " + std::to_string(index) +
-          ", but there are " + std::to_string(input_indices.size()) +
-          " inputs: " + initializer.json_serializer.dump(2));
-      if (input_indices[index] == -1)
-        return shared_from_this(); // Return this object for 'self'
-      else
-        {
-          auto arg_id = input_indices[index];
-          if (!(arg_id < static_cast<int>(arguments.size())))
-            throw std::runtime_error(
-              "Internal error! Input you asked for input " +
-              std::to_string(index) + ", which points to argument number " +
-              std::to_string(arg_id) + ", but there are only " +
-              std::to_string(arguments.size()) + " arguments to pick from.");
-          return arguments[input_indices[index]];
-        }
-    }
-
-    void
-    set_input(const unsigned int index, const NodeObjectPtr &value)
-    {
-      if (!(index < input_indices.size()))
-        throw std::runtime_error(
-          "Index out of bounds: you asked for input " + std::to_string(index) +
-          ", but there are " + std::to_string(input_indices.size()) +
-          " inputs: " + initializer.json_serializer.dump(2));
-      if (input_indices[index] == -1)
-        throw std::runtime_error("Cannot set input for 'self'.");
-      else
-        {
-          auto arg_id = input_indices[index];
-          if (!(arg_id < static_cast<int>(arguments.size())))
-            throw std::runtime_error(
-              "Internal error! You asked to set input " +
-              std::to_string(index) + ", which points to argument number " +
-              std::to_string(arg_id) + ", but there are only " +
-              std::to_string(arguments.size()) + " arguments to pick from.");
-          arguments[input_indices[index]] = value;
-        }
-    }
+    get_input(const unsigned int index);
 
     /**
-     * Expose the underlying std::shared_ptr<entt::meta_any> object->
+     * Bind an input slot to a NodeObject.
+     *
+     * @code
+     * node->bind_input(0, other);
+     * @endcode
      */
-    operator std::shared_ptr<entt::meta_any> &()
-    {
-      return object;
-    }
+    void
+    bind_input(const unsigned int index, const NodeObjectPtr &value);
 
+    /**
+     * Get a shared pointer to the underlying object (const).
+     */
     template <typename T>
     std::shared_ptr<const T>
-    get_shared() const
-    {
-      using type = std::remove_cv_t<std::remove_reference_t<T>>;
-      std::shared_ptr<const type> ptr;
-      if (hash() != coral::hash<type>())
-        {
-          auto &j = initializer.json_serializer;
-          if (!(j.contains("base") &&
-                (coral::hash<type>() == j.at("base").get<std::string>())))
-            throw std::runtime_error("Cannot cast object of type " +
-                                     type_name() + " to object of type " +
-                                     boost::core::type_name<type>() + ".");
-          auto new_object = initializer.to_base(object);
-          if (!(new_object && *new_object))
-            throw std::runtime_error("New object does not have value.");
-          if (!(coral::hash(new_object) == j.at("base").get<std::string>()))
-            throw std::runtime_error(
-              "New object does not have the right hash.");
-          const auto cast_ptr =
-            new_object->template try_cast<std::shared_ptr<const type>>();
-          if (cast_ptr == nullptr)
-            throw std::runtime_error(
-              "Could not cast converted object to " +
-              std::string(boost::core::type_name<type>()));
-          ptr = *cast_ptr;
-        }
-      else
-        {
-          const auto cast_ptr =
-            object->template try_cast<std::shared_ptr<const type>>();
-          if (cast_ptr == nullptr)
-            throw std::runtime_error(
-              "Could not cast object to shared pointer of type " +
-              std::string(boost::core::type_name<type>()) +
-              " from object of type " + boost::core::demangle([&]() {
-                const char *named = object->type().name();
-                if (named != nullptr && named[0] != '\0')
-                  return named;
-                const auto info_name = object->type().info().name();
-                static thread_local std::string info_name_str;
-                info_name_str = std::string(info_name);
-                return info_name_str.c_str();
-              }()) +
-              ".");
-          ptr = *cast_ptr;
-        }
-      return ptr;
-    }
+    get_shared() const;
 
+    /**
+     * Assign from a shared pointer to a registered type.
+     */
     template <typename T>
     NodeObject &
-    operator=(std::shared_ptr<T> data)
-    {
-      if (!(object && *object))
-        {
-          *this = NodeObject(data);
-          return *this;
-        }
-      else
-        {
-          // Check that we store a compatible type first.
-          // Check that coral::hash<T>() is contained in hash().
-          const auto my_hash = hash();
-          const auto type_id = coral::hash<T>();
-          if (my_hash.find(type_id) != 0)
-            throw std::runtime_error(
-              "Object type does not match. My hash is " + my_hash +
-              " and the object hash is " + type_id +
-              ". They should at least start with the same characters.");
-          *this = NodeObject(data);
-          return *this;
-        }
-    }
+    operator=(std::shared_ptr<T> data);
 
+    /**
+     * Assign from a value of a registered type.
+     */
     template <typename T>
     NodeObject &
-    operator=(const T &data)
-    {
-      *this = NodeObject(std::make_shared<T>(data));
-      return *this;
-    }
+    operator=(const T &data);
 
+    /**
+     * Return the JSON info record for this node.
+     */
     const json &
-    get_info() const
-    {
-      auto &j = initializer.json_serializer;
-      if (initializer.to_string && object && *object)
-        j["value"] = initializer.to_string(object);
-      return j;
-    }
+    get_info() const;
 
     /**
      * Get the hash of the stored object->
      */
     std::string
-    hash() const
-    {
-      if (object.operator bool() && (*object))
-        {
-          // The object is initialized. Check if this is consistent with
-          // the initializer, and return its hash.
-          const auto object_hash = coral::hash(object);
-          const auto stored_hash =
-            std::string(initializer.json_serializer.at("type"));
-          if (stored_hash.find(object_hash) != 0)
-            throw std::runtime_error(
-              "Object type does not match: we store " + stored_hash +
-              ", and cannot set this object equal to " + object_hash +
-              ". The two hashes should at least start with the same characters.");
-          return stored_hash;
-        }
-      else
-        {
-          return initializer.json_serializer.at("type");
-        }
-    }
+    hash() const;
 
+    /**
+     * Return the human-readable type name for this node.
+     */
     std::string
-    type_name() const
-    {
-      return initializer.type_name;
-    }
+    type_name() const;
 
+    /**
+     * Return the node type enum.
+     */
     NodeType
-    node_type() const
-    {
-      return magic_enum::enum_cast<NodeType>(
-               initializer.json_serializer.at("node_type").get<std::string>())
-        .value();
-    }
+    node_type() const;
 
     /**
      * Get the number of arguments that this node has.
      */
     size_t
-    n_arguments() const
-    {
-      return initializer.json_serializer["arguments"].size();
-    }
+    n_arguments() const;
 
     /**
      * Get the number of inputs.
      */
     size_t
-    n_inputs() const
-    {
-      return initializer.json_serializer["inputs"].size();
-    }
+    n_inputs() const;
 
     /**
      * Get the number of outputs.
      */
     size_t
-    n_outputs() const
-    {
-      return initializer.json_serializer["outputs"].size();
-    }
+    n_outputs() const;
 
   private:
+    /**
+     * Return true if an output index maps to a pass-through argument.
+     */
+    bool
+    is_passthrough_output(const unsigned int index) const;
+
+    /**
+     * Find the input index that maps to a given argument index.
+     */
+    unsigned int
+    input_index_for_argument(const int argument_index) const;
+
     /**
      * The actual object is stored here as a std::shared_ptr<entt::meta_any>.
      */
@@ -1571,7 +1262,7 @@ namespace coral
      * Anything required to build a std::shared_ptr<T> object, and to
      * manipulate it.
      */
-    NodeObjectInitializer initializer;
+    detail::NodeObjectInitializer initializer;
 
     /**
      * The arguments to pass to the executor.
@@ -1584,55 +1275,43 @@ namespace coral
     std::vector<ConnectionType> arguments_types;
 
     /**
+     * Track whether inputs and outputs have been explicitly bound.
+     */
+    std::vector<bool> input_bound;
+    std::vector<bool> output_bound;
+
+    /**
      * A list of all known types and their initializers.
      */
-    static inline std::map<std::string, NodeObjectInitializer> initializers;
+    // Thread-safety: registration is not synchronized; treat as
+    // single-threaded init before concurrent use.
+    static inline std::map<std::string, detail::NodeObjectInitializer>
+      initializers;
+
+    /**
+     * Hash string that identifies the Network node type.
+     */
     static inline std::string network_type_hash;
-    static inline std::function<NodeInterface(
+
+    /**
+     * Builder for network interfaces from stored values.
+     */
+    static inline std::function<detail::NodeInterface(
       const std::shared_ptr<entt::meta_any> &)>
-                                  network_interface_builder;
-    static inline NetworkExecutor network_executor;
+      network_interface_builder;
 
     template <typename T>
     static bool
-    is_registered_elementary_type()
-    {
-      using PlainType     = std::remove_cv_t<std::remove_reference_t<T>>;
-      const auto hash_str = coral::hash<PlainType>();
-      const auto it       = initializers.find(hash_str);
-      return (it != initializers.end()) &&
-             (it->second.node_type == NodeType::elementary_constructor);
-    }
+    is_registered_elementary_type();
 
+    /**
+     * Mark an argument as output-only in the JSON metadata.
+     */
     static void
-    set_output_only(NodeObjectInitializer &initializer, unsigned int arg_index)
-    {
-      auto &args = initializer.json_serializer["arguments"];
-      if (arg_index >= args.size())
-        return;
+    set_output_only(detail::NodeObjectInitializer &initializer,
+                    unsigned int                   arg_index);
 
-      args[arg_index]["connection_type"] =
-        magic_enum::enum_name(ConnectionType::output);
-
-      auto &inputs = initializer.json_serializer["inputs"];
-      for (auto it = inputs.begin(); it != inputs.end();)
-        {
-          if (it->get<unsigned int>() == arg_index)
-            it = inputs.erase(it);
-          else
-            ++it;
-        }
-
-      auto &outputs = initializer.json_serializer["outputs"];
-      for (const auto &entry : outputs)
-        {
-          if (entry.get<int>() == static_cast<int>(arg_index))
-            return;
-        }
-      outputs.push_back(static_cast<int>(arg_index));
-    }
-
-   /**
+    /**
      * Input indices mapping to arguments.
      */
     std::vector<int> input_indices;
@@ -1643,424 +1322,185 @@ namespace coral
      */
     std::vector<int> output_indices;
 
+    /**
+     * Initialize input index mappings from JSON metadata.
+     */
     void
-    initialize_inputs()
-    {
-      const auto &json_inputs = initializer.json_serializer["inputs"];
-      input_indices.resize(json_inputs.size());
-      for (unsigned int i = 0; i < json_inputs.size(); ++i)
-        {
-          input_indices[i] = json_inputs[i].get<unsigned int>();
-        }
-    }
+    initialize_inputs();
 
+    /**
+     * Initialize output index mappings from JSON metadata.
+     */
     void
-    initialize_outputs()
-    {
-      const auto &json_outputs = initializer.json_serializer["outputs"];
-      output_indices.resize(json_outputs.size());
-      for (unsigned int i = 0; i < json_outputs.size(); ++i)
-        {
-          output_indices[i] = json_outputs[i].get<int>();
-          if (output_indices[i] != -1)
-            {
-              // Throw and exception if the output index is not valid.
-              if (output_indices[i] >=
-                  static_cast<int>(
-                    initializer.json_serializer["arguments"].size()))
-                throw std::runtime_error(
-                  "Output index " + std::to_string(output_indices[i]) +
-                  " is out of bounds for the number of arguments: " +
-                  std::to_string(
-                    initializer.json_serializer["arguments"].size()) +
-                  ".");
-              arguments[output_indices[i]] = std::make_shared<NodeObject>(
-                initializer
-                  .json_serializer["arguments"][output_indices[i]]["type"]
-                  .get<std::string>());
-            }
-        }
-    }
+    initialize_outputs();
 
+    /**
+     * Initialize argument list and connection types from JSON metadata.
+     */
     void
-    initialize_arguments()
-    {
-      const auto &json_args = initializer.json_serializer["arguments"];
-      arguments.resize(json_args.size());
-      arguments_types.resize(json_args.size(), ConnectionType::none);
-      for (unsigned int i = 0; i < json_args.size(); ++i)
-        {
-          if (json_args[i].contains("connection_type"))
-            arguments_types[i] =
-              magic_enum::enum_cast<ConnectionType>(
-                json_args[i].at("connection_type").get<std::string>())
-                .value();
-        }
-    }
+    initialize_arguments();
 
+    /**
+     * Configure network-specific interface overrides.
+     */
     void
-    setup_network_if_needed()
-    {
-      const auto &type = initializer.json_serializer.at("type");
-      if (!NodeObject::is_network_type(type.get<std::string>()))
-        return;
-
-      if (ready())
-        {
-          const auto iface = NodeObject::build_network_interface(object);
-          if (!iface.arguments.empty() || !iface.inputs.empty() ||
-              !iface.outputs.empty())
-            override_interface(iface.arguments, iface.inputs, iface.outputs);
-        }
-
-      initializer.executor =
-        [this](std::vector<std::shared_ptr<NodeObject>> args)
-        -> std::shared_ptr<entt::meta_any> {
-        if (!ready())
-          {
-            if (initializer.parse_string &&
-                initializer.json_serializer.contains("value"))
-              parse_string(initializer.json_serializer["value"]
-                             .template get<std::string>());
-            else
-              throw std::runtime_error(
-                "Network node has no value to initialize.");
-          }
-
-        const auto iface = NodeObject::build_network_interface(object);
-        if (!iface.arguments.empty() || !iface.inputs.empty() ||
-            !iface.outputs.empty())
-          override_interface(iface.arguments, iface.inputs, iface.outputs);
-
-        if (!network_executor)
-          throw std::runtime_error("Network executor is not configured.");
-
-        return network_executor(*this, std::move(args));
-      };
-    }
+    setup_network_if_needed();
 
   public:
+    /**
+     * Bind all inputs using a list of node/output pairs.
+     *
+     * @code
+     * node->bind_inputs({{upstream, 0}});
+     * @endcode
+     */
     void
-    set_inputs(
-      const std::vector<std::pair<NodeObjectPtr, unsigned int>> &inputs)
-    {
-      if (inputs.size() != input_indices.size())
-        throw std::runtime_error(
-          "Wrong number of inputs: " + std::to_string(inputs.size()) +
-          " instead of " + std::to_string(input_indices.size()) + ".");
-
-      for (unsigned int i = 0; i < inputs.size(); ++i)
-        {
-          const auto &input_node  = inputs[i].first;
-          const auto &input_index = inputs[i].second;
-
-          const auto expected_hash =
-            initializer.json_serializer["arguments"][input_indices[i]]["type"]
-              .get<std::string>();
-          const auto input_hash = input_node->output(input_index)->hash();
-
-          // Check if the input hash matches the expected hash or is derived
-          // from the base type
-          const auto &base_hash =
-            initializer.json_serializer["arguments"][input_indices[i]].value(
-              "base", "");
-          const bool is_valid =
-            (expected_hash == input_hash) || (base_hash == input_hash);
-
-          if (!is_valid)
-            throw std::runtime_error(
-              "The hash type of input " + std::to_string(i) + " (" +
-              input_hash + ") does not match the expected hash (" +
-              expected_hash + ") or its base type (" + base_hash + ".");
-
-          arguments[input_indices[i]] = input_node->output(input_index);
-        }
-    }
-
-    void
-    set_outputs(
-      const std::vector<std::pair<NodeObjectPtr, unsigned int>> &outputs)
-    {
-      if (outputs.size() != output_indices.size())
-        throw std::runtime_error(
-          "Wrong number of outputs: " + std::to_string(outputs.size()) +
-          " instead of " + std::to_string(output_indices.size()) + ".");
-
-      for (unsigned int i = 0; i < outputs.size(); ++i)
-        {
-          const auto &output_node  = outputs[i].first;
-          const auto &output_index = outputs[i].second;
-
-          const auto expected_hash =
-            initializer.json_serializer["arguments"][output_indices[i]]["type"]
-              .get<std::string>();
-          const auto output_hash = arguments[output_indices[i]]->hash();
-
-          if (expected_hash != output_hash)
-            throw std::runtime_error("The hash type of output " +
-                                     std::to_string(i) + " (" + output_hash +
-                                     ") does not match the expected hash (" +
-                                     expected_hash + ").");
-
-          output_node->arguments[output_index] = arguments[output_indices[i]];
-        }
-    }
+    bind_inputs(
+      const std::vector<std::pair<NodeObjectPtr, unsigned int>> &inputs);
   };
+
+  // Template implementations kept in the main header for visibility.
+  template <typename T>
+  inline NodeObject::NodeObject(const T &data)
+    : NodeObject(std::make_shared<T>(data))
+  {}
+
+  template <typename T>
+  inline NodeObject::NodeObject(std::shared_ptr<T> data)
+  {
+    object        = std::make_shared<entt::meta_any>(data);
+    auto hash_str = detail::hash<T>();
+    try
+      {
+        initializer = initializers.at(hash_str);
+      }
+    catch (const std::out_of_range &)
+      {
+        throw std::runtime_error(
+          "Type " + std::string(typeid(T).name()) +
+          " is not registered. Before using it, you should call "
+          "one of the NodeObject::register_*<" +
+          std::string(typeid(T).name()) + ">(...) functions.");
+      }
+    initialize_arguments();
+    initialize_inputs();
+    initialize_outputs();
+    setup_network_if_needed();
+  }
+
+
+
+  template <typename T>
+  inline auto
+  NodeObject::register_json_header(const std::string &suffix)
+    -> detail::NodeObjectInitializer &
+  {
+    auto hash_str = detail::hash<T>(suffix);
+    if (initializers.find(hash_str) != initializers.end())
+      // Reset the initializer
+      initializers[hash_str] = {};
+
+    auto &initializer                        = initializers[hash_str];
+    initializer.type_name                    = boost::core::type_name<T>();
+    initializer.json_serializer["type"]      = hash_str;
+    initializer.json_serializer["arguments"] = json::array();
+    initializer.json_serializer["inputs"]    = json::array();
+    initializer.json_serializer["outputs"]   = json::array();
+    return initializer;
+  }
+
+
+
+  template <typename T, typename... Args>
+  inline auto
+  NodeObject::register_json_header(const std::vector<std::string> &arg_names,
+                                   const std::string              &suffix)
+    -> detail::NodeObjectInitializer &
+  {
+    auto &initializer = register_json_header<T>(suffix);
+
+    // Now take care of the arguments.
+    std::vector<std::shared_ptr<NodeObject>> args = {
+      std::make_shared<NodeObject>(
+        std::shared_ptr<std::remove_cv_t<std::remove_reference_t<Args>>>())...};
+
+    std::vector<ConnectionType> arg_connection_types = {
+      connection_type<Args>()...};
+
+    if (args.size() != arg_names.size())
+      throw std::runtime_error("Wrong number of arguments.");
+
+    for (unsigned int i = 0; i < args.size(); ++i)
+      {
+        initializer.json_serializer["arguments"][i]["name"] = arg_names[i];
+        initializer.json_serializer["arguments"][i]["type"] = args[i]->hash();
+        initializer.json_serializer["arguments"][i]["connection_type"] =
+          magic_enum::enum_name(arg_connection_types[i]);
+        if ((arg_connection_types[i] & ConnectionType::input) !=
+            ConnectionType::none)
+          initializer.json_serializer["inputs"].push_back(i);
+        if ((arg_connection_types[i] & ConnectionType::output) !=
+            ConnectionType::none)
+          initializer.json_serializer["outputs"].push_back(i);
+      }
+    return initializer;
+  }
+
+
 
   /**
    * json serialization of a Nodeobject->
    */
-  inline void
-  to_json(json &j, const NodeObjectPtr &obj)
-  {
-    j = obj->get_info();
-  }
+  void
+  to_json(json &j, const NodeObjectPtr &obj);
 
   /**
    * json deserialization of a Nodeobject->
    */
-  inline void
-  from_json(const json &j, NodeObjectPtr &obj)
+  void
+  from_json(const json &j, NodeObjectPtr &obj);
+
+  namespace detail
   {
-    if (!j.contains("type"))
-      throw std::runtime_error(
-        "The json does not contain a type entry. Bailing out.");
-    obj = make_node(j.at("type").get<std::string>());
-    // Make sure the hash matches the expected value
-    if (j["type"] != obj->hash())
-      throw std::runtime_error(
-        "The type does not match the expected value: expected " +
-        j["type"].dump() + ", got " + obj->hash());
 
-    const auto &reg        = obj->get_info();
-    const bool  is_network = NodeObject::is_network_type(obj->hash());
+    /** \cond INTERNAL */
+    /**
+     * Implementation of cast_args.
+     */
+    template <typename... Args, std::size_t... Is>
+    inline std::tuple<
+      std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
+    cast_args_impl(const std::vector<std::shared_ptr<NodeObject>> &args,
+                   std::index_sequence<Is...>)
+    {
+      try
+        {
+          return std::make_tuple(
+            args[Is]
+              ->get_shared<
+                std::remove_const_t<std::remove_reference_t<Args>>>()...);
+        }
+      catch (const std::exception &e)
+        {
+          throw std::runtime_error(e.what());
+        }
+    }
 
-    // If the input JSON contains fields that also exist in the registry
-    // description, they must match exactly (except for "value", which is
-    // allowed to differ when provided).
-    for (const auto &[key, val] : j.items())
-      {
-        if (key == "value")
-          continue;
-        if (is_network &&
-            (key == "arguments" || key == "inputs" || key == "outputs"))
-          continue;
-        if (reg.contains(key) && reg.at(key) != val)
-          throw std::runtime_error(
-            "The json object field '" + key +
-            "' does not match the registered value: expected " +
-            reg.at(key).dump() + ", got " + val.dump());
-      }
 
-    const auto node_type = reg.value("node_type", "");
 
-    if ((node_type == "elementary_constructor" ||
-         node_type == "empty_constructor") &&
-        !is_network)
-      (*obj)();
-    if (j.contains("value"))
-      {
-        obj->parse_string(j.at("value").get<std::string>());
-        if (obj->ready())
-          {
-            // Refresh serialized value to match the parsed object.
-            (void)obj->get_info();
-          }
-      }
+    /**
+     * Cast a vector of NodeObject arguments to a tuple of shared pointers.
+     */
+    template <typename... Args>
+    inline std::tuple<
+      std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
+    cast_args(const std::vector<std::shared_ptr<NodeObject>> &args)
+    {
+      return cast_args_impl<Args...>(args, std::index_sequence_for<Args...>{});
+    }
 
-    if (is_network)
-      {
-        const bool has_any_interface = j.contains("arguments") ||
-                                       j.contains("inputs") ||
-                                       j.contains("outputs");
-        const bool has_full_interface = j.contains("arguments") &&
-                                        j.contains("inputs") &&
-                                        j.contains("outputs");
-
-        const auto &any = static_cast<std::shared_ptr<entt::meta_any> &>(*obj);
-        const auto  expected = NodeObject::build_network_interface(any);
-
-        auto validate_and_reorder_interface =
-          [](const json          &args,
-             const json          &inputs,
-             const json          &outputs,
-             const NodeInterface &expected_iface)
-          -> std::tuple<json, json, json> {
-          if (!args.is_array() || !inputs.is_array() || !outputs.is_array())
-            throw std::runtime_error("Network interface must be arrays.");
-
-          if (args.size() != expected_iface.arguments.size())
-            throw std::runtime_error(
-              "Network arguments do not match expected size.");
-
-          // Build mapping from provided argument index to expected argument index
-          // by matching on name, type, and connection_type
-          std::vector<int> provided_to_expected(args.size(), -1);
-          std::vector<bool> expected_matched(expected_iface.arguments.size(), false);
-
-          for (size_t provided_idx = 0; provided_idx < args.size(); ++provided_idx)
-            {
-              const auto &provided = args[provided_idx];
-              if (!provided.contains("type"))
-                throw std::runtime_error("Network argument is missing type.");
-              if (!provided.contains("connection_type"))
-                throw std::runtime_error(
-                  "Network argument is missing connection_type.");
-
-              // Try to find matching expected argument
-              for (size_t expected_idx = 0; expected_idx < expected_iface.arguments.size(); ++expected_idx)
-                {
-                  if (expected_matched[expected_idx])
-                    continue;
-
-                  const auto &expected = expected_iface.arguments[expected_idx];
-
-                  // Match by name if both have names
-                  if (provided.contains("name") && expected.contains("name"))
-                    {
-                      if (provided.at("name") == expected.at("name"))
-                        {
-                          // Verify type and connection_type also match
-                          if (provided.at("type") != expected.at("type"))
-                            throw std::runtime_error(
-                              "Network argument '" + provided.at("name").get<std::string>() +
-                              "' type does not match: expected " +
-                              expected.at("type").dump() + ", got " +
-                              provided.at("type").dump());
-                          if (provided.at("connection_type") !=
-                              expected.at("connection_type"))
-                            throw std::runtime_error(
-                              "Network argument '" + provided.at("name").get<std::string>() +
-                              "' connection_type does not match: expected " +
-                              expected.at("connection_type").dump() + ", got " +
-                              provided.at("connection_type").dump());
-                          provided_to_expected[provided_idx] = expected_idx;
-                          expected_matched[expected_idx] = true;
-                          break;
-                        }
-                    }
-                  // Otherwise match by type and connection_type
-                  else if (provided.at("type") == expected.at("type") &&
-                           provided.at("connection_type") == expected.at("connection_type"))
-                    {
-                      provided_to_expected[provided_idx] = expected_idx;
-                      expected_matched[expected_idx] = true;
-                      break;
-                    }
-                }
-
-              if (provided_to_expected[provided_idx] == -1)
-                {
-                  std::string arg_desc = provided.contains("name")
-                    ? "'" + provided.at("name").get<std::string>() + "'"
-                    : "with type " + provided.at("type").dump();
-                  throw std::runtime_error(
-                    "Network argument " + arg_desc + " does not match any expected argument.");
-                }
-            }
-
-          // Build expected_to_provided mapping (inverse of provided_to_expected)
-          std::vector<int> expected_to_provided(expected_iface.arguments.size(), -1);
-          for (size_t provided_idx = 0; provided_idx < provided_to_expected.size(); ++provided_idx)
-            {
-              const int expected_idx = provided_to_expected[provided_idx];
-              expected_to_provided[expected_idx] = provided_idx;
-            }
-
-          // Reorder arguments to match expected order
-          json reordered_args = json::array();
-          for (size_t expected_idx = 0; expected_idx < expected_iface.arguments.size(); ++expected_idx)
-            {
-              const int provided_idx = expected_to_provided[expected_idx];
-              reordered_args.push_back(args[provided_idx]);
-            }
-
-          // Remap provided inputs/outputs to expected order and compare
-          json remapped_inputs = json::array();
-          for (const auto &input_idx : inputs)
-            {
-              const auto provided_idx = input_idx.get<size_t>();
-              if (provided_idx >= provided_to_expected.size())
-                throw std::runtime_error("Network input index out of range.");
-              remapped_inputs.push_back(provided_to_expected[provided_idx]);
-            }
-
-          json remapped_outputs = json::array();
-          for (const auto &output_idx : outputs)
-            {
-              const auto provided_idx = output_idx.get<size_t>();
-              if (provided_idx >= provided_to_expected.size())
-                throw std::runtime_error("Network output index out of range.");
-              remapped_outputs.push_back(provided_to_expected[provided_idx]);
-            }
-
-          if (remapped_inputs != expected_iface.inputs)
-            throw std::runtime_error(
-              "Network inputs do not match expected: expected " +
-              expected_iface.inputs.dump() + ", got " + remapped_inputs.dump());
-          if (remapped_outputs != expected_iface.outputs)
-            throw std::runtime_error(
-              "Network outputs do not match expected: expected " +
-              expected_iface.outputs.dump() + ", got " + remapped_outputs.dump());
-
-          return std::make_tuple(reordered_args, expected_iface.inputs, expected_iface.outputs);
-        };
-
-        if (has_any_interface)
-          {
-            if (!has_full_interface)
-              throw std::runtime_error(
-                "Network interface override requires arguments, inputs, and outputs.");
-            auto [reordered_args, reordered_inputs, reordered_outputs] =
-              validate_and_reorder_interface(j.at("arguments"),
-                                             j.at("inputs"),
-                                             j.at("outputs"),
-                                             expected);
-            obj->override_interface(reordered_args,
-                                    reordered_inputs,
-                                    reordered_outputs);
-          }
-        else
-          {
-            obj->override_interface(expected.arguments,
-                                    expected.inputs,
-                                    expected.outputs);
-          }
-      }
-  }
-
-  /**
-   * Implementation of cast_args function.
-   */
-  template <typename... Args, std::size_t... Is>
-  inline std::tuple<
-    std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
-  cast_args_impl(const std::vector<std::shared_ptr<NodeObject>> &args,
-                 std::index_sequence<Is...>)
-  {
-    try
-      {
-        return std::make_tuple(
-          args[Is]
-            ->get_shared<
-              std::remove_const_t<std::remove_reference_t<Args>>>()...);
-      }
-    catch (const std::exception &e)
-      {
-        throw std::runtime_error(e.what());
-      }
-  }
-
-  /**
-   * Cast a vector of NodeObject arguments to a tuple of shared pointers.
-   */
-  template <typename... Args>
-  inline std::tuple<
-    std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
-  cast_args(const std::vector<std::shared_ptr<NodeObject>> &args)
-  {
-    return cast_args_impl<Args...>(args, std::index_sequence_for<Args...>{});
-  }
+    /** \endcond */
+  } // namespace detail
 
   /**
    * Connect the inputs of a node.
@@ -2071,13 +1511,296 @@ namespace coral
    *
    * @param node The node to connect
    * @param inputs The pair input/output connector of the node
+   *
+   * @code
+   * coral::connect(node, {{upstream, 0}});
+   * @endcode
    */
-  inline void
+  void
   connect(
     NodeObjectPtr                                             &node,
-    const std::vector<std::pair<NodeObjectPtr, unsigned int>> &inputs = {})
+    const std::vector<std::pair<NodeObjectPtr, unsigned int>> &inputs = {});
+
+  template <typename T, typename... Args>
+  inline auto
+  NodeObject::register_type(const std::vector<std::string> &arg_names)
+    -> detail::NodeObjectInitializer &
   {
-    node->set_inputs(inputs);
+    auto &initializer = register_json_header<T, Args...>(arg_names);
+    initializer.json_serializer["node_type"] = "constructor";
+    initializer.node_type                    = NodeType::constructor;
+    initializer.json_serializer["outputs"].push_back(-1);
+
+    // And the executor.
+    initializer.executor =
+      [&initializer](const NodeObjectPtr &,
+                     std::vector<std::shared_ptr<NodeObject>> args)
+      -> std::shared_ptr<entt::meta_any> {
+      if (args.size() != sizeof...(Args))
+        throw std::runtime_error("Wrong number of arguments.");
+      auto tuple = detail::cast_args<Args...>(args);
+      std::cout << "constructor: " << initializer.type_name << std::endl;
+      return std::apply(
+        [](auto &&...unpackedArgs) {
+          return std::make_shared<entt::meta_any>(
+            std::make_shared<T>(*unpackedArgs...));
+        },
+        tuple);
+    };
+    return initializer;
   }
+
+
+
+  template <typename B, typename T, typename... Args>
+  inline auto
+  NodeObject::register_derived_type(const std::vector<std::string> &arg_names)
+    -> detail::NodeObjectInitializer &
+  {
+    auto &initializer      = register_type<T, Args...>(arg_names);
+    auto &base_initializer = register_abstract_type<B>();
+
+    base_initializer.json_serializer["derived"].push_back(
+      initializer.json_serializer["type"]);
+
+    initializer.json_serializer["base"] =
+      base_initializer.json_serializer["type"];
+
+    // Register entt conversion shared_ptr<Derived> -> shared_ptr<Base>
+    using stored_derived =
+      std::shared_ptr<std::remove_cv_t<std::remove_reference_t<T>>>;
+    entt::meta_factory<stored_derived>()
+      .template conv<&detail::shared_ptr_to_base<B, T>>();
+
+    // Add the conversion to the base class.
+    initializer.to_base =
+      [](std::shared_ptr<entt::meta_any> a) -> std::shared_ptr<entt::meta_any> {
+      const auto ptr = a->template try_cast<std::shared_ptr<T>>();
+      if (ptr == nullptr)
+        throw std::runtime_error("Could not cast derived type to base.");
+      return std::make_shared<entt::meta_any>(
+        std::static_pointer_cast<B>(*ptr));
+    };
+    return initializer;
+  }
+
+
+
+  template <typename B, typename T, typename Arg>
+  inline auto
+  NodeObject::register_derived_type(const std::string &arg_name)
+    -> detail::NodeObjectInitializer &
+  {
+    return register_derived_type<B, T, Arg>(
+      std::vector<std::string>{{arg_name}});
+  }
+
+
+  template <typename ReturnType, typename... Args>
+  inline void
+  NodeObject::register_function(ReturnType (*ptr)(Args...),
+                                std::vector<std::string> arg_names)
+  {
+    std::function<ReturnType(Args...)> func = ptr;
+    register_function(func, arg_names);
+  }
+
+
+
+  template <typename Lambda>
+  inline void
+  NodeObject::register_function(Lambda func, std::vector<std::string> arg_names)
+  {
+    auto f = std::function{func};
+    register_function(f, arg_names);
+  }
+
+
+
+  template <typename T>
+  inline auto
+  NodeObject::get_shared() -> std::shared_ptr<T>
+  {
+    if (!ready())
+      throw std::runtime_error("Object is not ready.");
+    using type = std::remove_cv_t<std::remove_reference_t<T>>;
+    std::shared_ptr<type> ptr;
+
+    if (hash() != detail::hash<type>())
+      {
+        auto &j = initializer.json_serializer;
+        if (!(j.contains("base") &&
+              (detail::hash<type>() == j.at("base").get<std::string>())))
+          throw std::runtime_error("Cannot cast object of type " + type_name() +
+                                   " to object of type " +
+                                   boost::core::type_name<type>() + ".");
+        auto new_object = initializer.to_base(object);
+        if (!(new_object && *new_object))
+          throw std::runtime_error("New object does not have value.");
+        if (!(detail::hash(new_object) == j.at("base").get<std::string>()))
+          throw std::runtime_error("New object does not have the right hash.");
+        const auto cast_ptr =
+          new_object->template try_cast<std::shared_ptr<type>>();
+        if (cast_ptr == nullptr)
+          throw std::runtime_error("Could not cast converted object to " +
+                                   std::string(boost::core::type_name<type>()));
+        ptr = *cast_ptr;
+      }
+    else
+      {
+        const auto cast_ptr =
+          object->template try_cast<std::shared_ptr<type>>();
+        if (cast_ptr == nullptr)
+          throw std::runtime_error(
+            "Could not cast object to shared pointer of type " +
+            std::string(boost::core::type_name<type>()) +
+            " from object of type " + boost::core::demangle([&]() {
+              const char *named = object->type().name();
+              if (named != nullptr && named[0] != '\0')
+                return named;
+              const auto info_name = object->type().info().name();
+              static thread_local std::string info_name_str;
+              info_name_str = std::string(info_name);
+              return info_name_str.c_str();
+            }()) +
+            ".");
+        ptr = *cast_ptr;
+      }
+    return ptr;
+  }
+
+
+
+  template <typename T>
+  inline T &
+  NodeObject::get()
+  {
+    if (!ready())
+      throw std::runtime_error("Object is not ready.");
+    return *(get_shared<T>());
+  }
+
+
+
+  template <typename T>
+  inline const T &
+  NodeObject::get() const
+  {
+    if (!ready())
+      throw std::runtime_error("Object is not ready.");
+    return *(get_shared<T>());
+  }
+
+
+
+  template <typename T>
+  inline std::shared_ptr<const T>
+  NodeObject::get_shared() const
+  {
+    if (!ready())
+      throw std::runtime_error("Object is not ready.");
+    using type = std::remove_cv_t<std::remove_reference_t<T>>;
+    std::shared_ptr<const type> ptr;
+    if (hash() != detail::hash<type>())
+      {
+        auto &j = initializer.json_serializer;
+        if (!(j.contains("base") &&
+              (detail::hash<type>() == j.at("base").get<std::string>())))
+          throw std::runtime_error("Cannot cast object of type " + type_name() +
+                                   " to object of type " +
+                                   boost::core::type_name<type>() + ".");
+        auto new_object = initializer.to_base(object);
+        if (!(new_object && *new_object))
+          throw std::runtime_error("New object does not have value.");
+        if (!(detail::hash(new_object) == j.at("base").get<std::string>()))
+          throw std::runtime_error("New object does not have the right hash.");
+        const auto cast_ptr =
+          new_object->template try_cast<std::shared_ptr<const type>>();
+        if (cast_ptr == nullptr)
+          throw std::runtime_error("Could not cast converted object to " +
+                                   std::string(boost::core::type_name<type>()));
+        ptr = *cast_ptr;
+      }
+    else
+      {
+        const auto cast_ptr =
+          object->template try_cast<std::shared_ptr<const type>>();
+        if (cast_ptr == nullptr)
+          throw std::runtime_error(
+            "Could not cast object to shared pointer of type " +
+            std::string(boost::core::type_name<type>()) +
+            " from object of type " + boost::core::demangle([&]() {
+              const char *named = object->type().name();
+              if (named != nullptr && named[0] != '\0')
+                return named;
+              const auto info_name = object->type().info().name();
+              static thread_local std::string info_name_str;
+              info_name_str = std::string(info_name);
+              return info_name_str.c_str();
+            }()) +
+            ".");
+        ptr = *cast_ptr;
+      }
+    return ptr;
+  }
+
+
+
+  template <typename T>
+  inline NodeObject &
+  NodeObject::operator=(std::shared_ptr<T> data)
+  {
+    if (!(object && *object))
+      {
+        *this = NodeObject(data);
+        return *this;
+      }
+    // Check that we store a compatible type first.
+    // Check that detail::hash<T>() is contained in hash().
+    const auto my_hash = hash();
+    const auto type_id = detail::hash<T>();
+    if (my_hash.find(type_id) != 0)
+      throw std::runtime_error(
+        "Object type does not match. My hash is " + my_hash +
+        " and the object hash is " + type_id +
+        ". They should at least start with the same characters.");
+    *this = NodeObject(data);
+    return *this;
+  }
+
+
+
+  template <typename T>
+  inline NodeObject &
+  NodeObject::operator=(const T &data)
+  {
+    *this = NodeObject(std::make_shared<T>(data));
+    return *this;
+  }
+
+
+
+  template <typename T>
+  inline bool
+  NodeObject::is_registered_elementary_type()
+  {
+    using PlainType     = std::remove_cv_t<std::remove_reference_t<T>>;
+    const auto hash_str = detail::hash<PlainType>();
+    const auto it       = initializers.find(hash_str);
+    return (it != initializers.end()) &&
+           (it->second.node_type == NodeType::elementary_constructor);
+  }
+
+  namespace detail
+  {
+    std::shared_ptr<entt::meta_any> &
+    meta_any_ref(NodeObject &node);
+
+    const std::shared_ptr<entt::meta_any> &
+    meta_any_ref(const NodeObject &node);
+  } // namespace detail
 } // namespace coral
+#if defined(CORAL_HEADER_ONLY) && CORAL_HEADER_ONLY
+#  include "coral_implementation.h"
+#endif
 #endif

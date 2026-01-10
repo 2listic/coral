@@ -17,9 +17,9 @@ TEST(dealiiTypes, Triangulation)
   NodeObject::register_type<type>();
 
   // This builds a Triangulation<2> object
-  NodeObject obj(coral::hash<type>());
-  obj();
-  auto &tria = obj.get<type>();
+  NodeObjectPtr obj = make_node<type>();
+  (*obj)();
+  auto &tria = obj->get<type>();
   GridGenerator::hyper_cube(tria, 0, 1, true);
   ASSERT_EQ(1, tria.n_active_cells());
 }
