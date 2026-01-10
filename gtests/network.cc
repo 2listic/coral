@@ -12,7 +12,7 @@ using json = nlohmann::json;
 
 
 // Failing test from network.cc
-TEST(NetworkTest, BareMinimal)
+TEST(Network, BareMinimal)
 {
   coral::NodeObject::register_elementary_type<double>();
 
@@ -103,7 +103,7 @@ TEST(NetworkTest, BareMinimal)
     << "The output node should have the value 3.0";
 }
 
-TEST(NetworkTest, ExplicitNodeNaming)
+TEST(Network, ExplicitNodeNaming)
 {
   coral::NodeObject::register_elementary_type<double>();
   auto sum = [](const double &a, const double &b) { return a + b; };
@@ -128,7 +128,7 @@ TEST(NetworkTest, ExplicitNodeNaming)
   ASSERT_EQ(network.get_node_name(id4), "adder");
 }
 
-TEST(NetworkTest, AutoNameOnConnection)
+TEST(Network, AutoNameOnConnection)
 {
   coral::NodeObject::register_elementary_type<double>();
   auto pass = [](const double &a) { return a; };
@@ -144,7 +144,7 @@ TEST(NetworkTest, AutoNameOnConnection)
   ASSERT_EQ(network.get_node_name(src_id), "in");
 }
 
-TEST(NetworkTest, ParseAndDump)
+TEST(Network, ParseAndDump)
 {
   // Load the JSON file
   std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
@@ -188,7 +188,7 @@ TEST(NetworkTest, ParseAndDump)
 
 // ConnectionsMapTracking test moved to failing.cc
 
-TEST(NetworkTest, ConnectionSerialization)
+TEST(Network, ConnectionSerialization)
 { // Create a connection
   coral::Connection conn(1, 3, 2, 4);
 
@@ -212,7 +212,7 @@ TEST(NetworkTest, ConnectionSerialization)
 }
 
 // Test for JSON-based workflow
-TEST(NetworkTest, JsonBasedWorkflow)
+TEST(Network, JsonBasedWorkflow)
 {
   // Load the JSON file
   std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
@@ -240,7 +240,7 @@ TEST(NetworkTest, JsonBasedWorkflow)
 }
 
 // Test for validating edge connections
-TEST(NetworkTest, ValidateEdgeConnections)
+TEST(Network, ValidateEdgeConnections)
 {
   // Load the JSON file
   std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
@@ -292,7 +292,7 @@ TEST(NetworkTest, ValidateEdgeConnections)
 }
 
 // Test for verifying node types
-TEST(NetworkTest, VerifyNodeTypes)
+TEST(Network, VerifyNodeTypes)
 {
   // Load the JSON file
   std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
@@ -385,7 +385,7 @@ TEST(NetworkTest, VerifyNodeTypes)
 }
 
 // Test for connections map tracking
-TEST(NetworkTest, ConnectionsMapTracking)
+TEST(Network, ConnectionsMapTracking)
 {
   // Load the JSON file
   std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
@@ -521,7 +521,7 @@ TEST(NetworkTest, ConnectionsMapTracking)
 }
 
 // Test for network serialization
-TEST(NetworkTest, NetworkSerialization)
+TEST(Network, NetworkSerialization)
 {
   // Load the JSON file
   std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
@@ -613,7 +613,7 @@ TEST(NetworkTest, NetworkSerialization)
   EXPECT_TRUE(new_network.is_connected(8, 9));
 }
 
-TEST(NetworkTest, RegistrySubset)
+TEST(Network, RegistrySubset)
 {
   coral::NodeObject::register_elementary_type<int>();
   coral::NodeObject::register_elementary_type<double>();
@@ -632,7 +632,7 @@ TEST(NetworkTest, RegistrySubset)
             "elementary_constructor");
 }
 
-TEST(NetworkTest, ParseAndExecuteNetwork)
+TEST(Network, ParseAndExecuteNetwork)
 {
   // Load the JSON file
   std::ifstream file(SOURCE_DIR "/test_files/mwe.json");

@@ -2,24 +2,24 @@
 
 #include "coral.h"
 
-TEST(ConnectionTypeTest, ConstDouble)
+TEST(ConnectionType, ConstDouble)
 {
   EXPECT_EQ(coral::connection_type<const double>(),
             coral::ConnectionType::input);
 }
 
-TEST(ConnectionTypeTest, Double)
+TEST(ConnectionType, Double)
 {
   EXPECT_EQ(coral::connection_type<double>(), coral::ConnectionType::input);
 }
 
-TEST(ConnectionTypeTest, ConstDoubleRef)
+TEST(ConnectionType, ConstDoubleRef)
 {
   EXPECT_EQ(coral::connection_type<const double &>(),
             coral::ConnectionType::input);
 }
 
-TEST(ConnectionTypeTest, DoubleRef)
+TEST(ConnectionType, DoubleRef)
 {
   EXPECT_EQ(coral::connection_type<double &>(),
             coral::ConnectionType::pass_through);

@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <fstream>
+
 #include "coral_network.h"
 #include "register_types.h"
 
@@ -122,8 +124,12 @@ TEST(Modules, HyperCubeNetworkRoundTrip)
   ASSERT_EQ(network_node->n_outputs(), 1u);
 
   // Dump the network_node to json, rebuild, and compare network json.
-  json  node_json     = network_node;
-  auto  network_node2 = node_json.get<coral::NodeObjectPtr>();
+  json node_json     = network_node;
+  auto network_node2 = node_json.get<coral::NodeObjectPtr>();
+
+  json node_json2 = network_node2;
+  EXPECT_EQ(node_json, node_json2);
+
   auto &network2      = network_node2->get<coral::Network>();
   json  network_json1 = network.to_json();
   json  network_json2 = network2.to_json();
