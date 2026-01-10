@@ -71,11 +71,7 @@ TEST(dealiiTypes, DoFHandler)
 TEST(dealiiTypes, TriangulationRefineGlobal)
 {
   using type = Triangulation<2>;
-  NodeObject::register_type<type>();
-  NodeObject::register_type<unsigned int>();
-  NodeObject::register_method<type, void, unsigned int>(
-    &type::refine_global,
-    {"Triangulation<2>::refine_global", "triangulation", "n_refinements"});
+  register_all_types();
 
   // This builds a Triangulation<2> object
   NodeObjectPtr obj = make_node<type>();
@@ -83,8 +79,7 @@ TEST(dealiiTypes, TriangulationRefineGlobal)
   auto &tria = obj->get<type>();
   GridGenerator::hyper_cube(tria, 0, 1, true);
 
-  NodeObjectPtr ref   = make_method_node("Triangulation<2>::refine_global",
-                                       &Triangulation<2>::refine_global);
+  NodeObjectPtr ref   = make_node("Triangulation<2>::refine_global");
   NodeObjectPtr n_ref = make_node(2u);
   ref->set_arguments({obj, n_ref});
   (*ref)();
@@ -102,8 +97,7 @@ TEST(dealiiTypes, TriangulationHyperCube)
   auto &tria = obj->get<Triangulation<2>>();
 
   NodeObjectPtr make_grid =
-    make_method_node("GridGenerator::generate_from_name_and_arguments<2>",
-                     &GridGenerator::generate_from_name_and_arguments<2, 2>);
+    make_node("GridGenerator::generate_from_name_and_arguments<2>");
 
   EXPECT_TRUE(registry.contains(make_grid->hash()));
   EXPECT_EQ(registry[make_grid->hash()]["type"], make_grid->hash());

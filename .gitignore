@@ -9,6 +9,7 @@ CMakeFiles/
 
 
 build*/
+build*/*.json
 .cache/
 
 *.dot

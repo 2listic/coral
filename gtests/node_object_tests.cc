@@ -141,8 +141,6 @@ TEST(NodeObject, FunctionRegistration)
   NodeObject::register_function(my_function,
                                 {{"my_function", "sum", "a", "b"}});
 
-  std::cout << NodeObject::get_registry().dump(2) << std::endl;
-
   NodeObjectPtr obj = coral::make_method_node("my_function", my_function);
 
   // Check number of inputs and outputs

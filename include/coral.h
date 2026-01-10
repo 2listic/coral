@@ -3,11 +3,14 @@
 
 #include <nlohmann/json.hpp> // JSON library
 
+#include <filesystem>
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -37,6 +40,7 @@ namespace coral
 
   // forward declarations
   class NodeObject;
+  class Network;
 
   using NodeObjectPtr = std::shared_ptr<NodeObject>;
 
@@ -105,8 +109,11 @@ namespace coral
            std::string(entt::type_id<underlying_type>().name()));
 
     const char *base_name_ptr = detail::store_identifier(base_identifier);
-    const auto  type_id       = entt::hashed_string{base_name_ptr}.value();
-    entt::meta_factory<stored_type>().type(type_id, base_name_ptr);
+    const char *type_name_ptr = base_name_ptr;
+    if (!suffix.empty() && base_identifier.find('(') != std::string::npos)
+      type_name_ptr = detail::store_identifier(suffix);
+    const auto type_id = entt::hashed_string{type_name_ptr}.value();
+    entt::meta_factory<stored_type>().type(type_id, type_name_ptr);
 
     if (suffix.empty())
       return base_identifier;
@@ -256,6 +263,8 @@ namespace coral
     void_function,
     //! non void function
     function,
+    //! Network node
+    network,
   };
 
   /**
@@ -330,6 +339,17 @@ namespace coral
     mutable json json_serializer;
   };
 
+  struct NodeInterface
+  {
+    json arguments = json::array();
+    json inputs    = json::array();
+    json outputs   = json::array();
+  };
+
+  auto
+  build_network_interface(const std::shared_ptr<Network> &net) -> NodeInterface;
+
+
   /**
    * @class NodeObject
    * @brief A class that represents an object of any type.
@@ -346,6 +366,7 @@ namespace coral
   class NodeObject : public std::enable_shared_from_this<NodeObject>
   {
   public:
+    friend class Network;
     NodeObject() = default;
 
     /**
@@ -388,6 +409,7 @@ namespace coral
       initialize_arguments();
       initialize_inputs();
       initialize_outputs();
+      setup_network_if_needed();
     }
 
     /**
@@ -409,6 +431,7 @@ namespace coral
       initialize_arguments();
       initialize_inputs();
       initialize_outputs();
+      setup_network_if_needed();
     }
 
     /**
@@ -432,6 +455,43 @@ namespace coral
           registry[hash_str] = initializer.json_serializer;
         }
       return registry;
+    }
+
+    static auto
+    is_network_type(const std::string &hash_str) -> bool
+    {
+      return !network_type_hash.empty() && hash_str == network_type_hash;
+    }
+
+    using NetworkExecutor = std::function<std::shared_ptr<
+      entt::meta_any>(NodeObject &, std::vector<std::shared_ptr<NodeObject>>)>;
+
+    static auto
+    build_network_interface(const std::shared_ptr<entt::meta_any> &value)
+      -> NodeInterface
+    {
+      if (!network_interface_builder)
+        return {};
+      return network_interface_builder(value);
+    }
+
+    static void
+    set_network_executor(NetworkExecutor executor)
+    {
+      network_executor = std::move(executor);
+    }
+
+    void
+    override_interface(const json &arguments,
+                       const json &inputs,
+                       const json &outputs)
+    {
+      initializer.json_serializer["arguments"] = arguments;
+      initializer.json_serializer["inputs"]    = inputs;
+      initializer.json_serializer["outputs"]   = outputs;
+      initialize_arguments();
+      initialize_inputs();
+      initialize_outputs();
     }
 
     auto
@@ -494,6 +554,10 @@ namespace coral
         throw std::runtime_error(
           "Arguments are not ready. You can only call "
           "this function after all arguments are ready.");
+
+      if (initializer.node_type == NodeType::elementary_constructor &&
+          initializer.to_string && object && *object)
+        initializer.json_serializer["value"] = initializer.to_string(object);
 
       object = initializer.executor(arguments);
       // Check if we have to copy back the original value
@@ -1515,6 +1579,11 @@ namespace coral
      * A list of all known types and their initializers.
      */
     static inline std::map<std::string, NodeObjectInitializer> initializers;
+    static inline std::string network_type_hash;
+    static inline std::function<NodeInterface(
+      const std::shared_ptr<entt::meta_any> &)>
+                                  network_interface_builder;
+    static inline NetworkExecutor network_executor;
 
     template <typename T>
     static bool
@@ -1621,6 +1690,47 @@ namespace coral
         }
     }
 
+    void
+    setup_network_if_needed()
+    {
+      const auto &type = initializer.json_serializer.at("type");
+      if (!NodeObject::is_network_type(type.get<std::string>()))
+        return;
+
+      if (ready())
+        {
+          const auto iface = NodeObject::build_network_interface(object);
+          if (!iface.arguments.empty() || !iface.inputs.empty() ||
+              !iface.outputs.empty())
+            override_interface(iface.arguments, iface.inputs, iface.outputs);
+        }
+
+      initializer.executor =
+        [this](std::vector<std::shared_ptr<NodeObject>> args)
+        -> std::shared_ptr<entt::meta_any> {
+        if (!ready())
+          {
+            if (initializer.parse_string &&
+                initializer.json_serializer.contains("value"))
+              parse_string(initializer.json_serializer["value"]
+                             .template get<std::string>());
+            else
+              throw std::runtime_error(
+                "Network node has no value to initialize.");
+          }
+
+        const auto iface = NodeObject::build_network_interface(object);
+        if (!iface.arguments.empty() || !iface.inputs.empty() ||
+            !iface.outputs.empty())
+          override_interface(iface.arguments, iface.inputs, iface.outputs);
+
+        if (!network_executor)
+          throw std::runtime_error("Network executor is not configured.");
+
+        return network_executor(*this, std::move(args));
+      };
+    }
+
   public:
     void
     set_inputs(
@@ -1714,7 +1824,8 @@ namespace coral
         "The type does not match the expected value: expected " +
         j["type"].dump() + ", got " + obj->hash());
 
-    const auto &reg = obj->get_info();
+    const auto &reg        = obj->get_info();
+    const bool  is_network = NodeObject::is_network_type(obj->hash());
 
     // If the input JSON contains fields that also exist in the registry
     // description, they must match exactly (except for "value", which is
@@ -1722,6 +1833,9 @@ namespace coral
     for (const auto &[key, val] : j.items())
       {
         if (key == "value")
+          continue;
+        if (is_network &&
+            (key == "arguments" || key == "inputs" || key == "outputs"))
           continue;
         if (reg.contains(key) && reg.at(key) != val)
           throw std::runtime_error(
@@ -1732,8 +1846,9 @@ namespace coral
 
     const auto node_type = reg.value("node_type", "");
 
-    if (node_type == "elementary_constructor" ||
-        node_type == "empty_constructor")
+    if ((node_type == "elementary_constructor" ||
+         node_type == "empty_constructor") &&
+        !is_network)
       (*obj)();
     if (j.contains("value"))
       {
@@ -1742,6 +1857,75 @@ namespace coral
           {
             // Refresh serialized value to match the parsed object.
             (void)obj->get_info();
+          }
+      }
+
+    if (is_network)
+      {
+        const bool has_any_interface = j.contains("arguments") ||
+                                       j.contains("inputs") ||
+                                       j.contains("outputs");
+        const bool has_full_interface = j.contains("arguments") &&
+                                        j.contains("inputs") &&
+                                        j.contains("outputs");
+
+        const auto &any = static_cast<std::shared_ptr<entt::meta_any> &>(*obj);
+        const auto  expected = NodeObject::build_network_interface(any);
+
+        auto validate_interface = [](const json          &args,
+                                     const json          &inputs,
+                                     const json          &outputs,
+                                     const NodeInterface &expected_iface) {
+          if (!args.is_array() || !inputs.is_array() || !outputs.is_array())
+            throw std::runtime_error("Network interface must be arrays.");
+
+          if (args.size() != expected_iface.arguments.size())
+            throw std::runtime_error(
+              "Network arguments do not match expected size.");
+          if (inputs != expected_iface.inputs)
+            throw std::runtime_error(
+              "Network inputs do not match expected order.");
+          if (outputs != expected_iface.outputs)
+            throw std::runtime_error(
+              "Network outputs do not match expected order.");
+
+          for (size_t i = 0; i < args.size(); ++i)
+            {
+              const auto &provided = args[i];
+              const auto &expected = expected_iface.arguments[i];
+              if (!provided.contains("type"))
+                throw std::runtime_error("Network argument is missing type.");
+              if (provided.at("type") != expected.at("type"))
+                throw std::runtime_error(
+                  "Network argument type does not match expected value.");
+              if (!provided.contains("connection_type"))
+                throw std::runtime_error(
+                  "Network argument is missing connection_type.");
+              if (provided.at("connection_type") !=
+                  expected.at("connection_type"))
+                throw std::runtime_error(
+                  "Network argument connection_type does not match expected value.");
+            }
+        };
+
+        if (has_any_interface)
+          {
+            if (!has_full_interface)
+              throw std::runtime_error(
+                "Network interface override requires arguments, inputs, and outputs.");
+            validate_interface(j.at("arguments"),
+                               j.at("inputs"),
+                               j.at("outputs"),
+                               expected);
+            obj->override_interface(j.at("arguments"),
+                                    j.at("inputs"),
+                                    j.at("outputs"));
+          }
+        else
+          {
+            obj->override_interface(expected.arguments,
+                                    expected.inputs,
+                                    expected.outputs);
           }
       }
   }

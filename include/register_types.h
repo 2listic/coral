@@ -14,6 +14,7 @@
 #include <nlohmann/json.hpp>
 
 #include "coral.h"
+#include "coral_network.h"
 
 namespace nlohmann
 {
@@ -64,6 +65,7 @@ namespace coral
 
     NodeObject::register_derived_type<std::ostream, std::ofstream, std::string>(
       "file_name");
+    Network::register_node();
   }
 
   template <int dim, int spacedim>

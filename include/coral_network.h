@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <limits>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -84,6 +85,18 @@ namespace coral
 
   class Network
   {
+  public:
+    struct DanglingPort
+    {
+      unsigned int   node_id        = 0;
+      int            argument_index = -1;
+      int            input_index    = -1;
+      int            output_index   = -1;
+      ConnectionType type           = ConnectionType::none;
+    };
+
+    using Interface = NodeInterface;
+
   private:
     std::map<unsigned int, std::shared_ptr<NodeObject>> nodes;
     std::map<unsigned int, std::string>                 nodes_name;
@@ -93,6 +106,72 @@ namespace coral
     std::map<unsigned int, Connection> connections;
 
     tf::Taskflow taskflow;
+
+  public:
+    Network() = default;
+
+    Network(const Network &other)
+      : nodes(other.nodes)
+      , nodes_name(other.nodes_name)
+      , connections(other.connections)
+    {
+      rebuild_taskflow();
+    }
+
+    Network &
+    operator=(const Network &other)
+    {
+      if (this == &other)
+        return *this;
+      nodes       = other.nodes;
+      nodes_name  = other.nodes_name;
+      connections = other.connections;
+      rebuild_taskflow();
+      return *this;
+    }
+
+    Network(Network &&) noexcept = default;
+    Network &
+    operator=(Network &&) noexcept = default;
+
+    static void
+    register_node();
+
+  private:
+    void
+    rebuild_taskflow()
+    {
+      taskflow.clear();
+      node_tasks.clear();
+
+      for (const auto &entry : nodes)
+        {
+          const auto node_id = entry.first;
+          const auto node    = entry.second;
+          const auto name    = get_node_name(node_id);
+          node_tasks[node_id] =
+            taskflow
+              .emplace([node, node_id, name]() {
+                std::cout << "Running node " << node_id << ": " << name
+                          << " (type = " << node->type_name() << ")"
+                          << std::endl;
+                (*node)();
+              })
+              .name(name == "" ? "node_" + std::to_string(node_id) + ": " +
+                                   node->type_name() :
+                                 name);
+        }
+
+      for (const auto &[conn_id, conn] : connections)
+        {
+          (void)conn_id;
+          if (node_tasks.find(conn.source_id) == node_tasks.end() ||
+              node_tasks.find(conn.target_id) == node_tasks.end())
+            throw std::runtime_error(
+              "Taskflow rebuild missing source or target node.");
+          node_tasks[conn.source_id].precede(node_tasks[conn.target_id]);
+        }
+    }
 
   public:
     void
@@ -115,10 +194,11 @@ namespace coral
     }
 
     unsigned int
-    add_node(const std::shared_ptr<NodeObject> &node)
+    add_node(const std::shared_ptr<NodeObject> &node,
+             const std::string                 &node_name = "")
     {
       unsigned int id = nodes.empty() ? 0 : nodes.rbegin()->first + 1;
-      add_node(id, node);
+      add_node(id, node, node_name);
       return id;
     }
 
@@ -229,6 +309,23 @@ namespace coral
         connections.empty() ? 0 : connections.rbegin()->first + 1;
       add_connection(id, conn);
       return id;
+    }
+
+    void
+    remove_nodes_and_connections(
+      const std::vector<unsigned int> &node_ids,
+      const std::vector<unsigned int> &connection_ids)
+    {
+      for (const auto id : connection_ids)
+        connections.erase(id);
+
+      for (const auto id : node_ids)
+        {
+          nodes.erase(id);
+          nodes_name.erase(id);
+        }
+
+      rebuild_taskflow();
     }
 
     unsigned int
@@ -438,6 +535,234 @@ namespace coral
       return result;
     }
 
+    [[nodiscard]] auto
+    get_inputs() const -> std::vector<std::pair<unsigned int, unsigned int>>
+    {
+      std::vector<std::pair<unsigned int, unsigned int>> result;
+
+      // Ordering is stable by node id (ascending), then by input index.
+      for (const auto &[node_id, node] : nodes)
+        {
+          if (!node)
+            continue;
+
+          const auto        n_inputs = node->n_inputs();
+          std::vector<bool> connected(n_inputs, false);
+
+          for (const auto &[conn_id, conn] : connections)
+            {
+              (void)conn_id;
+              if (conn.target_id == node_id && conn.target_input < n_inputs)
+                connected[conn.target_input] = true;
+            }
+
+          for (unsigned int i = 0; i < n_inputs; ++i)
+            if (!connected[i])
+              result.emplace_back(node_id, i);
+        }
+
+      return result;
+    }
+
+    [[nodiscard]] auto
+    n_inputs() const -> size_t
+    {
+      return get_inputs().size();
+    }
+
+    [[nodiscard]] auto
+    get_outputs() const -> std::vector<std::pair<unsigned int, unsigned int>>
+    {
+      std::vector<std::pair<unsigned int, unsigned int>> result;
+
+      // Ordering is stable by node id (ascending), then by output index.
+      for (const auto &[node_id, node] : nodes)
+        {
+          if (!node)
+            continue;
+
+          const auto        n_outputs = node->n_outputs();
+          std::vector<bool> connected(n_outputs, false);
+
+          for (const auto &[conn_id, conn] : connections)
+            {
+              (void)conn_id;
+              if (conn.source_id == node_id && conn.source_output < n_outputs)
+                connected[conn.source_output] = true;
+            }
+
+          for (unsigned int i = 0; i < n_outputs; ++i)
+            if (!connected[i])
+              result.emplace_back(node_id, i);
+        }
+
+      return result;
+    }
+
+    [[nodiscard]] auto
+    n_outputs() const -> size_t
+    {
+      return get_outputs().size();
+    }
+
+    NodeObjectPtr
+    input(const unsigned int index)
+    {
+      // Indexing follows get_inputs(): ascending node id, then input index.
+      const auto inputs = get_inputs();
+      if (index >= inputs.size())
+        throw std::runtime_error("Network input index out of bounds.");
+      const auto &[node_id, port_index] = inputs[index];
+      auto it                           = nodes.find(node_id);
+      if (it == nodes.end() || !it->second)
+        throw std::runtime_error("Network input node not found.");
+      return it->second->input(port_index);
+    }
+
+    NodeObjectPtr
+    output(const unsigned int index)
+    {
+      // Indexing follows get_outputs(): ascending node id, then output index.
+      const auto outputs = get_outputs();
+      if (index >= outputs.size())
+        throw std::runtime_error("Network output index out of bounds.");
+      const auto &[node_id, port_index] = outputs[index];
+      auto it                           = nodes.find(node_id);
+      if (it == nodes.end() || !it->second)
+        throw std::runtime_error("Network output node not found.");
+      return it->second->output(port_index);
+    }
+
+    [[nodiscard]] auto
+    get_arguments() const -> std::vector<DanglingPort>
+    {
+      std::vector<DanglingPort> result;
+
+      for (const auto &[node_id, node] : nodes)
+        {
+          if (!node)
+            continue;
+
+          const auto                  info = node->get_info();
+          std::map<int, DanglingPort> by_argument;
+
+          if (info.contains("inputs"))
+            {
+              const auto &inputs = info["inputs"];
+              for (unsigned int i = 0; i < inputs.size(); ++i)
+                {
+                  const int arg_index = inputs[i].get<int>();
+                  bool      connected = false;
+                  for (const auto &[conn_id, conn] : connections)
+                    {
+                      (void)conn_id;
+                      if (conn.target_id == node_id && conn.target_input == i)
+                        {
+                          connected = true;
+                          break;
+                        }
+                    }
+                  if (!connected)
+                    {
+                      auto &entry          = by_argument[arg_index];
+                      entry.node_id        = node_id;
+                      entry.argument_index = arg_index;
+                      entry.input_index    = static_cast<int>(i);
+                    }
+                }
+            }
+
+          if (info.contains("outputs"))
+            {
+              const auto &outputs = info["outputs"];
+              for (unsigned int i = 0; i < outputs.size(); ++i)
+                {
+                  const int arg_index = outputs[i].get<int>();
+                  if (arg_index < 0)
+                    continue;
+                  bool connected = false;
+                  for (const auto &[conn_id, conn] : connections)
+                    {
+                      (void)conn_id;
+                      if (conn.source_id == node_id && conn.source_output == i)
+                        {
+                          connected = true;
+                          break;
+                        }
+                    }
+                  if (!connected)
+                    {
+                      auto &entry          = by_argument[arg_index];
+                      entry.node_id        = node_id;
+                      entry.argument_index = arg_index;
+                      entry.output_index   = static_cast<int>(i);
+                    }
+                }
+            }
+
+          for (auto &[arg_index, entry] : by_argument)
+            {
+              (void)arg_index;
+              const bool has_input  = entry.input_index >= 0;
+              const bool has_output = entry.output_index >= 0;
+              if (has_input && has_output)
+                entry.type = ConnectionType::pass_through;
+              else if (has_input)
+                entry.type = ConnectionType::input;
+              else if (has_output)
+                entry.type = ConnectionType::output;
+              else
+                entry.type = ConnectionType::none;
+              result.push_back(entry);
+            }
+        }
+
+      return result;
+    }
+
+    [[nodiscard]] auto
+    build_interface() const -> Interface
+    {
+      Interface interface;
+
+      for (const auto &entry : get_arguments())
+        {
+          auto node_it = nodes.find(entry.node_id);
+          if (node_it == nodes.end() || !node_it->second)
+            throw std::runtime_error("Network interface node not found.");
+
+          const auto info = node_it->second->get_info();
+          if (!info.contains("arguments"))
+            throw std::runtime_error("Node is missing argument metadata.");
+
+          if (entry.argument_index < 0 ||
+              entry.argument_index >=
+                static_cast<int>(info["arguments"].size()))
+            throw std::runtime_error("Dangling argument index out of range.");
+
+          const auto &arg_info = info["arguments"][entry.argument_index];
+          if (!arg_info.contains("type"))
+            throw std::runtime_error("Argument metadata missing type.");
+
+          nlohmann::json arg_json;
+          arg_json["type"]            = arg_info["type"];
+          arg_json["connection_type"] = magic_enum::enum_name(entry.type);
+          if (arg_info.contains("name"))
+            arg_json["name"] = arg_info["name"];
+
+          const auto arg_index =
+            static_cast<unsigned int>(interface.arguments.size());
+          interface.arguments.push_back(arg_json);
+
+          if ((entry.type & ConnectionType::input) != ConnectionType::none)
+            interface.inputs.push_back(arg_index);
+          if ((entry.type & ConnectionType::output) != ConnectionType::none)
+            interface.outputs.push_back(arg_index);
+        }
+
+      return interface;
+    }
+
     // Check if two nodes are connected (direct connection from inId to outId)
     [[nodiscard]] auto
     is_connected(unsigned int inId, unsigned int outId) const -> bool
@@ -541,5 +866,238 @@ namespace coral
   {
     conn = Connection::from_json(j);
   }
+
+  inline void
+  Network::register_node()
+  {
+    auto &initializer = NodeObject::register_json_header<Network>();
+    initializer.json_serializer["node_type"] = "network";
+    initializer.node_type                    = NodeType::network;
+    initializer.json_serializer["value"]     = "{}";
+
+    NodeObject::network_type_hash = coral::hash<Network>();
+    NodeObject::network_interface_builder =
+      [](const std::shared_ptr<entt::meta_any> &value) -> NodeInterface {
+      const auto ptr = value->template try_cast<std::shared_ptr<Network>>();
+      if (ptr == nullptr)
+        throw std::runtime_error(
+          "Could not cast meta_any to shared_ptr<Network>.");
+      return coral::build_network_interface(*ptr);
+    };
+
+    initializer.parse_string =
+      [](const std::string &value) -> std::shared_ptr<entt::meta_any> {
+      auto        t       = std::make_shared<Network>();
+      std::string payload = value;
+      bool        is_path = false;
+      if (!value.empty())
+        {
+          try
+            {
+              is_path = std::filesystem::exists(value);
+            }
+          catch (const std::filesystem::filesystem_error &)
+            {
+              is_path = false;
+            }
+        }
+      if (is_path)
+        {
+          std::ifstream input(value);
+          if (!input)
+            throw std::runtime_error("Failed to open network file: " + value);
+          std::ostringstream buffer;
+          buffer << input.rdbuf();
+          payload = buffer.str();
+        }
+      auto j = json::parse(payload);
+      if (j.is_string())
+        j = json::parse(j.get<std::string>());
+      if (!j.contains("workflow") && j.contains("value") &&
+          j.at("value").is_string())
+        j = json::parse(j.at("value").get<std::string>());
+      t->from_json(j);
+      return std::make_shared<entt::meta_any>(t);
+    };
+
+    initializer.executor =
+      [](const std::vector<std::shared_ptr<NodeObject>> &args)
+      -> std::shared_ptr<entt::meta_any> {
+      if (args.size() != 0)
+        throw std::runtime_error("Wrong number of arguments.");
+      return std::make_shared<entt::meta_any>(std::make_shared<Network>());
+    };
+
+    initializer.to_string =
+      [](const std::shared_ptr<entt::meta_any> &value) -> std::string {
+      const auto ptr = value->template try_cast<std::shared_ptr<Network>>();
+      if (ptr == nullptr)
+        throw std::runtime_error(
+          "Could not cast meta_any to requested shared_ptr type.");
+      const Network &t = **ptr;
+      return json(t).dump();
+    };
+
+    NodeObject::set_network_executor([](NodeObject &node,
+                                        std::vector<std::shared_ptr<NodeObject>>
+                                          args)
+                                       -> std::shared_ptr<entt::meta_any> {
+      auto      &value = static_cast<std::shared_ptr<entt::meta_any> &>(node);
+      const auto ptr   = value->template try_cast<std::shared_ptr<Network>>();
+      if (ptr == nullptr)
+        throw std::runtime_error(
+          "Could not cast meta_any to shared_ptr<Network>.");
+      if (!*ptr)
+        throw std::runtime_error("Network object is not initialized.");
+
+      auto      &network  = **ptr;
+      const auto args_map = network.get_arguments();
+
+      if (args.size() != args_map.size())
+        throw std::runtime_error("Wrong number of arguments.");
+
+      const auto                info = node.get_info();
+      std::vector<unsigned int> output_to_argument;
+      if (info.contains("outputs"))
+        {
+          const auto &outputs = info["outputs"];
+          output_to_argument.reserve(outputs.size());
+          for (const auto &entry : outputs)
+            {
+              const auto arg_index = entry.get<int>();
+              output_to_argument.push_back(
+                arg_index >= 0 ? static_cast<unsigned int>(arg_index) :
+                                 std::numeric_limits<unsigned int>::max());
+            }
+        }
+
+      struct InputRestore
+      {
+        unsigned int  node_id;
+        unsigned int  input_index;
+        NodeObjectPtr previous;
+      };
+
+      std::vector<unsigned int> added_node_ids;
+      std::vector<unsigned int> added_connection_ids;
+      std::vector<InputRestore> restore_inputs;
+
+      bool cleaned = false;
+      auto cleanup = [&]() {
+        if (cleaned)
+          return;
+        cleaned = true;
+
+        for (const auto &entry : restore_inputs)
+          {
+            try
+              {
+                auto target_node = network.get_node(entry.node_id);
+                if (target_node)
+                  target_node->set_input(entry.input_index, entry.previous);
+              }
+            catch (const std::exception &)
+              {}
+          }
+
+        try
+          {
+            network.remove_nodes_and_connections(added_node_ids,
+                                                 added_connection_ids);
+          }
+        catch (const std::exception &)
+          {}
+      };
+
+      try
+        {
+          // Connect ready arguments to their corresponding network inputs.
+          for (size_t i = 0; i < args_map.size(); ++i)
+            {
+              const auto &entry = args_map[i];
+              const auto &arg   = args[i];
+              if (!arg || !arg->ready())
+                continue;
+
+              if ((entry.type & ConnectionType::input) == ConnectionType::none)
+                continue;
+
+              if (entry.input_index < 0)
+                throw std::runtime_error(
+                  "Network input index is invalid for argument " +
+                  std::to_string(i) + ".");
+
+              if (arg->n_outputs() == 0)
+                throw std::runtime_error("Argument " + std::to_string(i) +
+                                         " has no outputs to connect.");
+
+              auto target_node = network.get_node(entry.node_id);
+              if (!target_node)
+                throw std::runtime_error(
+                  "Network input node not found for argument " +
+                  std::to_string(i) + ".");
+
+              const auto input_index =
+                static_cast<unsigned int>(entry.input_index);
+              if (input_index >= target_node->n_inputs())
+                throw std::runtime_error(
+                  "Network input index out of bounds for argument " +
+                  std::to_string(i) + ".");
+
+              auto node_id = network.add_node(arg);
+              added_node_ids.push_back(node_id);
+              restore_inputs.push_back(
+                {entry.node_id, input_index, target_node->input(input_index)});
+
+              auto conn_id =
+                network.add_connection(node_id, entry.node_id, 0, input_index);
+              added_connection_ids.push_back(conn_id);
+
+              if (entry.type == ConnectionType::pass_through)
+                {
+                  for (size_t out_index = 0;
+                       out_index < output_to_argument.size();
+                       ++out_index)
+                    {
+                      if (output_to_argument[out_index] ==
+                          static_cast<unsigned int>(entry.argument_index))
+                        {
+                          node.set_output(static_cast<unsigned int>(out_index),
+                                          arg->output(0));
+                          break;
+                        }
+                    }
+                }
+            }
+
+          if (!network.get_inputs().empty())
+            throw std::runtime_error(
+              "Network has unconnected inputs after binding arguments.");
+
+          network.run();
+          const auto outputs = network.get_outputs();
+          for (size_t out_index = 0; out_index < outputs.size(); ++out_index)
+            node.set_output(static_cast<unsigned int>(out_index),
+                            network.output(out_index));
+          cleanup();
+        }
+      catch (...)
+        {
+          cleanup();
+          throw;
+        }
+
+      return value;
+    });
+  }
+
+  inline auto
+  build_network_interface(const std::shared_ptr<Network> &net) -> NodeInterface
+  {
+    if (!net)
+      throw std::runtime_error("Network interface builder received null.");
+    return net->build_interface();
+  }
+
 } // namespace coral
 #endif
