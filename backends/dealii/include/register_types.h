@@ -13,6 +13,9 @@
 
 #include <nlohmann/json.hpp>
 
+#include <iostream>
+#include <sstream>
+
 #include "coral.h"
 #include "coral_network.h"
 
