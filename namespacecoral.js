@@ -1,0 +1,56 @@
+var namespacecoral =
+[
+    [ "detail", "namespacecoral_1_1detail.html", [
+      [ "shared_ptr_to_base", "namespacecoral_1_1detail.html#acec65c58404e1b8907a8abca95478393", null ],
+      [ "store_identifier", "namespacecoral_1_1detail.html#a5732557bf017773a945f1d12d2386cb5", null ],
+      [ "type_aliases", "namespacecoral_1_1detail.html#a86e45aeb9dc55749fbb61e3dc96a791b", null ],
+      [ "type_identifier", "namespacecoral_1_1detail.html#a5efcada0f0100cf2787a7d695e579e03", null ]
+    ] ],
+    [ "Connection", "classcoral_1_1_connection.html", "classcoral_1_1_connection" ],
+    [ "is_callable", "structcoral_1_1is__callable.html", null ],
+    [ "Network", "classcoral_1_1_network.html", "classcoral_1_1_network" ],
+    [ "NodeObject", "classcoral_1_1_node_object.html", "classcoral_1_1_node_object" ],
+    [ "NodeObjectInitializer", "structcoral_1_1_node_object_initializer.html", "structcoral_1_1_node_object_initializer" ],
+    [ "NodeObjectPtr", "namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f", null ],
+    [ "ConnectionType", "namespacecoral.html#a4cb5aa0d2101c9b6b2a30b68f2560c15", [
+      [ "none", "namespacecoral.html#a4cb5aa0d2101c9b6b2a30b68f2560c15a334c4a4c42fdb79d7ebc3e73b517e6f8", null ],
+      [ "input", "namespacecoral.html#a4cb5aa0d2101c9b6b2a30b68f2560c15aa43c1b0aa53a0c908810c06ab1ff3967", null ],
+      [ "output", "namespacecoral.html#a4cb5aa0d2101c9b6b2a30b68f2560c15a78e6221f6393d1356681db398f14ce6d", null ],
+      [ "pass_through", "namespacecoral.html#a4cb5aa0d2101c9b6b2a30b68f2560c15ae2d68d874a73c72e056c6e92c005e699", null ],
+      [ "self", "namespacecoral.html#a4cb5aa0d2101c9b6b2a30b68f2560c15a590f53e8699817c6fa498cc11a4cbe63", null ]
+    ] ],
+    [ "NodeType", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536", [
+      [ "none", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536a334c4a4c42fdb79d7ebc3e73b517e6f8", null ],
+      [ "abstract", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536ace28071e1a0424ba1b7956dd3853c7fb", null ],
+      [ "elementary_constructor", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536ad440b687957b4692b38a1c308a8fe62a", null ],
+      [ "empty_constructor", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536ae1043af5ff52c17ad3b1b4a142e3f88c", null ],
+      [ "constructor", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536a6ca268371eeb5d93eefeb68f96157666", null ],
+      [ "void_method", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536a9ed816daef7f1d9f79d99ab840f23495", null ],
+      [ "void_const_method", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536a244e1d95ecf2d31349e2f53048c1d917", null ],
+      [ "method", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536aea9f6aca279138c58f705c8d4cb4b8ce", null ],
+      [ "const_method", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536ae562285cc08a3f52a4070a53d77619d8", null ],
+      [ "void_function", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536a5e10317a1e387e33dbcddd6dfc238202", null ],
+      [ "function", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536ac1c425268e68385d1ab5074c17a94f14", null ]
+    ] ],
+    [ "cast_args", "namespacecoral.html#afb50a11423f04de62d5a063d3f9a9c46", null ],
+    [ "cast_args_impl", "namespacecoral.html#aafd46bf6e1eea4080b783d6c466453fc", null ],
+    [ "connect", "namespacecoral.html#a1341a8134c74614a80c197df24374a48", null ],
+    [ "connection_type", "namespacecoral.html#a34fcc6acd1258dcc47130fc4a220d003", null ],
+    [ "from_json", "namespacecoral.html#add6efbaa0aa6ba227518ce0a67978e88", null ],
+    [ "from_json", "namespacecoral.html#aa341cd0e2301f166dbc542fdf0e671dc", null ],
+    [ "from_json", "namespacecoral.html#a7ae1c85bdb3a645886678978978cea5e", null ],
+    [ "hash", "namespacecoral.html#a5b5133967da138b0e8c23a1dcea2e326", null ],
+    [ "hash", "namespacecoral.html#a5efd0be00828bbae3390806f9188974d", null ],
+    [ "hash", "namespacecoral.html#a2d00125635720af769177d7d8a33b151", null ],
+    [ "hash", "namespacecoral.html#a2551f390114c66cca3c5b7835c2504e6", null ],
+    [ "make_method_node", "namespacecoral.html#a4fbf4f7d71920aa426067eb4c3a219e5", null ],
+    [ "make_node", "namespacecoral.html#aed92ee9769d9710df9eb7e1a33fe21df", null ],
+    [ "make_node", "namespacecoral.html#a9426e4a0f9f090e55049bfba670e3c16", null ],
+    [ "register_all_types", "namespacecoral.html#a8a727a04a0a181eb30a962949718b629", null ],
+    [ "register_dimensional_types", "namespacecoral.html#aa364f2f2bd0df69cc7c99db3df22543f", null ],
+    [ "register_non_dimensional_types", "namespacecoral.html#ac0a93248e4f3c01e12240a573debbd1e", null ],
+    [ "set_type_alias", "namespacecoral.html#a4b8990311e45ffb96dc2c215f7ab2793", null ],
+    [ "to_json", "namespacecoral.html#a62a918f0df1860a0ffe66808ceb79f36", null ],
+    [ "to_json", "namespacecoral.html#abb1b2aa90b4791b020ce6e2b7f7d8d9e", null ],
+    [ "to_json", "namespacecoral.html#aee87896ce99e23ffe24acea549eddb44", null ]
+];
