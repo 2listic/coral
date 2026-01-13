@@ -217,9 +217,16 @@ namespace boost
       tn_to_string(std::size_t n)
       {
         char buffer[32];
-        std::sprintf(buffer, "%lu", static_cast<unsigned long>(n));
+        const auto written =
+          std::snprintf(buffer, sizeof(buffer), "%lu",
+                        static_cast<unsigned long>(n));
 
-        return buffer;
+        if (written < 0)
+          return {};
+
+        return std::string(buffer,
+                           static_cast<std::size_t>(std::min<int>(
+                             written, static_cast<int>(sizeof(buffer) - 1))));
       }
 
 #if defined(BOOST_MSVC)

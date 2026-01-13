@@ -83,7 +83,8 @@ FOREACH(_build_type ${_d2_build_types})
     MESSAGE("-- Configuring library ${_lib}")
 
     ADD_LIBRARY(${_lib} INTERFACE)
-    TARGET_INCLUDE_DIRECTORIES(${_lib} INTERFACE ./include)
+    TARGET_INCLUDE_DIRECTORIES(
+      ${_lib} INTERFACE ./include ${CMAKE_CURRENT_SOURCE_DIR}/entt/single_include)
     # DEAL_II_SETUP_TARGET(${_lib} ${_BUILD_TYPE})
     TARGET_COMPILE_DEFINITIONS(${_lib} INTERFACE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     SET(TEST_LIBRARIES_${_BUILD_TYPE} ${_lib})

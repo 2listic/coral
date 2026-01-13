@@ -10,7 +10,6 @@
 
 #include "coral.h"
 #include "coral_network.h"
-#include "coral_utilities.h"
 #include "register_types.h"
 #include "taskflow/taskflow.hpp" // Taskflow library
 
@@ -118,11 +117,8 @@ main(int argc, char *argv[])
     input >> data;
     std::cout << "File " << input_json << " read." << std::endl;
 
-    json fixed_data = coral::fix_hashes(data);
-    std::cout << "Hashes fixed." << std::endl;
-
     coral::Network network;
-    network.from_json(fixed_data);
+    network.from_json(data);
     std::cout << "Build network from data." << std::endl;
 
     if (dump_graph) {

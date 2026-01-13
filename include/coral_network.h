@@ -6,12 +6,12 @@
 #include <taskflow/taskflow.hpp>
 
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <map>
 #include <memory>
 #include <sstream>
-#include <filesystem>
 
 #include "coral.h"
 #include "taskflow/core/task.hpp"
@@ -86,6 +86,7 @@ namespace coral
   {
   private:
     std::map<unsigned int, std::shared_ptr<NodeObject>> nodes;
+    std::map<unsigned int, std::string>                 nodes_name;
     std::map<unsigned int, tf::Task>                    node_tasks;
 
     // Store connections by their ID
@@ -95,17 +96,22 @@ namespace coral
 
   public:
     void
-    add_node(unsigned int id, const std::shared_ptr<NodeObject> &node)
+    add_node(unsigned int                       id,
+             const std::shared_ptr<NodeObject> &node,
+             const std::string                 &node_name = "")
     {
-      nodes[id] = node;
+      nodes[id]      = node;
+      nodes_name[id] = node_name;
       node_tasks[id] =
         taskflow
-          .emplace([node, id]() {
-            std::cout << "Running node " << id << ": " << node->type_name()
-                      << std::endl;
+          .emplace([node, id, node_name]() {
+            std::cout << "Running node " << id << ": " << node_name
+                      << " (type = " << node->type_name() << ")" << std::endl;
             (*node)();
           })
-          .name("node_" + std::to_string(id) + ": " + node->type_name());
+          .name(node_name == "" ?
+                  "node_" + std::to_string(id) + ": " + node->type_name() :
+                  node_name);
     }
 
     unsigned int
@@ -114,6 +120,25 @@ namespace coral
       unsigned int id = nodes.empty() ? 0 : nodes.rbegin()->first + 1;
       add_node(id, node);
       return id;
+    }
+
+    void
+    set_node_name(unsigned int id, const std::string &name)
+    {
+      nodes_name[id] = name;
+      if (node_tasks.find(id) != node_tasks.end())
+        {
+          node_tasks[id].name(name == "" ? "node_" + std::to_string(id) + ": " +
+                                             nodes[id]->type_name() :
+                                           name);
+        }
+    }
+
+    std::string
+    get_node_name(unsigned int id) const
+    {
+      auto it = nodes_name.find(id);
+      return it == nodes_name.end() ? std::string() : it->second;
     }
 
 
@@ -132,6 +157,36 @@ namespace coral
         {
           throw std::runtime_error("Target node not found: " +
                                    std::to_string(conn.target_id));
+        }
+
+      try
+        {
+          const auto &source_node = nodes.at(conn.source_id);
+          const auto &target_node = nodes.at(conn.target_id);
+          auto        output_ptr  = source_node->output(conn.source_output);
+
+          if (output_ptr == source_node &&
+              get_node_name(conn.source_id).empty())
+            {
+              const auto &info = target_node->get_info();
+              if (info.contains("inputs") && info.contains("arguments") &&
+                  conn.target_input < info["inputs"].size())
+                {
+                  const auto arg_index =
+                    info["inputs"][conn.target_input].get<unsigned int>();
+                  if (arg_index < info["arguments"].size() &&
+                      info["arguments"][arg_index].contains("name"))
+                    {
+                      set_node_name(conn.source_id,
+                                    info["arguments"][arg_index]["name"]
+                                      .get<std::string>());
+                    }
+                }
+            }
+        }
+      catch (const std::exception &)
+        {
+          // Naming is best-effort; ignore errors
         }
 
       // Set the input of the target node to the output of the source node
@@ -189,6 +244,39 @@ namespace coral
       return nodes.size();
     }
 
+    /**
+     * Return a registry containing only the node types used in this network.
+     */
+    json
+    get_registry() const
+    {
+      std::set<std::string>                              active_types;
+      std::map<std::string, std::shared_ptr<NodeObject>> type_to_node;
+      for (const auto &[id, node] : nodes)
+        {
+          (void)id;
+          active_types.insert(node->hash());
+          if (type_to_node.find(node->hash()) == type_to_node.end())
+            type_to_node[node->hash()] = node;
+        }
+
+      json full   = NodeObject::get_registry();
+      json result = json::object();
+      for (const auto &type_hash : active_types)
+        {
+          if (full.contains(type_hash))
+            result[type_hash] = full[type_hash];
+          else if (auto it = type_to_node.find(type_hash);
+                   it != type_to_node.end())
+            {
+              // Fallback to the node's own info if not present in the global
+              // registry
+              result[type_hash] = it->second->get_info();
+            }
+        }
+      return result;
+    }
+
     void
     from_json(const nlohmann::json &json_data)
     {
@@ -216,12 +304,19 @@ namespace coral
         {
           int id = std::stoi(key); // Convert string key to int
 
-          // Prepare node data - ensure type_hash exists for proper
+          // Prepare node data - ensure type exists for proper
           // deserialization
           nlohmann::json node_data = value;
+          if (!node_data.contains("type"))
+            {
+              throw std::runtime_error(
+                "Node " + key +
+                " does not contain a 'type' field: " + node_data.dump(2));
+            }
+          std::string node_name = node_data.value("name", "");
           try
             {
-              add_node(id, node_data.get<NodeObjectPtr>());
+              add_node(id, node_data.get<NodeObjectPtr>(), node_name);
             }
           catch (const std::exception &e)
             {
@@ -378,7 +473,23 @@ namespace coral
       nlohmann::json json;
 
       for (const auto &[node_id, node] : nodes)
-        json[std::to_string(node_id)] = node;
+        {
+          nlohmann::json node_json;
+          node_json["type"] = node->hash();
+
+          const auto name = get_node_name(node_id);
+          if (!name.empty())
+            node_json["name"] = name;
+
+          if (node->node_type() == NodeType::elementary_constructor)
+            {
+              const auto &info = node->get_info();
+              if (info.contains("value"))
+                node_json["value"] = info["value"];
+            }
+
+          json[std::to_string(node_id)] = node_json;
+        }
 
       return json;
     }

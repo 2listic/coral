@@ -16,7 +16,7 @@ TEST(TrivialTypes, Int)
   NodeObject obj = 42;
   ASSERT_EQ(42, obj.get<type>());
   const auto &j = obj.get_info();
-  std::string s = j.at("type_hash");
+  std::string s = j.at("type");
   ASSERT_EQ(s, coral::hash<type>());
 }
 
@@ -27,7 +27,7 @@ TEST(TrivialTypes, Double)
   NodeObject obj = 42.0;
   ASSERT_EQ(42.0, obj.get<type>());
   const auto &j = obj.get_info();
-  std::string s = j.at("type_hash");
+  std::string s = j.at("type");
   ASSERT_EQ(s, coral::hash<type>());
 }
 
@@ -38,7 +38,7 @@ TEST(TrivialTypes, String)
   NodeObject obj = std::string("Hello world!");
   ASSERT_EQ("Hello world!", obj.get<type>());
   const auto &j = obj.get_info();
-  std::string s = j.at("type_hash");
+  std::string s = j.at("type");
   ASSERT_EQ(s, coral::hash<type>());
 }
 
@@ -51,7 +51,7 @@ TEST(TrivialTypes, Point)
   NodeObject obj = type(1.0, 2.0);
   ASSERT_EQ(type(1.0, 2.0), obj.get<type>());
   const auto &j = obj.get_info();
-  std::string s = j.at("type_hash");
+  std::string s = j.at("type");
   ASSERT_EQ(s, coral::hash<type>());
 
   // Verify JSON serialization is working correctly

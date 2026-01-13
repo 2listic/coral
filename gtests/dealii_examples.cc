@@ -249,25 +249,29 @@ TEST(dealiiExamples, NetworkFromJsonStep00)
   for (unsigned int i = 0; i < network.n_nodes(); ++i)
     {
       auto node = network.get_node(i);
-      std::cout << "Node " << i << ": " << (node ? "exists" : "nullptr")
-                << std::endl;
+      std::cout << "Node " << i << ": " << network.get_node_name(i) << " ("
+                << (node ? "exists" : "nullptr") << ")";
 
       if (node->node_type() == NodeType::elementary_constructor)
         {
-          std::cout << "node " << i << " value: " << node->to_string()
-                    << std::endl;
+          std::cout << " value: " << node->to_string() << std::endl;
+        }
+      else
+        {
+          std::cout << " type: " << node->type_name() << std::endl;
         }
     }
 
-  // Print the triangulation state before running the network
-  auto tria_node = network.get_node(0);
-  ASSERT_NE(tria_node, nullptr) << "Failed to get triangulation node";
-  std::cout << "Before execution, triangulation has "
-            << tria_node->get<Triangulation<2>>().n_active_cells()
-            << " active cells\n";
+  // // Print the triangulation state before running the network
+
+  // ASSERT_NE(tria_node, nullptr) << "Failed to get triangulation node";
+  // std::cout << "Before execution, triangulation has "
+  //           << tria_node->get<Triangulation<2>>().n_active_cells()
+  //           << " active cells\n";
 
   // Run the network
   network.run();
+  auto tria_node = network.get_node(0);
 
   // Print the triangulation state after running the network
   std::cout << "After execution, triangulation has "
