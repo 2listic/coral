@@ -1,268 +1,65 @@
 {
+  "author": "coral-editor",
+  "date_time_utc": "2026-01-07T12:09:47.000Z",
+  "version": 1,
   "workflow": {
-    "nodes": {
-      "0": {
-        "type": "dealii::Triangulation<2, 2>",
-        "arguments": [],
-        "inputs": [],
-        "node_type": "empty_constructor",
-        "outputs": [
-          -1
-        ],
-        "is_valid": true,
-        "position": {
-          "x": 128.75,
-          "y": -27.5
-        }
-      },
-      "1": {
-        "type": "std::string",
-        "arguments": [],
-        "inputs": [],
-        "node_type": "elementary_constructor",
-        "outputs": [
-          -1
-        ],
-        "value": "hyper_cube",
-        "is_valid": true,
-        "position": {
-          "x": 128.76553642403542,
-          "y": 58.22654947412285
-        }
-      },
-      "2": {
-        "type": "std::string",
-        "arguments": [],
-        "inputs": [],
-        "node_type": "elementary_constructor",
-        "outputs": [
-          -1
-        ],
-        "value": "0: 1: false",
-        "is_valid": true,
-        "position": {
-          "x": 123.902261686974,
-          "y": 163.2732837946497
-        }
-      },
-      "3": {
-        "type": "GridGenerator::generate_from_name_and_arguments<2>",
-        "arguments": [
-          {
-            "type": "dealii::Triangulation<2, 2>",
-            "connection_type": "pass_through",
-            "name": "triangulation"
-          },
-          {
-            "type": "std::string",
-            "connection_type": "input",
-            "name": "grid_generator_function_name"
-          },
-          {
-            "type": "std::string",
-            "connection_type": "input",
-            "name": "grid_generator_function_arguments"
-          }
-        ],
-        "inputs": [
-          0,
-          1,
-          2
-        ],
-        "node_type": "void_function",
-        "outputs": [
-          0
-        ],
-        "is_valid": true,
-        "position": {
-          "x": 618.9836299198275,
-          "y": 6.675837261271724
-        }
-      },
-      "4": {
-        "type": "unsigned int",
-        "arguments": [],
-        "inputs": [],
-        "node_type": "elementary_constructor",
-        "outputs": [
-          -1
-        ],
-        "value": "2",
-        "is_valid": true,
-        "position": {
-          "x": 428.3432602270194,
-          "y": 245.94895432469406
-        }
-      },
-      "5": {
-        "type": "Triangulation<2>::refine_global",
-        "arguments": [
-          {
-            "type": "dealii::Triangulation<2, 2>",
-            "connection_type": "pass_through",
-            "name": "triangulation"
-          },
-          {
-            "type": "unsigned int",
-            "connection_type": "input",
-            "name": "n_refinements"
-          }
-        ],
-        "inputs": [
-          0,
-          1
-        ],
-        "node_type": "void_method",
-        "outputs": [
-          0
-        ],
-        "is_valid": true,
-        "position": {
-          "x": 765.8545269790827,
-          "y": 248.8669191669308
-        }
-      },
-      "6": {
-        "type": "std::string",
-        "arguments": [],
-        "inputs": [],
-        "node_type": "elementary_constructor",
-        "outputs": [
-          -1
-        ],
-        "value": "grid-1.vtk",
-        "is_valid": true,
-        "position": {
-          "x": 269.80050379881686,
-          "y": 462.8510075976337
-        }
-      },
-      "7": {
-        "type": "std::ofstream",
-        "arguments": [
-          {
-            "type": "std::string",
-            "connection_type": "input",
-            "name": "file_name"
-          }
-        ],
-        "base": "std::ostream",
-        "inputs": [
-          0
-        ],
-        "node_type": "constructor",
-        "outputs": [
-          -1
-        ],
-        "is_valid": true,
-        "position": {
-          "x": 575.2141572862746,
-          "y": 571.7883617078097
-        }
-      },
-      "8": {
-        "type": "dealii::GridOut",
-        "arguments": [],
-        "inputs": [],
-        "node_type": "empty_constructor",
-        "outputs": [
-          -1
-        ],
-        "is_valid": true,
-        "position": {
-          "x": 613.1477002353538,
-          "y": 463.823662545046
-        }
-      },
-      "9": {
-        "type": "GridOut::write_vtk<2>",
-        "arguments": [
-          {
-            "type": "dealii::GridOut",
-            "connection_type": "input",
-            "name": "grid_out"
-          },
-          {
-            "type": "dealii::Triangulation<2, 2>",
-            "connection_type": "input",
-            "name": "triangulation"
-          },
-          {
-            "type": "std::ostream",
-            "connection_type": "pass_through",
-            "name": "output_file"
-          }
-        ],
-        "inputs": [
-          0,
-          1,
-          2
-        ],
-        "node_type": "void_const_method",
-        "outputs": [
-          2
-        ],
-        "is_valid": true,
-        "position": {
-          "x": 958.4034235702453,
-          "y": 472.70688862552777
-        }
-      }
-    },
     "edges": {
       "0": {
         "source": 0,
-        "target": 3,
         "source_output": 0,
+        "target": 3,
         "target_input": 0
       },
       "1": {
         "source": 1,
-        "target": 3,
         "source_output": 0,
+        "target": 3,
         "target_input": 1
       },
       "2": {
         "source": 2,
-        "target": 3,
         "source_output": 0,
+        "target": 3,
         "target_input": 2
       },
       "3": {
         "source": 3,
-        "target": 5,
         "source_output": 0,
+        "target": 5,
         "target_input": 0
       },
       "4": {
         "source": 4,
-        "target": 5,
         "source_output": 0,
+        "target": 5,
         "target_input": 1
+      }
+    },
+    "nodes": {
+      "0": {
+        "name": "triangulation",
+        "type": "dealii::Triangulation<2, 2>"
+      },
+      "1": {
+        "name": "grid_generator_function_name",
+        "type": "std::string",
+        "value": "hyper_cube"
+      },
+      "2": {
+        "name": "grid_generator_function_arguments",
+        "type": "std::string",
+        "value": "0: 1: false"
+      },
+      "3": {
+        "type": "GridGenerator::generate_from_name_and_arguments<2>"
+      },
+      "4": {
+        "name": "n_refinements",
+        "type": "unsigned int",
+        "value": "2"
       },
       "5": {
-        "source": 5,
-        "target": 9,
-        "source_output": 0,
-        "target_input": 1
-      },
-      "6": {
-        "source": 8,
-        "target": 9,
-        "source_output": 0,
-        "target_input": 0
-      },
-      "7": {
-        "source": 6,
-        "target": 7,
-        "source_output": 0,
-        "target_input": 0
-      },
-      "8": {
-        "source": 7,
-        "target": 9,
-        "source_output": 0,
-        "target_input": 2
+        "type": "Triangulation<2>::refine_global"
       }
     }
   }
