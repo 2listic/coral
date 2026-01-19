@@ -62,17 +62,16 @@ namespace coral
     }
 
     inline auto
-    type_identifier(const entt::meta_type &type,
-                    const std::string     &suffix = "") -> std::string
+    type_identifier(const entt::meta_type &type, const std::string &suffix = "")
+      -> std::string
     {
       if (!type)
         return suffix;
 
-      const char *name = type.name();
-      const std::string base =
-        (name != nullptr && name[0] != '\0') ?
-          std::string(name) :
-          std::string(type.info().name());
+      const char       *name = type.name();
+      const std::string base = (name != nullptr && name[0] != '\0') ?
+                                 std::string(name) :
+                                 std::string(type.info().name());
       return base + suffix;
     }
 
@@ -91,14 +90,13 @@ namespace coral
   inline auto
   hash(const std::string &suffix = "") -> std::string
   {
-    using underlying_type =
-      std::remove_cv_t<std::remove_reference_t<T>>;
-    using stored_type = std::shared_ptr<underlying_type>;
+    using underlying_type = std::remove_cv_t<std::remove_reference_t<T>>;
+    using stored_type     = std::shared_ptr<underlying_type>;
 
     const auto alias_it =
       detail::type_aliases().find(typeid(underlying_type).hash_code());
 
-    const auto resolved_underlying = entt::resolve<underlying_type>();
+    const auto  resolved_underlying = entt::resolve<underlying_type>();
     std::string base_identifier =
       (alias_it != detail::type_aliases().end()) ?
         alias_it->second :
@@ -127,8 +125,7 @@ namespace coral
   }
 
   inline auto
-  hash(const entt::meta_any &obj, const std::string &suffix = "")
-    -> std::string
+  hash(const entt::meta_any &obj, const std::string &suffix = "") -> std::string
   {
     return detail::type_identifier(obj.type(), suffix);
   }
@@ -303,7 +300,7 @@ namespace coral
      */
     std::function<std::shared_ptr<entt::meta_any>(
       std::vector<std::shared_ptr<NodeObject>> args)>
-     executor = [](std::vector<std::shared_ptr<NodeObject>>)
+      executor = [](std::vector<std::shared_ptr<NodeObject>>)
       -> std::shared_ptr<entt::meta_any> {
       std::cout << "empty node. ";
       return std::make_shared<entt::meta_any>();
@@ -322,11 +319,10 @@ namespace coral
     /**
      * For derived types, we give a way to convert to the base class.
      */
-    std::function<std::shared_ptr<entt::meta_any>(std::shared_ptr<entt::meta_any>)>
+    std::function<std::shared_ptr<entt::meta_any>(
+      std::shared_ptr<entt::meta_any>)>
       to_base = [](std::shared_ptr<entt::meta_any> a)
-      -> std::shared_ptr<entt::meta_any> {
-      return a;
-    };
+      -> std::shared_ptr<entt::meta_any> { return a; };
 
     /**
      * The json serialization of the object->
@@ -389,7 +385,7 @@ namespace coral
             "one of the NodeObject::register_*<" +
             std::string(typeid(T).name()) + ">(...) functions.");
         }
-
+      initialize_arguments();
       initialize_inputs();
       initialize_outputs();
     }
@@ -410,16 +406,7 @@ namespace coral
           // object->
           *this = NodeObject(std::make_shared<std::string>(hash_str));
         }
-      const auto &args   = initializer.json_serializer["arguments"];
-      const auto  n_args = args.size();
-      arguments.resize(n_args);
-      connections.resize(n_args);
-      for (unsigned int i = 0; i < n_args; ++i)
-        {
-          connections[i] = magic_enum::enum_cast<ConnectionType>(
-                             args[i].at("connection_type").get<std::string>())
-                             .value();
-        }
+      initialize_arguments();
       initialize_inputs();
       initialize_outputs();
     }
@@ -492,9 +479,12 @@ namespace coral
     operator()() -> bool
     {
       bool is_ready = true;
-      for (const auto &arg : arguments)
+      for (size_t i = 0; i < arguments.size(); ++i)
         {
-          if (!arg->ready())
+          if ((arguments_types[i] & ConnectionType::input) ==
+              ConnectionType::none)
+            continue;
+          if (!arguments[i]->ready())
             {
               is_ready = false;
               break;
@@ -526,6 +516,9 @@ namespace coral
           " instead of " +
           std::to_string(initializer.json_serializer["arguments"].size()) +
           ".");
+      if (arguments_types.size() !=
+          initializer.json_serializer["arguments"].size())
+        initialize_arguments();
       this->arguments = args;
     }
 
@@ -707,8 +700,8 @@ namespace coral
       initializer.executor =
         [&initializer](std::vector<std::shared_ptr<NodeObject>>)
         -> std::shared_ptr<entt::meta_any> {
-        std::cout << "empty_constructor: "
-                  << initializer.type_name << std::endl;
+        std::cout << "empty_constructor: " << initializer.type_name
+                  << std::endl;
         return std::make_shared<entt::meta_any>(std::shared_ptr<T>());
       };
       return initializer;
@@ -733,17 +726,18 @@ namespace coral
       base_initializer.json_serializer["derived"].push_back(
         initializer.json_serializer["type"]);
 
-      initializer.json_serializer["base"] = base_initializer.json_serializer["type"];
+      initializer.json_serializer["base"] =
+        base_initializer.json_serializer["type"];
 
       // Register entt conversion shared_ptr<Derived> -> shared_ptr<Base>
-      using stored_derived = std::shared_ptr<
-        std::remove_cv_t<std::remove_reference_t<T>>>;
-      entt::meta_factory<stored_derived>().template conv<
-        &detail::shared_ptr_to_base<B, T>>();
+      using stored_derived =
+        std::shared_ptr<std::remove_cv_t<std::remove_reference_t<T>>>;
+      entt::meta_factory<stored_derived>()
+        .template conv<&detail::shared_ptr_to_base<B, T>>();
 
       // Add the conversion to the base class.
-      initializer.to_base =
-        [](std::shared_ptr<entt::meta_any> a) -> std::shared_ptr<entt::meta_any> {
+      initializer.to_base = [](std::shared_ptr<entt::meta_any> a)
+        -> std::shared_ptr<entt::meta_any> {
         std::cout << "Cast to derived class " << boost::core::type_name<T>()
                   << "\n";
         const auto ptr = a->template try_cast<std::shared_ptr<T>>();
@@ -782,8 +776,7 @@ namespace coral
         if (args.size() != sizeof...(Args))
           throw std::runtime_error("Wrong number of arguments.");
         auto tuple = cast_args<Args...>(args);
-        std::cout << "constructor: " << initializer.type_name
-                  << std::endl;
+        std::cout << "constructor: " << initializer.type_name << std::endl;
         return std::apply(
           [](auto &&...unpackedArgs) {
             return std::make_shared<entt::meta_any>(
@@ -808,17 +801,18 @@ namespace coral
       base_initializer.json_serializer["derived"].push_back(
         initializer.json_serializer["type"]);
 
-      initializer.json_serializer["base"] = base_initializer.json_serializer["type"];
+      initializer.json_serializer["base"] =
+        base_initializer.json_serializer["type"];
 
       // Register entt conversion shared_ptr<Derived> -> shared_ptr<Base>
-      using stored_derived = std::shared_ptr<
-        std::remove_cv_t<std::remove_reference_t<T>>>;
-      entt::meta_factory<stored_derived>().template conv<
-        &detail::shared_ptr_to_base<B, T>>();
+      using stored_derived =
+        std::shared_ptr<std::remove_cv_t<std::remove_reference_t<T>>>;
+      entt::meta_factory<stored_derived>()
+        .template conv<&detail::shared_ptr_to_base<B, T>>();
 
       // Add the conversion to the base class.
-      initializer.to_base =
-        [](std::shared_ptr<entt::meta_any> a) -> std::shared_ptr<entt::meta_any> {
+      initializer.to_base = [](std::shared_ptr<entt::meta_any> a)
+        -> std::shared_ptr<entt::meta_any> {
         const auto ptr = a->template try_cast<std::shared_ptr<T>>();
         if (ptr == nullptr)
           throw std::runtime_error("Could not cast derived type to base.");
@@ -919,15 +913,21 @@ namespace coral
               arg_names, method_name);
           initializer.json_serializer["node_type"] = "method";
           initializer.node_type                    = NodeType::method;
+          const bool output_is_elementary =
+            is_registered_elementary_type<ReturnType>();
+          if (output_is_elementary)
+            set_output_only(initializer, 1);
 
           // Add to the initializer the emtpy executor.
           initializer.executor =
-            [ptr, &initializer, method_name](
+            [ptr, &initializer, method_name, output_is_elementary](
               std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 2 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
             auto &obj = args[0]->get<T>();
+            if (output_is_elementary && !args[1]->ready())
+              (*args[1])();
             auto &ret = args[1]->get<ReturnType>();
 
             // Create a copy of args without the first two elements for function
@@ -1010,15 +1010,21 @@ namespace coral
               arg_names, method_name);
           initializer.json_serializer["node_type"] = "const_method";
           initializer.node_type                    = NodeType::const_method;
+          const bool output_is_elementary =
+            is_registered_elementary_type<ReturnType>();
+          if (output_is_elementary)
+            set_output_only(initializer, 1);
 
           // Add to the initializer the emtpy executor.
           initializer.executor =
-            [ptr, &initializer, method_name](
+            [ptr, &initializer, method_name, output_is_elementary](
               std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 2 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
             auto &obj = args[0]->get<T>();
+            if (output_is_elementary && !args[1]->ready())
+              (*args[1])();
             auto &ret = args[1]->get<ReturnType>();
             args.erase(args.begin()); // remove the class
             args.erase(args.begin()); // remove the return type
@@ -1097,14 +1103,20 @@ namespace coral
               arg_names, method_name);
           initializer.json_serializer["node_type"] = "function";
           initializer.node_type                    = NodeType::function;
+          const bool output_is_elementary =
+            is_registered_elementary_type<ReturnType>();
+          if (output_is_elementary)
+            set_output_only(initializer, 0);
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr, &initializer, method_name](
+            [ptr, &initializer, method_name, output_is_elementary](
               std::vector<std::shared_ptr<NodeObject>> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 1 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
+            if (output_is_elementary && !args[0]->ready())
+              (*args[0])();
             auto &ret = args[0]->get<ReturnType>();
             args.erase(args.begin()); // remove the first element
 
@@ -1171,8 +1183,9 @@ namespace coral
           const auto cast_ptr =
             new_object->template try_cast<std::shared_ptr<type>>();
           if (cast_ptr == nullptr)
-            throw std::runtime_error("Could not cast converted object to " +
-                                     std::string(boost::core::type_name<type>()));
+            throw std::runtime_error(
+              "Could not cast converted object to " +
+              std::string(boost::core::type_name<type>()));
           ptr = *cast_ptr;
         }
       else
@@ -1182,8 +1195,8 @@ namespace coral
           if (cast_ptr == nullptr)
             throw std::runtime_error(
               "Could not cast object to shared pointer of type " +
-              std::string(boost::core::type_name<type>()) + " from object of type " +
-              boost::core::demangle([&]() {
+              std::string(boost::core::type_name<type>()) +
+              " from object of type " + boost::core::demangle([&]() {
                 const char *named = object->type().name();
                 if (named != nullptr && named[0] != '\0')
                   return named;
@@ -1339,8 +1352,9 @@ namespace coral
           const auto cast_ptr =
             new_object->template try_cast<std::shared_ptr<const type>>();
           if (cast_ptr == nullptr)
-            throw std::runtime_error("Could not cast converted object to " +
-                                     std::string(boost::core::type_name<type>()));
+            throw std::runtime_error(
+              "Could not cast converted object to " +
+              std::string(boost::core::type_name<type>()));
           ptr = *cast_ptr;
         }
       else
@@ -1350,8 +1364,8 @@ namespace coral
           if (cast_ptr == nullptr)
             throw std::runtime_error(
               "Could not cast object to shared pointer of type " +
-              std::string(boost::core::type_name<type>()) + " from object of type " +
-              boost::core::demangle([&]() {
+              std::string(boost::core::type_name<type>()) +
+              " from object of type " + boost::core::demangle([&]() {
                 const char *named = object->type().name();
                 if (named != nullptr && named[0] != '\0')
                   return named;
@@ -1379,8 +1393,8 @@ namespace coral
         {
           // Check that we store a compatible type first.
           // Check that coral::hash<T>() is contained in hash().
-          const auto my_hash  = hash();
-          const auto type_id  = coral::hash<T>();
+          const auto my_hash = hash();
+          const auto type_id = coral::hash<T>();
           if (my_hash.find(type_id) != 0)
             throw std::runtime_error(
               "Object type does not match. My hash is " + my_hash +
@@ -1419,7 +1433,8 @@ namespace coral
           // The object is initialized. Check if this is consistent with
           // the initializer, and return its hash.
           const auto object_hash = coral::hash(object);
-          const auto stored_hash = std::string(initializer.json_serializer.at("type"));
+          const auto stored_hash =
+            std::string(initializer.json_serializer.at("type"));
           if (stored_hash.find(object_hash) != 0)
             throw std::runtime_error(
               "Object type does not match: we store " + stored_hash +
@@ -1494,12 +1509,51 @@ namespace coral
     /**
      * Arguments to connection type.
      */
-    std::vector<ConnectionType> connections;
+    std::vector<ConnectionType> arguments_types;
 
     /**
      * A list of all known types and their initializers.
      */
     static inline std::map<std::string, NodeObjectInitializer> initializers;
+
+    template <typename T>
+    static bool
+    is_registered_elementary_type()
+    {
+      using PlainType     = std::remove_cv_t<std::remove_reference_t<T>>;
+      const auto hash_str = coral::hash<PlainType>();
+      const auto it       = initializers.find(hash_str);
+      return (it != initializers.end()) &&
+             (it->second.node_type == NodeType::elementary_constructor);
+    }
+
+    static void
+    set_output_only(NodeObjectInitializer &initializer, unsigned int arg_index)
+    {
+      auto &args = initializer.json_serializer["arguments"];
+      if (arg_index >= args.size())
+        return;
+
+      args[arg_index]["connection_type"] =
+        magic_enum::enum_name(ConnectionType::output);
+
+      auto &inputs = initializer.json_serializer["inputs"];
+      for (auto it = inputs.begin(); it != inputs.end();)
+        {
+          if (it->get<unsigned int>() == arg_index)
+            it = inputs.erase(it);
+          else
+            ++it;
+        }
+
+      auto &outputs = initializer.json_serializer["outputs"];
+      for (const auto &entry : outputs)
+        {
+          if (entry.get<int>() == static_cast<int>(arg_index))
+            return;
+        }
+      outputs.push_back(static_cast<int>(arg_index));
+    }
 
     /**
      * Input indices mapping to arguments.
@@ -1544,10 +1598,26 @@ namespace coral
                     initializer.json_serializer["arguments"].size()) +
                   ".");
               arguments[output_indices[i]] = std::make_shared<NodeObject>(
-                initializer.json_serializer["arguments"][output_indices[i]]
-                  ["type"]
-                    .get<std::string>());
+                initializer
+                  .json_serializer["arguments"][output_indices[i]]["type"]
+                  .get<std::string>());
             }
+        }
+    }
+
+    void
+    initialize_arguments()
+    {
+      const auto &json_args = initializer.json_serializer["arguments"];
+      arguments.resize(json_args.size());
+      arguments_types.resize(json_args.size(), ConnectionType::none);
+      for (unsigned int i = 0; i < json_args.size(); ++i)
+        {
+          if (json_args[i].contains("connection_type"))
+            arguments_types[i] =
+              magic_enum::enum_cast<ConnectionType>(
+                json_args[i].at("connection_type").get<std::string>())
+                .value();
         }
     }
 
@@ -1567,8 +1637,7 @@ namespace coral
           const auto &input_index = inputs[i].second;
 
           const auto expected_hash =
-            initializer
-              .json_serializer["arguments"][input_indices[i]]["type"]
+            initializer.json_serializer["arguments"][input_indices[i]]["type"]
               .get<std::string>();
           const auto input_hash = input_node->output(input_index)->hash();
 
@@ -1599,16 +1668,15 @@ namespace coral
           "Wrong number of outputs: " + std::to_string(outputs.size()) +
           " instead of " + std::to_string(output_indices.size()) + ".");
 
-          for (unsigned int i = 0; i < outputs.size(); ++i)
-            {
-              const auto &output_node  = outputs[i].first;
-              const auto &output_index = outputs[i].second;
+      for (unsigned int i = 0; i < outputs.size(); ++i)
+        {
+          const auto &output_node  = outputs[i].first;
+          const auto &output_index = outputs[i].second;
 
-              const auto expected_hash =
-                initializer
-                  .json_serializer["arguments"][output_indices[i]]["type"]
-                  .get<std::string>();
-              const auto output_hash = arguments[output_indices[i]]->hash();
+          const auto expected_hash =
+            initializer.json_serializer["arguments"][output_indices[i]]["type"]
+              .get<std::string>();
+          const auto output_hash = arguments[output_indices[i]]->hash();
 
           if (expected_hash != output_hash)
             throw std::runtime_error("The hash type of output " +

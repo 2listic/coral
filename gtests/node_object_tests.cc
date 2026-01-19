@@ -152,3 +152,24 @@ TEST(NodeObject, FunctionRegistration)
   // Check output type
   ASSERT_EQ(obj->type_name(), "std::function<int(int, int)>");
 }
+
+TEST(NodeObject, LambdaNoInputIntOutput)
+{
+  auto guide = []() -> int { return 42; };
+
+  NodeObject::register_elementary_type<int>();
+  NodeObject::register_function(guide,
+                                {"life_the_universe_everything", "answer"});
+
+  NodeObjectPtr fun =
+    coral::make_method_node("life_the_universe_everything", guide);
+  NodeObjectPtr out = coral::make_node(0);
+
+  ASSERT_EQ(fun->n_inputs(), 0);
+  ASSERT_EQ(fun->n_outputs(), 1);
+
+  fun->set_arguments({out});
+  (*fun)();
+  ASSERT_TRUE(out->ready());
+  ASSERT_EQ(out->get<int>(), 42);
+}
