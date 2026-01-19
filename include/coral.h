@@ -1624,46 +1624,7 @@ namespace coral
       outputs.push_back(static_cast<int>(arg_index));
     }
 
-    template <typename T>
-    static bool
-    is_registered_elementary_type()
-    {
-      using PlainType     = std::remove_cv_t<std::remove_reference_t<T>>;
-      const auto hash_str = coral::hash<PlainType>();
-      const auto it       = initializers.find(hash_str);
-      return (it != initializers.end()) &&
-             (it->second.node_type == NodeType::elementary_constructor);
-    }
-
-    static void
-    set_output_only(NodeObjectInitializer &initializer, unsigned int arg_index)
-    {
-      auto &args = initializer.json_serializer["arguments"];
-      if (arg_index >= args.size())
-        return;
-
-      args[arg_index]["connection_type"] =
-        magic_enum::enum_name(ConnectionType::output);
-
-      auto &inputs = initializer.json_serializer["inputs"];
-      for (auto it = inputs.begin(); it != inputs.end();)
-        {
-          if (it->get<unsigned int>() == arg_index)
-            it = inputs.erase(it);
-          else
-            ++it;
-        }
-
-      auto &outputs = initializer.json_serializer["outputs"];
-      for (const auto &entry : outputs)
-        {
-          if (entry.get<int>() == static_cast<int>(arg_index))
-            return;
-        }
-      outputs.push_back(static_cast<int>(arg_index));
-    }
-
-    /**
+   /**
      * Input indices mapping to arguments.
      */
     std::vector<int> input_indices;

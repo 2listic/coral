@@ -35,6 +35,8 @@ TEST(Network, BareMinimal)
   auto id1 = network.add_node(coral::make_node(1.0));
   auto id2 = network.add_node(coral::make_node(2.0));
 
+  auto id4 = network.add_node(coral::make_method_node("sum", sum), "sum");
+
   // Int 1
   network.add_connection(id1, id4, 0, 0);
 
@@ -54,12 +56,12 @@ TEST(Network, BareMinimal)
 
   json n1_json        = n1;
   json n2_json        = n2;
-  json n4_output_json = n4_output;
+  json n3_json        = n4->output(0);
 
   // Verify the JSON "value" of the nodes
   ASSERT_EQ(n1_json["value"], "1.0");
   ASSERT_EQ(n2_json["value"], "2.0");
-  ASSERT_EQ(n4_output_json["value"], "0.0");
+  ASSERT_EQ(n3_json["value"], "0.0");
 
   // Make sure that executing the nodes does not change their values
   (*n1)();
