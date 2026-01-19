@@ -1,5 +1,11 @@
 var NAVTREEINDEX2 =
 {
+"namespaceCGALWrappers.html#a673f5ec5d747ce7d718168bd6c71cfdb":[1,0,9,4],
+"namespaceCGALWrappers.html#a6dfe446ebcbbd9331e23bfeb5a6e1561":[1,0,9,28],
+"namespaceCGALWrappers.html#a74d881116bd6c3027f395504b6c4102d":[1,0,9,1],
+"namespaceCGALWrappers.html#a76219bb83320e322f63ea07042cc0108":[1,0,9,37],
+"namespaceCGALWrappers.html#a7e1bd4e3c7e8decb3d3af9d17304c80b":[1,0,9,16],
+"namespaceCGALWrappers.html#a7e4bea6ac70c06dda15375c8216da847":[1,0,9,29],
 "namespaceCGALWrappers.html#a7f48358340b22beeb4b91e9108ebe022":[1,0,9,43],
 "namespaceCGALWrappers.html#a815534f25385f41d00730b80484cd982":[1,0,9,32],
 "namespaceCGALWrappers.html#a82c725cdf8d09192ca0c78f1ab3ca47d":[1,0,9,23],
@@ -243,11 +249,5 @@ var NAVTREEINDEX2 =
 "namespaceDoFTools_1_1internal.html#a1579a6155ce2df52cf0db10c361e661c":[1,0,26,0,5],
 "namespaceDoFTools_1_1internal.html#a178f97d374514a73857b8d527eefaaac":[1,0,26,0,11],
 "namespaceDoFTools_1_1internal.html#a20eb35b94e472ea7b5e338c0912860b6":[1,0,26,0,15],
-"namespaceDoFTools_1_1internal.html#a2a4052f43ef4e73da6bbfd62d01f5197":[1,0,26,0,1],
-"namespaceDoFTools_1_1internal.html#a324f18749a092d65550437dd941a2a91":[1,0,26,0,9],
-"namespaceDoFTools_1_1internal.html#a3cb5fed9373028ca1ed54e96dbac4448":[1,0,26,0,10],
-"namespaceDoFTools_1_1internal.html#a4e398e8e5c2769fc839aaee77e78b557":[1,0,26,0,4],
-"namespaceDoFTools_1_1internal.html#a5ad8b255537b48e40e516a36e1472eb8":[1,0,26,0,18],
-"namespaceDoFTools_1_1internal.html#a7a7f02ac543826b3d717a34f629f4aba":[1,0,26,0,7],
-"namespaceDoFTools_1_1internal.html#a7aaf930ab35522dab7780ce94312650f":[1,0,26,0,6]
+"namespaceDoFTools_1_1internal.html#a2a4052f43ef4e73da6bbfd62d01f5197":[1,0,26,0,1]
 };

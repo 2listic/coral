@@ -770,7 +770,7 @@ var searchData=
   ['connection_767',['Connection',['../classcoral_1_1_connection.html',1,'coral::Connection'],['../classcoral_1_1_connection.html#af0d2b7ebb7e07b1b1c1c2c652631abf0',1,'coral::Connection::Connection()=default'],['../classcoral_1_1_connection.html#a0a33de509815d2eed0533a554d4fe667',1,'coral::Connection::Connection(unsigned int _source_id, unsigned int _target_id, unsigned int _source_output=0, unsigned int _target_input=0)']]],
   ['connection_768',['connection',['http://www.dealii.org/developer/doxygen/deal.II/classparallel_1_1CellWeights.html#ad23b91e965c5bc078e9fbd06ae8087c3',1,'parallel::CellWeights']]],
   ['connection_5ftype_769',['connection_type',['../namespacecoral.html#a34fcc6acd1258dcc47130fc4a220d003',1,'coral']]],
-  ['connections_770',['connections',['../classcoral_1_1_node_object.html#a271aecdcc0042c15c97683b6f93f8d39',1,'coral::NodeObject::connections'],['../classcoral_1_1_network.html#a81778cfbfcc6b381e4673cef847f9f84',1,'coral::Network::connections']]],
+  ['connections_770',['connections',['../classcoral_1_1_network.html#a81778cfbfcc6b381e4673cef847f9f84',1,'coral::Network']]],
   ['connections_20and_20networks_771',['Connections and Networks',['../index.html#autotoc_md7',1,'']]],
   ['connections_5fto_5fjson_772',['connections_to_json',['../classcoral_1_1_network.html#a7501135e5c6ab234f1c2b573c353ccc7',1,'coral::Network']]],
   ['connectiontype_773',['ConnectionType',['../namespacecoral.html#a4cb5aa0d2101c9b6b2a30b68f2560c15',1,'coral']]],

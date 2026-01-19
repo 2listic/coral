@@ -1,5 +1,11 @@
 var NAVTREEINDEX6 =
 {
+"namespaceSparsityTools.html#a452753b6ffdf31b33f2bcd792b05df93":[1,0,145,17],
+"namespaceSparsityTools.html#a576797328aeace287d271ee4e48e04a6":[1,0,145,19],
+"namespaceSparsityTools.html#a6b5444028171035f8ffb3fb5c3f8da08":[1,0,145,5],
+"namespaceSparsityTools.html#aa51c64b340d0dbd53018574a1e0fff2e":[1,0,145,16],
+"namespaceSparsityTools.html#acf67676085b71915680a15103cc7cb3f":[1,0,145,15],
+"namespaceSparsityTools.html#ad7da91ef608d0e4c17d75c21070db6e4":[1,0,145,18],
 "namespaceSparsityTools.html#ade09f775d8cfb0c1ca98154ea4a7df1f":[1,0,145,4],
 "namespaceSparsityTools.html#ae7336d79d8674b4832bde6fe50510cda":[1,0,145,6],
 "namespaceSparsityTools.html#af306ee8725068408ab270d0517ebc58a":[1,0,145,3],
@@ -243,11 +249,5 @@ var NAVTREEINDEX6 =
 "namespaceUtilities_1_1MPI_1_1LargeCount.html#a7aba02f704d22ba101ebe0022500d4c5":[1,0,166,2,3,3],
 "namespaceUtilities_1_1MPI_1_1LargeCount.html#a915fb76425d404d588b8df9b1bc5c571":[1,0,166,2,3,6],
 "namespaceUtilities_1_1MPI_1_1LargeCount.html#ac2f16165e107a95c2670536eeda41683":[1,0,166,2,3,2],
-"namespaceUtilities_1_1MPI_1_1LargeCount.html#ac796476ed11f1a1dc809fe2de071ee5d":[1,0,166,2,3,8],
-"namespaceUtilities_1_1MPI_1_1LargeCount.html#acb6ac3ea891da90f3f52def463989034":[1,0,166,2,3,0],
-"namespaceUtilities_1_1MPI_1_1LargeCount.html#adf616989975e1f336ca323ea71520a79":[1,0,166,2,3,7],
-"namespaceUtilities_1_1MPI_1_1LargeCount.html#ae693ea83bde0c47bffa879ea79b73bef":[1,0,166,2,3,1],
-"namespaceUtilities_1_1MPI_1_1LargeCount.html#afa4273cd3878efce56dfbc8ce0f38e7f":[1,0,166,2,3,9],
-"namespaceUtilities_1_1MPI_1_1internal.html":[1,0,166,2,2],
-"namespaceUtilities_1_1MPI_1_1internal.html#a0ce04aed89ce203bbb7893fe086fbe5d":[1,0,166,2,2,6]
+"namespaceUtilities_1_1MPI_1_1LargeCount.html#ac796476ed11f1a1dc809fe2de071ee5d":[1,0,166,2,3,8]
 };
