@@ -169,3 +169,62 @@ TEST(Modules, HyperCubeNetworkConnectedRun)
 
   ASSERT_EQ(tri_node->get<dealii::Triangulation<2>>().n_active_cells(), 256);
 }
+
+TEST(Modules, NetworkNodeArgumentsOrder1)
+{
+  const std::string path = SOURCE_DIR "/test_files/networknode-order1.json";
+
+  coral::register_all_types();
+
+  std::ifstream input{path};
+  ASSERT_TRUE(input.good()) << "Failed to open " << path;
+
+  nlohmann::json data;
+  input >> data;
+
+  coral::Network network;
+  ASSERT_NO_THROW(network.from_json(data))
+    << "Failed to parse network from JSON";
+
+  ASSERT_NO_THROW(network.run()) << "Failed to run network";
+}
+
+TEST(Modules, NetworkNodeArgumentsOrder2)
+{
+  const std::string path = SOURCE_DIR "/test_files/networknode-order2.json";
+
+  coral::register_all_types();
+
+  std::ifstream input{path};
+  ASSERT_TRUE(input.good()) << "Failed to open " << path;
+
+  nlohmann::json data;
+  input >> data;
+
+  coral::Network network;
+  ASSERT_NO_THROW(network.from_json(data))
+    << "Failed to parse network from JSON with different argument order";
+
+  ASSERT_NO_THROW(network.run())
+    << "Failed to run network with different argument order";
+}
+
+TEST(Modules, NetworkNodeNoArguments)
+{
+  const std::string path = SOURCE_DIR "/test_files/networknode-noarguments.json";
+
+  coral::register_all_types();
+
+  std::ifstream input{path};
+  ASSERT_TRUE(input.good()) << "Failed to open " << path;
+
+  nlohmann::json data;
+  input >> data;
+
+  coral::Network network;
+  ASSERT_NO_THROW(network.from_json(data))
+    << "Failed to parse network from JSON with different argument order";
+
+  ASSERT_NO_THROW(network.run())
+    << "Failed to run network with different argument order";
+}
