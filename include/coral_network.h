@@ -13,6 +13,7 @@
 #include <map>
 #include <memory>
 #include <sstream>
+#include <cstdlib>
 
 #include "coral.h"
 #include "taskflow/core/task.hpp"
@@ -443,7 +444,10 @@ namespace coral
     void
     run()
     {
-      tf::Executor executor;
+      const char *env_th = std::getenv("THREADS");
+      size_t n_th = env_th ? static_cast<size_t>(std::stoull(env_th)) : std::thread::hardware_concurrency();
+      std::cout << "Using " << n_th << " thread(s)." << std::endl;
+      tf::Executor executor(n_th);
       executor.run(taskflow).wait();
     }
 
