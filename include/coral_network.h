@@ -273,11 +273,27 @@ namespace coral
       nodes[conn.target_id]->set_input(
         conn.target_input, nodes[conn.source_id]->output(conn.source_output));
 
-      auto source_task = node_tasks[conn.source_id];
-      auto target_task = node_tasks[conn.target_id];
+      // Update taskflow dependencies
+      if (node_tasks.find(conn.source_id) != node_tasks.end() &&
+          node_tasks.find(conn.target_id) != node_tasks.end())
+        {
+          auto source_task = node_tasks[conn.source_id];
+          auto target_task = node_tasks[conn.target_id];
 
-      // Connect the source and target tasks
-      source_task.precede(target_task);
+          std::cerr << "[TASKFLOW] Establishing dependency: node " << conn.source_id
+                    << " precedes node " << conn.target_id << "\n";
+
+          // Connect the source and target tasks
+          source_task.precede(target_task);
+        }
+      else
+        {
+          std::cerr << "[TASKFLOW] WARNING: Cannot establish dependency " << conn.source_id
+                    << " -> " << conn.target_id << " (tasks not found: "
+                    << "source=" << (node_tasks.find(conn.source_id) != node_tasks.end())
+                    << ", target=" << (node_tasks.find(conn.target_id) != node_tasks.end())
+                    << ")\n";
+        }
     }
 
     void
@@ -634,7 +650,8 @@ namespace coral
     }
 
     [[nodiscard]] auto
-    get_arguments() const -> std::vector<DanglingPort>
+    get_arguments(const std::map<unsigned int, std::map<int, int>> &remap_table =
+                    {}) const -> std::vector<DanglingPort>
     {
       std::vector<DanglingPort> result;
 
@@ -651,8 +668,21 @@ namespace coral
               const auto &inputs = info["inputs"];
               for (unsigned int i = 0; i < inputs.size(); ++i)
                 {
-                  const int arg_index = inputs[i].get<int>();
-                  bool      connected = false;
+                  int arg_index = inputs[i].get<int>();
+
+                  // Apply remapping if available for this node
+                  auto node_remap_it = remap_table.find(node_id);
+                  if (node_remap_it != remap_table.end())
+                    {
+                      auto index_remap_it =
+                        node_remap_it->second.find(arg_index);
+                      if (index_remap_it != node_remap_it->second.end())
+                        {
+                          arg_index = index_remap_it->second;
+                        }
+                    }
+
+                  bool connected = false;
                   for (const auto &[conn_id, conn] : connections)
                     {
                       (void)conn_id;
@@ -677,9 +707,22 @@ namespace coral
               const auto &outputs = info["outputs"];
               for (unsigned int i = 0; i < outputs.size(); ++i)
                 {
-                  const int arg_index = outputs[i].get<int>();
+                  int arg_index = outputs[i].get<int>();
                   if (arg_index < 0)
                     continue;
+
+                  // Apply remapping if available for this node
+                  auto node_remap_it = remap_table.find(node_id);
+                  if (node_remap_it != remap_table.end())
+                    {
+                      auto index_remap_it =
+                        node_remap_it->second.find(arg_index);
+                      if (index_remap_it != node_remap_it->second.end())
+                        {
+                          arg_index = index_remap_it->second;
+                        }
+                    }
+
                   bool connected = false;
                   for (const auto &[conn_id, conn] : connections)
                     {
@@ -718,6 +761,135 @@ namespace coral
         }
 
       return result;
+    }
+
+    [[nodiscard]] auto
+    build_argument_remap_table(const nlohmann::json &outer_arguments) const
+      -> std::map<unsigned int, std::map<int, int>>
+    {
+      // Build a mapping from (name, type) -> new index in outer_arguments
+      std::map<std::pair<std::string, std::string>, int> name_type_to_index;
+
+      for (size_t i = 0; i < outer_arguments.size(); ++i)
+        {
+          const auto &arg = outer_arguments[i];
+          if (arg.contains("name") && arg.contains("type"))
+            {
+              std::string name = arg["name"].get<std::string>();
+              std::string type = arg["type"].get<std::string>();
+              name_type_to_index[{name, type}] = static_cast<int>(i);
+            }
+        }
+
+      // Build remap table: node_id -> {old_index -> new_index}
+      std::map<unsigned int, std::map<int, int>> remap_table;
+
+      // For each node in the embedded network
+      for (const auto &[node_id, node] : nodes)
+        {
+          if (!node)
+            continue;
+
+          const auto info = node->get_info();
+          if (!info.contains("arguments"))
+            continue;
+
+          const auto &arguments = info["arguments"];
+
+          // Build remap for inputs
+          if (info.contains("inputs"))
+            {
+              const auto &inputs = info["inputs"];
+              for (size_t i = 0; i < inputs.size(); ++i)
+                {
+                  int old_index = inputs[i].get<int>();
+
+                  // Skip negative indices (internal nodes)
+                  if (old_index < 0)
+                    continue;
+
+                  // Get the argument metadata for this input
+                  if (i >= arguments.size())
+                    continue;
+
+                  const auto &arg = arguments[i];
+                  if (!arg.contains("name") || !arg.contains("type"))
+                    continue;
+
+                  std::string name = arg["name"].get<std::string>();
+                  std::string type = arg["type"].get<std::string>();
+
+                  // Look up the new index by name+type
+                  auto it = name_type_to_index.find({name, type});
+                  if (it != name_type_to_index.end())
+                    {
+                      int new_index = it->second;
+                      if (new_index != old_index)
+                        {
+                          std::cerr << "[REMAP] Node " << node_id
+                                    << " input " << i << ": " << name << " ("
+                                    << type << ") " << old_index << " -> "
+                                    << new_index << "\n";
+                          remap_table[node_id][old_index] = new_index;
+                        }
+                    }
+                }
+            }
+
+          // Build remap for outputs
+          if (info.contains("outputs"))
+            {
+              const auto &outputs = info["outputs"];
+              for (size_t i = 0; i < outputs.size(); ++i)
+                {
+                  int old_index = outputs[i].get<int>();
+
+                  // Skip negative indices (internal outputs)
+                  if (old_index < 0)
+                    continue;
+
+                  // Find which argument this output corresponds to
+                  // by looking for an argument with matching properties
+                  for (size_t arg_idx = 0; arg_idx < arguments.size();
+                       ++arg_idx)
+                    {
+                      const auto &arg = arguments[arg_idx];
+                      if (!arg.contains("name") || !arg.contains("type"))
+                        continue;
+
+                      // Check if this argument is an output or pass_through
+                      if (!arg.contains("connection_type"))
+                        continue;
+                      std::string conn_type =
+                        arg["connection_type"].get<std::string>();
+                      if (conn_type != "output" &&
+                          conn_type != "pass_through")
+                        continue;
+
+                      std::string name = arg["name"].get<std::string>();
+                      std::string type = arg["type"].get<std::string>();
+
+                      // Look up the new index by name+type
+                      auto it = name_type_to_index.find({name, type});
+                      if (it != name_type_to_index.end())
+                        {
+                          int new_index = it->second;
+                          if (new_index != old_index)
+                            {
+                              std::cerr << "[REMAP] Node " << node_id
+                                        << " output " << i << ": " << name
+                                        << " (" << type << ") " << old_index
+                                        << " -> " << new_index << "\n";
+                              remap_table[node_id][old_index] = new_index;
+                              break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+      return remap_table;
     }
 
     [[nodiscard]] auto
@@ -951,12 +1123,129 @@ namespace coral
         throw std::runtime_error("Network object is not initialized.");
 
       auto      &network  = **ptr;
-      const auto args_map = network.get_arguments();
+      const auto info = node.get_info();
+
+      // Remap embedded network node IDs to avoid conflicts with parent context
+      // We need to ensure embedded network's internal nodes don't conflict with
+      // the parent network's node IDs or with dynamically added argument nodes
+      std::map<unsigned int, unsigned int> node_id_remap;
+      unsigned int next_available_id = 0;
+
+      // Find the maximum existing node ID in the embedded network
+      for (const auto &[node_id, node_obj] : network.nodes)
+        {
+          (void)node_obj;
+          if (node_id >= next_available_id)
+            next_available_id = node_id + 1;
+        }
+
+      // Check if any embedded network node IDs might conflict with common IDs
+      // We'll remap all nodes to start from a high offset to avoid conflicts
+      // Use offset starting at 1000 * (some identifier) to create namespace separation
+      const unsigned int ID_OFFSET = 1000;
+      bool needs_remapping = false;
+
+      // DISABLE REMAPPING FOR NOW TO TEST IF IT'S CAUSING THE ISSUE
+      needs_remapping = false;
+
+      /*
+      for (const auto &[node_id, node_obj] : network.nodes)
+        {
+          (void)node_obj;
+          // If any node ID is less than ID_OFFSET, we should remap all nodes
+          // to avoid potential conflicts with parent network or argument nodes
+          if (node_id < ID_OFFSET)
+            {
+              needs_remapping = true;
+              break;
+            }
+        }
+      */
+
+      if (needs_remapping)
+        {
+          std::cerr << "[NETWORK_EXECUTOR] Remapping embedded network node IDs to avoid conflicts\n";
+
+          // Build the remap table: old_id -> new_id
+          unsigned int new_id = ID_OFFSET;
+          for (const auto &[old_id, node_obj] : network.nodes)
+            {
+              (void)node_obj;
+              node_id_remap[old_id] = new_id;
+              std::cerr << "[NODE_REMAP] Node " << old_id << " -> " << new_id << "\n";
+              new_id++;
+            }
+
+          // Create new nodes map with remapped IDs
+          std::map<unsigned int, std::shared_ptr<NodeObject>> new_nodes;
+          std::map<unsigned int, std::string> new_nodes_name;
+          for (const auto &[old_id, node_obj] : network.nodes)
+            {
+              unsigned int new_node_id = node_id_remap[old_id];
+              new_nodes[new_node_id] = node_obj;
+              if (auto it = network.nodes_name.find(old_id); it != network.nodes_name.end())
+                new_nodes_name[new_node_id] = it->second;
+            }
+
+          // Create new connections map with remapped node IDs
+          std::map<unsigned int, Connection> new_connections;
+          unsigned int conn_id = 0;
+          for (const auto &[old_conn_id, conn] : network.connections)
+            {
+              (void)old_conn_id;
+              Connection new_conn;
+              new_conn.source_id = node_id_remap[conn.source_id];
+              new_conn.target_id = node_id_remap[conn.target_id];
+              new_conn.source_output = conn.source_output;
+              new_conn.target_input = conn.target_input;
+              new_connections[conn_id] = new_conn;
+              std::cerr << "[CONN_REMAP] Edge " << conn.source_id << " -> " << conn.target_id
+                        << " remapped to " << new_conn.source_id << " -> " << new_conn.target_id << "\n";
+              conn_id++;
+            }
+
+          // Replace network's internal maps with remapped versions
+          network.nodes = new_nodes;
+          network.nodes_name = new_nodes_name;
+          network.connections = new_connections;
+
+          // Rebuild taskflow with new node IDs
+          network.rebuild_taskflow();
+
+          // CRITICAL: Re-establish input/output pointers after remapping
+          // The rebuild_taskflow() only updates the task DAG, not the data flow!
+          std::cerr << "[NETWORK_EXECUTOR] Re-establishing input/output pointers after remapping\n";
+          for (const auto &[conn_id, conn] : network.connections)
+            {
+              (void)conn_id;
+              auto source_node = network.nodes[conn.source_id];
+              auto target_node = network.nodes[conn.target_id];
+
+              // Reconnect the data flow: target's input points to source's output
+              target_node->set_input(conn.target_input,
+                                    source_node->output(conn.source_output));
+
+              std::cerr << "[INPUT_RECONNECT] Node " << conn.target_id
+                        << " input " << conn.target_input
+                        << " <- Node " << conn.source_id
+                        << " output " << conn.source_output << "\n";
+            }
+
+          std::cerr << "[NETWORK_EXECUTOR] Node ID remapping completed\n";
+        }
+
+      // Build remap table to translate embedded network's argument indices to match outer network's argument order
+      std::map<unsigned int, std::map<int, int>> remap_table;
+      if (info.contains("arguments"))
+        {
+          std::cerr << "[NETWORK_EXECUTOR] Building argument remap table based on name+type\n";
+          remap_table = network.build_argument_remap_table(info["arguments"]);
+        }
+
+      const auto args_map = network.get_arguments(remap_table);
 
       if (args.size() != args_map.size())
         throw std::runtime_error("Wrong number of arguments.");
-
-      const auto                info = node.get_info();
       std::vector<unsigned int> output_to_argument;
       if (info.contains("outputs"))
         {
@@ -1012,15 +1301,41 @@ namespace coral
       try
         {
           // Connect ready arguments to their corresponding network inputs.
+          std::cerr << "[NETWORK_EXECUTOR] Starting argument binding loop\n";
+          std::cerr << "[NETWORK_EXECUTOR] args_map.size() = " << args_map.size() << "\n";
+          std::cerr << "[NETWORK_EXECUTOR] args.size() = " << args.size() << "\n";
+          std::cerr << "[NETWORK_EXECUTOR] Network inputs before binding: " << network.get_inputs().size() << "\n";
+
           for (size_t i = 0; i < args_map.size(); ++i)
             {
               const auto &entry = args_map[i];
               const auto &arg   = args[i];
+
+              std::cerr << "[NETWORK_EXECUTOR] Processing argument " << i << ":\n";
+              std::cerr << "  argument_index = " << entry.argument_index << "\n";
+              std::cerr << "  node_id = " << entry.node_id << "\n";
+              std::cerr << "  input_index = " << entry.input_index << "\n";
+              std::cerr << "  type = " << static_cast<int>(entry.type) << " (input=" << static_cast<int>(ConnectionType::input)
+                        << ", pass_through=" << static_cast<int>(ConnectionType::pass_through) << ")\n";
+              std::cerr << "  arg is null: " << (!arg ? "YES" : "NO") << "\n";
+
+              if (arg)
+                {
+                  std::cerr << "  arg->ready(): " << (arg->ready() ? "YES" : "NO") << "\n";
+                  std::cerr << "  arg->n_outputs(): " << arg->n_outputs() << "\n";
+                }
+
               if (!arg || !arg->ready())
-                continue;
+                {
+                  std::cerr << "  SKIPPING: argument is " << (!arg ? "null" : "not ready") << "\n";
+                  continue;
+                }
 
               if ((entry.type & ConnectionType::input) == ConnectionType::none)
-                continue;
+                {
+                  std::cerr << "  SKIPPING: connection type has no input flag\n";
+                  continue;
+                }
 
               if (entry.input_index < 0)
                 throw std::runtime_error(
@@ -1044,24 +1359,35 @@ namespace coral
                   "Network input index out of bounds for argument " +
                   std::to_string(i) + ".");
 
+              std::cerr << "  BINDING: Adding argument as node to network\n";
               auto node_id = network.add_node(arg);
               added_node_ids.push_back(node_id);
+              std::cerr << "  Added node_id = " << node_id << "\n";
+
               restore_inputs.push_back(
                 {entry.node_id, input_index, target_node->input(input_index)});
 
+              std::cerr << "  Creating connection: node " << node_id << " (output 0) -> node " << entry.node_id
+                        << " (input " << input_index << ")\n";
               auto conn_id =
                 network.add_connection(node_id, entry.node_id, 0, input_index);
               added_connection_ids.push_back(conn_id);
+              std::cerr << "  Connection created with id = " << conn_id << "\n";
 
               if (entry.type == ConnectionType::pass_through)
                 {
+                  std::cerr << "  This is a PASS_THROUGH argument\n";
+                  std::cerr << "  output_to_argument.size() = " << output_to_argument.size() << "\n";
                   for (size_t out_index = 0;
                        out_index < output_to_argument.size();
                        ++out_index)
                     {
+                      std::cerr << "    Checking output " << out_index << ": maps to argument "
+                                << output_to_argument[out_index] << "\n";
                       if (output_to_argument[out_index] ==
                           static_cast<unsigned int>(entry.argument_index))
                         {
+                          std::cerr << "    SETTING OUTPUT " << out_index << " to arg->output(0) BEFORE network runs\n";
                           node.set_output(static_cast<unsigned int>(out_index),
                                           arg->output(0));
                           break;
@@ -1070,15 +1396,38 @@ namespace coral
                 }
             }
 
+          std::cerr << "[NETWORK_EXECUTOR] After binding: network inputs remaining = " << network.get_inputs().size() << "\n";
           if (!network.get_inputs().empty())
             throw std::runtime_error(
               "Network has unconnected inputs after binding arguments.");
 
+          // Dump taskflow for debugging
+          std::cerr << "[NETWORK_EXECUTOR] Dumping taskflow DAG to /tmp/embedded_network.dot\n";
+          std::ofstream dot_file("/tmp/embedded_network.dot");
+          network.get_taskflow().dump(dot_file);
+          dot_file.close();
+
+          // List all nodes and their ready status before execution
+          std::cerr << "[NETWORK_EXECUTOR] Node inventory before execution:\n";
+          for (const auto &[node_id, node_obj] : network.nodes)
+            {
+              std::cerr << "  Node " << node_id << ": ready=" << node_obj->ready()
+                        << ", n_inputs=" << node_obj->n_inputs()
+                        << ", n_outputs=" << node_obj->n_outputs() << "\n";
+            }
+
+          std::cerr << "[NETWORK_EXECUTOR] Running embedded network...\n";
           network.run();
+          std::cerr << "[NETWORK_EXECUTOR] Network execution completed\n";
+
           const auto outputs = network.get_outputs();
+          std::cerr << "[NETWORK_EXECUTOR] Network has " << outputs.size() << " outputs\n";
           for (size_t out_index = 0; out_index < outputs.size(); ++out_index)
-            node.set_output(static_cast<unsigned int>(out_index),
-                            network.output(out_index));
+            {
+              std::cerr << "  Setting output " << out_index << " to network.output(" << out_index << ") AFTER network runs\n";
+              node.set_output(static_cast<unsigned int>(out_index),
+                              network.output(out_index));
+            }
           cleanup();
         }
       catch (...)
