@@ -84,6 +84,28 @@ namespace coral
     }
   };
 
+  class TaskObserver: public tf::ObserverInterface {
+    std::string m_name;
+
+  public:
+    TaskObserver(const std::string& name)
+      : m_name{name}
+    {}
+
+    void set_up(size_t num_workers) override {
+      std::cout << "=====> [Observer " << m_name << "]: setup with " << num_workers << " worker(s)" << std::endl;
+    }
+
+    void on_entry(tf::WorkerView w, tf::TaskView tv) override {
+      std::cout << "=====> [Observer " << m_name << "]: worker " << w.id() << " about to run task " << tv.name() << std::endl;
+    }
+
+    void on_exit(tf::WorkerView w, tf::TaskView tv) override {
+      std::cout << "=====> [Observer " << m_name << "]: worker " << w.id() << " finished task " << tv.name() << std::endl;
+    }    
+  };
+  
+
   class Network
   {
   public:
@@ -107,9 +129,15 @@ namespace coral
     std::map<unsigned int, Connection> connections;
 
     tf::Taskflow taskflow;
+    std::string name;
 
   public:
-    Network() = default;
+    Network()
+    {
+      static size_t count = 0;
+      name = "network_" + std::to_string(count);
+      ++count;
+    }
 
     Network(const Network &other)
       : nodes(other.nodes)
@@ -142,6 +170,7 @@ namespace coral
     void
     rebuild_taskflow()
     {
+      std::cout << "#### rebuild taskflow" << std::endl;
       taskflow.clear();
       node_tasks.clear();
 
@@ -153,14 +182,14 @@ namespace coral
           node_tasks[node_id] =
             taskflow
               .emplace([node, node_id, name]() {
-                std::cout << "Running node " << node_id << ": " << name
+                std::cout << "Running node (mode rebuild)" << node_id << ": " << name
                           << " (type = " << node->type_name() << ")"
                           << std::endl;
                 (*node)();
               })
               .name(name == "" ? "node_" + std::to_string(node_id) + ": " +
                                    node->type_name() :
-                                 name);
+                                  name + ": " + std::to_string(node_id));
         }
 
       for (const auto &[conn_id, conn] : connections)
@@ -180,18 +209,19 @@ namespace coral
              const std::shared_ptr<NodeObject> &node,
              const std::string                 &node_name = "")
     {
+      std::cout << "Adding node " << node_name << ": " << id << " to " << name << "." << std::endl;
       nodes[id]      = node;
       nodes_name[id] = node_name;
       node_tasks[id] =
         taskflow
-          .emplace([node, id, node_name]() {
-            std::cout << "Running node " << id << ": " << node_name
+          .emplace([node, id, node_name, this]() {
+            std::cout << "Running node (mode add) [" << this->name << "] " << id << ": " << node_name
                       << " (type = " << node->type_name() << ")" << std::endl;
             (*node)();
           })
           .name(node_name == "" ?
                   "node_" + std::to_string(id) + ": " + node->type_name() :
-                  node_name);
+                  node_name + ": " + std::to_string(id));
     }
 
     unsigned int
@@ -211,7 +241,7 @@ namespace coral
         {
           node_tasks[id].name(name == "" ? "node_" + std::to_string(id) + ": " +
                                              nodes[id]->type_name() :
-                                           name);
+                                           name + ": " + std::to_string(id));
         }
     }
 
@@ -448,6 +478,11 @@ namespace coral
       size_t n_th = env_th ? static_cast<size_t>(std::stoull(env_th)) : std::thread::hardware_concurrency();
       std::cout << "Using " << n_th << " thread(s)." << std::endl;
       tf::Executor executor(n_th);
+      auto observer = executor.make_observer<TaskObserver>(name);
+
+      // TODO: Remove this
+      output_dot(std::filesystem::path{"./" + name + ".dot"});     
+
       executor.run(taskflow).wait();
     }
 
@@ -497,6 +532,15 @@ namespace coral
     void
     output_dot(const std::filesystem::path &filepath) const
     {
+      for (const auto& [id, t]: node_tasks) {
+        std::cout << "####### [network: " << name << "]: task " << t.name() << " (id: " << id << ")\n"
+          << "\t\tpredecessors: " << t.num_predecessors() << "\n"
+          << "\t\tsuccessors: " << t.num_successors() << "\n"
+          << "\t\tweak dependencies: " << t.num_weak_dependencies() << "\n"
+          << "\t\tstrong dependencies: " << t.num_strong_dependencies() << "\n"
+          << std::endl;
+      }
+
       std::ofstream dot_file(filepath);
       taskflow.dump(dot_file);
       dot_file.close();
