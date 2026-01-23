@@ -538,7 +538,7 @@ namespace coral
     auto
     operator()() -> bool
     {
-      bool is_ready = true;
+      std::vector<size_t> not_ready_arguments;
       for (size_t i = 0; i < arguments.size(); ++i)
         {
           if ((arguments_types[i] & ConnectionType::input) ==
@@ -546,14 +546,22 @@ namespace coral
             continue;
           if (!arguments[i]->ready())
             {
-              is_ready = false;
-              break;
+              not_ready_arguments.push_back(i);
             }
         }
-      if (!is_ready)
-        throw std::runtime_error(
-          "Arguments are not ready. You can only call "
-          "this function after all arguments are ready.");
+      if (!not_ready_arguments.empty())
+        {
+          std::string error_msg = "Arguments are not ready. You can only call "
+                                  "this function after all arguments are ready. "
+                                  "Not ready argument indices: ";
+          for (size_t i = 0; i < not_ready_arguments.size(); ++i)
+            {
+              error_msg += std::to_string(not_ready_arguments[i]);
+              if (i < not_ready_arguments.size() - 1)
+                error_msg += ", ";
+            }
+          throw std::runtime_error(error_msg);
+        }
 
       if (initializer.node_type == NodeType::elementary_constructor &&
           initializer.to_string && object && *object)
