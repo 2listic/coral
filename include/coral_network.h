@@ -203,9 +203,22 @@ namespace coral
                     << " (" << name << ")" << std::endl;
           node_tasks[node_id] =
             taskflow
-              .emplace([node, node_id, name]() {
+              .emplace([node, node_id, name, this]() {
                 std::cout << "[LAMBDA ENTRY] Task " << node_id << " lambda called (rebuild mode)!" << std::endl;
                 try {
+                  // Dynamic input resolution: Refresh all inputs before execution
+                  std::cout << "[DEBUG] Refreshing inputs for node " << node_id << std::endl;
+                  for (const auto &[conn_id, conn] : this->connections) {
+                    if (conn.target_id == node_id) {
+                      this->nodes[conn.target_id]->set_input(
+                        conn.target_input,
+                        this->nodes[conn.source_id]->output(conn.source_output)
+                      );
+                      std::cout << "[DEBUG]   Refreshed input " << conn.target_input
+                                << " from node " << conn.source_id << std::endl;
+                    }
+                  }
+
                   std::cout << "Running node (mode rebuild)" << node_id << ": " << name
                             << " (type = " << node->type_name() << ")"
                             << std::endl;
@@ -249,6 +262,19 @@ namespace coral
           .emplace([node, id, node_name, this]() {
             std::cout << "[LAMBDA ENTRY] Task " << id << " lambda called!" << std::endl;
             try {
+              // Dynamic input resolution: Refresh all inputs before execution
+              std::cout << "[DEBUG] Refreshing inputs for node " << id << std::endl;
+              for (const auto &[conn_id, conn] : this->connections) {
+                if (conn.target_id == id) {
+                  this->nodes[conn.target_id]->set_input(
+                    conn.target_input,
+                    this->nodes[conn.source_id]->output(conn.source_output)
+                  );
+                  std::cout << "[DEBUG]   Refreshed input " << conn.target_input
+                            << " from node " << conn.source_id << std::endl;
+                }
+              }
+
               std::cout << "Running node (mode add) [" << this->name << "] " << id << ": " << node_name
                         << " (type = " << node->type_name() << ")" << std::endl;
               (*node)();
