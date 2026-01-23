@@ -228,3 +228,131 @@ TEST(Modules, NetworkNodeNoArguments)
   ASSERT_NO_THROW(network.run())
     << "Failed to run network with different argument order";
 }
+
+TEST(Modules, VtkGen1)
+{
+  const std::string path        = SOURCE_DIR "/test_files/vtk-gen1.json";
+  const std::string output_file = "grid-1.vtk";
+
+  coral::register_all_types();
+
+  std::ifstream input{path};
+  ASSERT_TRUE(input.good()) << "Failed to open " << path;
+
+  nlohmann::json data;
+  input >> data;
+
+  coral::Network network;
+  ASSERT_NO_THROW(network.from_json(data))
+    << "Failed to parse network from JSON";
+
+  ASSERT_NO_THROW(network.run()) << "Failed to run network";
+
+  // Check that the output file was created and is not empty
+  std::ifstream output{output_file};
+  ASSERT_TRUE(output.good()) << "Output file " << output_file << " was not created";
+
+  output.seekg(0, std::ios::end);
+  std::streampos file_size = output.tellg();
+  ASSERT_GT(file_size, 0) << "Output file " << output_file << " is empty";
+  output.close();
+
+  // Remove the output file
+  std::remove(output_file.c_str());
+}
+
+TEST(Modules, VtkGen2)
+{
+  const std::string path        = SOURCE_DIR "/test_files/vtk-gen2.json";
+  const std::string output_file = "grid-1.vtk";
+
+  coral::register_all_types();
+
+  std::ifstream input{path};
+  ASSERT_TRUE(input.good()) << "Failed to open " << path;
+
+  nlohmann::json data;
+  input >> data;
+
+  coral::Network network;
+  ASSERT_NO_THROW(network.from_json(data))
+    << "Failed to parse network from JSON";
+
+  ASSERT_NO_THROW(network.run()) << "Failed to run network";
+
+  // Check that the output file was created and is not empty
+  std::ifstream output{output_file};
+  ASSERT_TRUE(output.good()) << "Output file " << output_file << " was not created";
+
+  output.seekg(0, std::ios::end);
+  std::streampos file_size = output.tellg();
+  ASSERT_GT(file_size, 0) << "Output file " << output_file << " is empty";
+  output.close();
+
+  // Remove the output file
+  std::remove(output_file.c_str());
+}
+
+TEST(Modules, VtkGen3)
+{
+  const std::string path        = SOURCE_DIR "/test_files/vtk-gen3.json";
+  const std::string output_file = "grid-1.vtk";
+
+  coral::register_all_types();
+
+  std::ifstream input{path};
+  ASSERT_TRUE(input.good()) << "Failed to open " << path;
+
+  nlohmann::json data;
+  input >> data;
+
+  coral::Network network;
+  ASSERT_NO_THROW(network.from_json(data))
+    << "Failed to parse network from JSON";
+
+  ASSERT_NO_THROW(network.run()) << "Failed to run network";
+
+  // Check that the output file was created and is not empty
+  std::ifstream output{output_file};
+  ASSERT_TRUE(output.good()) << "Output file " << output_file << " was not created";
+
+  output.seekg(0, std::ios::end);
+  std::streampos file_size = output.tellg();
+  ASSERT_GT(file_size, 0) << "Output file " << output_file << " is empty";
+  output.close();
+
+  // Remove the output file
+  std::remove(output_file.c_str());
+}
+
+TEST(Modules, VtkSingle)
+{
+  const std::string path        = SOURCE_DIR "/test_files/vtk-single.json";
+  const std::string output_file = "grid-1.vtk";
+
+  coral::register_all_types();
+
+  std::ifstream input{path};
+  ASSERT_TRUE(input.good()) << "Failed to open " << path;
+
+  nlohmann::json data;
+  input >> data;
+
+  coral::Network network;
+  ASSERT_NO_THROW(network.from_json(data))
+    << "Failed to parse network from JSON";
+
+  ASSERT_NO_THROW(network.run()) << "Failed to run network";
+
+  // Check that the output file was created and is not empty
+  std::ifstream output{output_file};
+  ASSERT_TRUE(output.good()) << "Output file " << output_file << " was not created";
+
+  output.seekg(0, std::ios::end);
+  std::streampos file_size = output.tellg();
+  ASSERT_GT(file_size, 0) << "Output file " << output_file << " is empty";
+  output.close();
+
+  // Remove the output file
+  std::remove(output_file.c_str());
+}
