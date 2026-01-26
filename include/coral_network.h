@@ -92,16 +92,16 @@ namespace coral
       : m_name{name}
     {}
 
-    void set_up(size_t num_workers) override {
-      std::cout << "=====> [Observer " << m_name << "]: setup with " << num_workers << " worker(s)" << std::endl;
+    void set_up([[maybe_unused]] size_t num_workers) override {
+      // TODO: complete
     }
 
-    void on_entry(tf::WorkerView w, tf::TaskView tv) override {
-      std::cout << "=====> [Observer " << m_name << "]: worker " << w.id() << " about to run task " << tv.name() << std::endl;
+    void on_entry([[maybe_unused]] tf::WorkerView w, [[maybe_unused]] tf::TaskView tv) override {
+      // TODO: complete
     }
 
-    void on_exit(tf::WorkerView w, tf::TaskView tv) override {
-      std::cout << "=====> [Observer " << m_name << "]: worker " << w.id() << " finished task " << tv.name() << std::endl;
+    void on_exit([[maybe_unused]] tf::WorkerView w, [[maybe_unused]] tf::TaskView tv) override {
+      // TODO: complete
     }    
   };
   
@@ -144,14 +144,6 @@ namespace coral
       , nodes_name(other.nodes_name)
       , connections(other.connections)
     {
-      std::cout << "[DEBUG] Network copy constructor called!" << std::endl;
-      std::cout << "[DEBUG] Source network has " << other.nodes.size()
-                << " nodes: ";
-      for (const auto &[id, _] : other.nodes)
-        std::cout << id << " ";
-      std::cout << std::endl;
-      std::cout << "[DEBUG] Copying " << nodes.size() << " nodes to new network"
-                << std::endl;
       rebuild_taskflow();
     }
 
@@ -160,12 +152,6 @@ namespace coral
     {
       if (this == &other)
         return *this;
-      std::cout << "[DEBUG] Network copy assignment operator called!" << std::endl;
-      std::cout << "[DEBUG] Source network has " << other.nodes.size()
-                << " nodes: ";
-      for (const auto &[id, _] : other.nodes)
-        std::cout << id << " ";
-      std::cout << std::endl;
       nodes       = other.nodes;
       nodes_name  = other.nodes_name;
       connections = other.connections;
@@ -184,13 +170,6 @@ namespace coral
     void
     rebuild_taskflow()
     {
-      std::cout << "#### rebuild taskflow" << std::endl;
-      std::cout << "[DEBUG] rebuild_taskflow: Rebuilding with " << nodes.size()
-                << " nodes: ";
-      for (const auto &[id, _] : nodes)
-        std::cout << id << " ";
-      std::cout << std::endl;
-
       taskflow.clear();
       node_tasks.clear();
 
@@ -199,12 +178,9 @@ namespace coral
           const auto node_id = entry.first;
           const auto node    = entry.second;
           const auto name    = get_node_name(node_id);
-          std::cout << "[DEBUG] rebuild_taskflow: Adding task for node " << node_id
-                    << " (" << name << ")" << std::endl;
           node_tasks[node_id] =
             taskflow
               .emplace([node, node_id, name, this]() {
-                std::cout << "[LAMBDA ENTRY] Task " << node_id << " lambda called (rebuild mode)!" << std::endl;
                 try {
                   // Dynamic input resolution: Refresh all inputs before execution
                   std::cout << "[DEBUG] Refreshing inputs for node " << node_id << std::endl;
@@ -214,21 +190,15 @@ namespace coral
                         conn.target_input,
                         this->nodes[conn.source_id]->output(conn.source_output)
                       );
-                      std::cout << "[DEBUG]   Refreshed input " << conn.target_input
-                                << " from node " << conn.source_id << std::endl;
                     }
                   }
 
-                  std::cout << "Running node (mode rebuild)" << node_id << ": " << name
-                            << " (type = " << node->type_name() << ")"
-                            << std::endl;
                   (*node)();
-                  std::cout << "[LAMBDA EXIT] Task " << node_id << " lambda finished (rebuild mode)!" << std::endl;
                 } catch (const std::exception& e) {
-                  std::cout << "[EXCEPTION] Task " << node_id << " (rebuild mode) threw exception: " << e.what() << std::endl;
+                  // TODO: complete
                   throw;
                 } catch (...) {
-                  std::cout << "[EXCEPTION] Task " << node_id << " (rebuild mode) threw unknown exception!" << std::endl;
+                  // TODO: complete
                   throw;
                 }
               })
@@ -254,34 +224,26 @@ namespace coral
              const std::shared_ptr<NodeObject> &node,
              const std::string                 &node_name = "")
     {
-      std::cout << "Adding node " << node_name << ": " << id << " to " << name << "." << std::endl;
       nodes[id]      = node;
       nodes_name[id] = node_name;
       node_tasks[id] =
         taskflow
           .emplace([node, id, node_name, this]() {
-            std::cout << "[LAMBDA ENTRY] Task " << id << " lambda called!" << std::endl;
             try {
               // Dynamic input resolution: Refresh all inputs before execution
-              std::cout << "[DEBUG] Refreshing inputs for node " << id << std::endl;
               for (const auto &[conn_id, conn] : this->connections) {
                 if (conn.target_id == id) {
                   this->nodes[conn.target_id]->set_input(
                     conn.target_input,
                     this->nodes[conn.source_id]->output(conn.source_output)
                   );
-                  std::cout << "[DEBUG]   Refreshed input " << conn.target_input
-                            << " from node " << conn.source_id << std::endl;
                 }
               }
 
-              std::cout << "Running node (mode add) [" << this->name << "] " << id << ": " << node_name
-                        << " (type = " << node->type_name() << ")" << std::endl;
               (*node)();
-              std::cout << "[LAMBDA EXIT] Task " << id << " lambda finished!" << std::endl;
             } catch (const std::exception& e) {
-              std::cout << "[EXCEPTION] Task " << id << " threw exception: " << e.what() << std::endl;
-
+              // TODO: complete
+              /*
               // Parse the exception to check for "Not ready argument indices"
               std::string error_msg(e.what());
               if (error_msg.find("Not ready argument indices:") != std::string::npos) {
@@ -299,9 +261,10 @@ namespace coral
                   }
                 }
               }
+              */
               throw;
             } catch (...) {
-              std::cout << "[EXCEPTION] Task " << id << " threw unknown exception!" << std::endl;
+              // TODO: complete
               throw;
             }
           })
@@ -342,12 +305,6 @@ namespace coral
     void
     add_connection(unsigned int id, const Connection &conn)
     {
-      std::cout << "[DEBUG] add_connection() called: connection_id=" << id
-                << ", source=" << conn.source_id
-                << ", target=" << conn.target_id
-                << ", source_output=" << conn.source_output
-                << ", target_input=" << conn.target_input << std::endl;
-
       connections[id] = conn;
       // Ensure both source and target nodes exist
       if (nodes.find(conn.source_id) == nodes.end())
@@ -389,41 +346,18 @@ namespace coral
         }
       catch (const std::exception &)
         {
-          // Naming is best-effort; ignore errors
+          // FIXME: never ignore errors!
         }
-
-      // Set the input of the target node to the output of the source node
-      std::cout << "[DEBUG] About to set_input: source_node[" << conn.source_id
-                << "]->output(" << conn.source_output << ") ready="
-                << nodes[conn.source_id]->output(conn.source_output)->ready()
-                << " -> target_node[" << conn.target_id << "]->input("
-                << conn.target_input << ")" << std::endl;
 
       nodes[conn.target_id]->set_input(
         conn.target_input, nodes[conn.source_id]->output(conn.source_output));
 
-      std::cout << "[DEBUG] After set_input: target_node[" << conn.target_id
-                << "]->input(" << conn.target_input << ") ready="
-                << nodes[conn.target_id]->input(conn.target_input)->ready()
-                << std::endl;
-
       auto source_task = node_tasks[conn.source_id];
       auto target_task = node_tasks[conn.target_id];
-
-      std::cout << "[DEBUG] Before precede(): source_task[" << conn.source_id
-                << "] empty=" << source_task.empty()
-                << ", target_task[" << conn.target_id
-                << "] empty=" << target_task.empty() << std::endl;
 
       // Connect the source and target tasks
       source_task.precede(target_task);
 
-      std::cout << "[DEBUG] After precede(): connection " << conn.source_id
-                << "->" << conn.target_id << " established" << std::endl;
-      std::cout << "[DEBUG]   Source task[" << conn.source_id
-                << "] now has " << source_task.num_successors() << " successors" << std::endl;
-      std::cout << "[DEBUG]   Target task[" << conn.target_id
-                << "] now has " << target_task.num_predecessors() << " predecessors" << std::endl;
     }
 
     void
@@ -591,70 +525,18 @@ namespace coral
     {
       const char *env_th = std::getenv("THREADS");
       size_t n_th = env_th ? static_cast<size_t>(std::stoull(env_th)) : std::thread::hardware_concurrency();
-      std::cout << "Using " << n_th << " thread(s)." << std::endl;
       tf::Executor executor(n_th);
       auto observer = executor.make_observer<TaskObserver>(name);
-
-      // TODO: Remove this
-      output_dot(std::filesystem::path{"./" + name + ".dot"});
-
-      std::cout << "[DEBUG] ==== PRE-EXECUTION TASKFLOW STATE ====" << std::endl;
-      std::cout << "[DEBUG] Taskflow has " << taskflow.num_tasks() << " tasks" << std::endl;
-      std::cout << "[DEBUG] node_tasks map has " << node_tasks.size() << " entries" << std::endl;
-
-      // Check for tasks with 0 predecessors
-      std::vector<unsigned int> ready_tasks;
-      for (const auto& [id, t]: node_tasks) {
-        if (t.num_predecessors() == 0) {
-          ready_tasks.push_back(id);
-        }
-      }
-      std::cout << "[DEBUG] Tasks with 0 predecessors (should execute first): ";
-      for (auto id : ready_tasks) {
-        std::cout << id << " ";
-      }
-      std::cout << std::endl;
-
-      // Special focus on task 26
-      if (node_tasks.find(26) != node_tasks.end()) {
-        const auto& task26 = node_tasks.at(26);
-        std::cout << "[DEBUG] *** TASK 26 DETAILED STATE ***" << std::endl;
-        std::cout << "[DEBUG] Task 26 empty: " << task26.empty() << std::endl;
-        std::cout << "[DEBUG] Task 26 num_predecessors: " << task26.num_predecessors() << std::endl;
-        std::cout << "[DEBUG] Task 26 num_successors: " << task26.num_successors() << std::endl;
-        std::cout << "[DEBUG] Task 26 num_strong_dependencies: " << task26.num_strong_dependencies() << std::endl;
-        std::cout << "[DEBUG] Task 26 num_weak_dependencies: " << task26.num_weak_dependencies() << std::endl;
-        std::cout << "[DEBUG] Task 26 name: " << task26.name() << std::endl;
-
-        // Check what task 26 precedes
-        if (node_tasks.find(20) != node_tasks.end()) {
-          const auto& task20 = node_tasks.at(20);
-          std::cout << "[DEBUG] Task 20 (successor) num_predecessors: " << task20.num_predecessors() << std::endl;
-          std::cout << "[DEBUG] Task 20 (successor) num_strong_dependencies: " << task20.num_strong_dependencies() << std::endl;
-        }
-      } else {
-        std::cout << "[DEBUG] *** TASK 26 NOT FOUND IN node_tasks MAP! ***" << std::endl;
-      }
-
-      std::cout << "[DEBUG] ==== STARTING EXECUTION ====" << std::endl;
 
       try {
         auto future = executor.run(taskflow);
         future.wait();
-        std::cout << "[DEBUG] ==== EXECUTION COMPLETED SUCCESSFULLY ====" << std::endl;
       } catch (const std::exception& e) {
-        std::cout << "[EXCEPTION] Executor threw exception: " << e.what() << std::endl;
+        // TODO: complete
         throw;
       } catch (...) {
-        std::cout << "[EXCEPTION] Executor threw unknown exception!" << std::endl;
+        // TODO: complete
         throw;
-      }
-
-      // Check which tasks actually ran by checking node readiness
-      std::cout << "[DEBUG] POST-EXECUTION: Checking which nodes executed..." << std::endl;
-      for (const auto& [id, task]: node_tasks) {
-        auto node = nodes.at(id);
-        std::cout << "[DEBUG] Node " << id << " ready: " << node->ready() << std::endl;
       }
     }
 
@@ -704,17 +586,6 @@ namespace coral
     void
     output_dot(const std::filesystem::path &filepath) const
     {
-
-      for (const auto& [id, t]: node_tasks) {
-        std::cout << "####### [network: " << name << "]: task " << t.name() << " (id: " << id << ")\n"
-          << "\t\tpredecessors: " << t.num_predecessors() << "\n"
-          << "\t\tsuccessors: " << t.num_successors() << "\n"
-          << "\t\tweak dependencies: " << t.num_weak_dependencies() << "\n"
-          << "\t\tstrong dependencies: " << t.num_strong_dependencies() << "\n"
-          << "\t\tempty: " << std::boolalpha << t.empty() << "\n"
-          << std::endl;
-      }
-
       std::ofstream dot_file(filepath);
       taskflow.dump(dot_file);
       dot_file.close();
