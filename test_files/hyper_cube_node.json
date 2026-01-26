@@ -1,0 +1,23 @@
+{
+  "arguments": [
+    {
+      "connection_type": "output",
+      "name": "triangulation",
+      "type": "dealii::Triangulation<2, 2>"
+    },
+    {
+      "connection_type": "input",
+      "name": "n_refinements",
+      "type": "unsigned int"
+    }
+  ],
+  "inputs": [
+    1
+  ],
+  "node_type": "network",
+  "outputs": [
+    0
+  ],
+  "type": "coral::Network",
+  "value": "{\"author\":\"coral-editor\",\"date_time_utc\":\"2026-01-10T02:22:15.000Z\",\"version\":1,\"workflow\":{\"edges\":{\"0\":{\"source\":0,\"source_output\":0,\"target\":1,\"target_input\":0},\"1\":{\"source\":3,\"source_output\":0,\"target\":1,\"target_input\":1},\"2\":{\"source\":4,\"source_output\":0,\"target\":1,\"target_input\":2},\"3\":{\"source\":1,\"source_output\":0,\"target\":2,\"target_input\":0}},\"nodes\":{\"0\":{\"name\":\"triangulation\",\"type\":\"dealii::Triangulation<2, 2>\"},\"1\":{\"type\":\"GridGenerator::generate_from_name_and_arguments<2>\"},\"2\":{\"type\":\"Triangulation<2>::refine_global\"},\"3\":{\"name\":\"grid_generator_function_name\",\"type\":\"std::string\",\"value\":\"hyper_cube\"},\"4\":{\"name\":\"grid_generator_function_arguments\",\"type\":\"std::string\",\"value\":\"0: 1: false\"}}}}"
+}

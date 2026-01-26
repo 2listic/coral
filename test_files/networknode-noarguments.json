@@ -1,0 +1,41 @@
+{
+  "workflow": {
+    "nodes": {
+      "7": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "elementary_constructor",
+        "outputs": [-1],
+        "type": "std::string",
+        "value": "hyper_cube",
+        "is_valid": true,
+        "position": { "x": 841.3157302681442, "y": 521.8579659139212 }
+      },
+      "8": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "elementary_constructor",
+        "outputs": [-1],
+        "type": "std::string",
+        "value": "0: 1: false",
+        "is_valid": true,
+        "position": { "x": 847.0808673890173, "y": 638.8078903659168 }
+      },
+      "10": {
+        "type": "coral::Network",
+        "node_type": "network",
+        "name": "generate grid",
+        "value": "{\"workflow\":{\"nodes\":{\"0\":{\"arguments\":[{\"connection_type\":\"pass_through\",\"name\":\"triangulation\",\"type\":\"dealii::Triangulation<2, 2>\"},{\"connection_type\":\"input\",\"name\":\"grid_generator_function_name\",\"type\":\"std::string\"},{\"connection_type\":\"input\",\"name\":\"grid_generator_function_arguments\",\"type\":\"std::string\"}],\"inputs\":[0,1,2],\"node_type\":\"void_function\",\"outputs\":[0],\"type\":\"GridGenerator::generate_from_name_and_arguments<2>\",\"is_valid\":true,\"position\":{\"x\":1018.421875,\"y\":400}},\"1\":{\"arguments\":[],\"inputs\":[],\"node_type\":\"empty_constructor\",\"outputs\":[-1],\"type\":\"dealii::Triangulation<2, 2>\",\"is_valid\":true,\"position\":{\"x\":507.7747744981655,\"y\":421.2555548496683}}},\"edges\":{\"0\":{\"source\":1,\"target\":0,\"source_output\":0,\"target_input\":0}}},\"version\":1,\"author\":\"dealiix-platform\",\"date_time_utc\":\"2026-01-20T09:10:40.872Z\"}",
+        "is_valid": true,
+        "position": { "x": 1336.2939316459558, "y": 524.328738965724 }
+      }
+    },
+    "edges": {
+      "0": { "source": 7, "target": 10, "source_output": 0, "target_input": 0 },
+      "1": { "source": 8, "target": 10, "source_output": 0, "target_input": 1 }
+    }
+  },
+  "version": 1,
+  "author": "dealiix-platform",
+  "date_time_utc": "2026-01-20T11:10:30.613Z"
+}

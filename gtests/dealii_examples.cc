@@ -20,20 +20,17 @@ TEST(dealiiExamples, step01)
   network.clear_network();
 
   auto make_grid =
-    make_method_node("GridGenerator::generate_from_name_and_arguments<2>",
-                     &GridGenerator::generate_from_name_and_arguments<2, 2>);
+    make_node("GridGenerator::generate_from_name_and_arguments<2>");
 
   auto tria           = make_node<Triangulation<2>>();
   auto grid_name      = make_node("hyper_cube");
   auto grid_arguments = make_node("0: 1: false");
-  auto ref            = make_method_node("Triangulation<2>::refine_global",
-                              &Triangulation<2>::refine_global);
+  auto ref            = make_node("Triangulation<2>::refine_global");
   auto n_ref          = make_node(2u);
   auto filename       = make_node("grid-1.vtk");
   auto out_file       = make_node<std::ofstream>();
   auto grid_out       = make_node<GridOut>();
-  auto write_vtk =
-    make_method_node("GridOut::write_vtk<2>", &GridOut::write_vtk<2, 2>);
+  auto write_vtk      = make_node("GridOut::write_vtk<2>");
 
   // connect(make_grid, {{tria, 0}, {grid_name, 0}, {grid_arguments, 0}});
 
@@ -84,14 +81,12 @@ TEST(dealiiExamples, NetworkStep00)
   network.clear_network();
 
   auto make_grid =
-    make_method_node("GridGenerator::generate_from_name_and_arguments<2>",
-                     &GridGenerator::generate_from_name_and_arguments<2, 2>);
+    make_node("GridGenerator::generate_from_name_and_arguments<2>");
 
   auto tria           = make_node<Triangulation<2>>();
   auto grid_name      = make_node("hyper_cube");
   auto grid_arguments = make_node("0: 1: false");
-  auto ref            = make_method_node("Triangulation<2>::refine_global",
-                              &Triangulation<2>::refine_global);
+  auto ref            = make_node("Triangulation<2>::refine_global");
   auto n_ref          = make_node(2u);
 
   // Add nodes to the network
@@ -146,20 +141,17 @@ TEST(dealiiExamples, NetworkStep01)
   network.clear_network();
 
   auto make_grid =
-    make_method_node("GridGenerator::generate_from_name_and_arguments<2>",
-                     &GridGenerator::generate_from_name_and_arguments<2, 2>);
+    make_node("GridGenerator::generate_from_name_and_arguments<2>");
 
   auto tria           = make_node<Triangulation<2>>();
   auto grid_name      = make_node("hyper_cube");
   auto grid_arguments = make_node("0: 1: false");
-  auto ref            = make_method_node("Triangulation<2>::refine_global",
-                              &Triangulation<2>::refine_global);
+  auto ref            = make_node("Triangulation<2>::refine_global");
   auto n_ref          = make_node(2u);
   auto filename       = make_node("grid-1.vtk");
   auto out_file       = make_node<std::ofstream>();
   auto grid_out       = make_node<GridOut>();
-  auto write_vtk =
-    make_method_node("GridOut::write_vtk<2>", &GridOut::write_vtk<2, 2>);
+  auto write_vtk      = make_node("GridOut::write_vtk<2>");
 
   // Add nodes to the network
   unsigned int tria_id           = network.add_node(tria);
@@ -261,13 +253,6 @@ TEST(dealiiExamples, NetworkFromJsonStep00)
           std::cout << " type: " << node->type_name() << std::endl;
         }
     }
-
-  // // Print the triangulation state before running the network
-
-  // ASSERT_NE(tria_node, nullptr) << "Failed to get triangulation node";
-  // std::cout << "Before execution, triangulation has "
-  //           << tria_node->get<Triangulation<2>>().n_active_cells()
-  //           << " active cells\n";
 
   // Run the network
   network.run();
