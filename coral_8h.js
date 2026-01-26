@@ -2,6 +2,7 @@ var coral_8h =
 [
     [ "coral::is_callable< Arg, typename >", "structcoral_1_1is__callable.html", null ],
     [ "coral::NodeObjectInitializer", "structcoral_1_1_node_object_initializer.html", "structcoral_1_1_node_object_initializer" ],
+    [ "coral::NodeInterface", "structcoral_1_1_node_interface.html", "structcoral_1_1_node_interface" ],
     [ "coral::NodeObject", "classcoral_1_1_node_object.html", "classcoral_1_1_node_object" ],
     [ "coral::NodeObjectPtr", "namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f", null ],
     [ "coral::ConnectionType", "namespacecoral.html#a4cb5aa0d2101c9b6b2a30b68f2560c15", [
@@ -22,8 +23,10 @@ var coral_8h =
       [ "coral::NodeType::method", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536aea9f6aca279138c58f705c8d4cb4b8ce", null ],
       [ "coral::NodeType::const_method", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536ae562285cc08a3f52a4070a53d77619d8", null ],
       [ "coral::NodeType::void_function", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536a5e10317a1e387e33dbcddd6dfc238202", null ],
-      [ "coral::NodeType::function", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536ac1c425268e68385d1ab5074c17a94f14", null ]
+      [ "coral::NodeType::function", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536ac1c425268e68385d1ab5074c17a94f14", null ],
+      [ "coral::NodeType::network", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536a91e02cd2b8621d0c05197f645668c5c4", null ]
     ] ],
+    [ "coral::build_network_interface", "namespacecoral.html#aee4421e063227161f59f9cc10bd2d137", null ],
     [ "coral::cast_args", "namespacecoral.html#afb50a11423f04de62d5a063d3f9a9c46", null ],
     [ "coral::cast_args_impl", "namespacecoral.html#aafd46bf6e1eea4080b783d6c466453fc", null ],
     [ "coral::connect", "namespacecoral.html#a1341a8134c74614a80c197df24374a48", null ],

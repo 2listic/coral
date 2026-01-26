@@ -43,7 +43,8 @@ var NAVTREE =
         [ "All", "functions.html", null ],
         [ "Functions", "functions_func.html", null ],
         [ "Variables", "functions_vars.html", null ],
-        [ "Typedefs", "functions_type.html", null ]
+        [ "Typedefs", "functions_type.html", null ],
+        [ "Related Symbols", "functions_rela.html", null ]
       ] ]
     ] ],
     [ "Files", "files.html", [
@@ -61,16 +62,17 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"group__CPP11.html#ga880e3efbb0a778f8c9d91c69c2967475",
-"namespaceCGALWrappers.html#a673f5ec5d747ce7d718168bd6c71cfdb",
-"namespaceDoFTools_1_1internal.html#a324f18749a092d65550437dd941a2a91",
-"namespaceGridTools.html#a5cfa9aa295a2e99559009e57823932b3",
-"namespaceMatrixCreator.html#a35973e42cee9bedbbfce9603f4529223",
-"namespaceSparsityTools.html#a452753b6ffdf31b33f2bcd792b05df93",
-"namespaceUtilities_1_1MPI_1_1LargeCount.html#acb6ac3ea891da90f3f52def463989034",
-"namespacecoral.html#afb50a11423f04de62d5a063d3f9a9c46",
-"namespaceinternal_1_1FunctionParser.html#a7a2308eb8bd9c33297f9aaa84f04ae3a",
-"namespacenumbers.html#a9b7cf507f7010dde825c4baae64281ad"
+"classcoral_1_1_node_object.html#aaa27c1a6088616ff7cbcc125ba6b6558",
+"group__matrixfree.html#ggaee4d2d09d3fd284528a8a9c4a3e36979a378b1f39faa7e3405fac686f82808e23",
+"namespaceDoFTools.html#a0a84027251b470f94bcaf1f00e04e722",
+"namespaceGridGenerator.html#ac61fc98d04baf8b567fe82710e987945",
+"namespaceLinearAlgebra_1_1TpetraWrappers_1_1SparsityPatternImpl.html",
+"namespacePatterns_1_1Tools_1_1internal.html#a977cf1116509feb6d6578b5f5a0b2f12",
+"namespaceUtilities_1_1LinearAlgebra.html",
+"namespaceVectorTools.html#adbf70c57cf6f92f1a7b0d73b130f0afa",
+"namespaceinternal.html#ad84709e40043fde0d82101030a191b86",
+"namespaceinternal_1_1TriangulationImplementation.html#aed92ce174709fca34e8910479ec9cfc2",
+"structcoral_1_1_network_1_1_dangling_port.html#a43d8d4ae3fab8469a872466dce2e3e2d"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

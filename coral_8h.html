@@ -119,11 +119,14 @@ $(function(){initNavTree('coral_8h.html',''); initResizable(true); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;nlohmann/json.hpp&gt;</code><br />
+<code>#include &lt;filesystem&gt;</code><br />
+<code>#include &lt;fstream&gt;</code><br />
 <code>#include &lt;functional&gt;</code><br />
 <code>#include &lt;iostream&gt;</code><br />
 <code>#include &lt;map&gt;</code><br />
 <code>#include &lt;memory&gt;</code><br />
 <code>#include &lt;set&gt;</code><br />
+<code>#include &lt;sstream&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;type_traits&gt;</code><br />
 <code>#include &lt;unordered_map&gt;</code><br />
@@ -141,6 +144,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcoral_1_1_node_object_initializer.html">coral::NodeObjectInitializer</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store all std::functions that need to be used to build a <a class="el" href="classcoral_1_1_node_object.html" title="A class that represents an object of any type.">NodeObject</a>, and the corresponding json serialization.  <a href="structcoral_1_1_node_object_initializer.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcoral_1_1_node_interface.html">coral::NodeInterface</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcoral_1_1_node_object.html">coral::NodeObject</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class that represents an object of any type.  <a href="classcoral_1_1_node_object.html#details">More...</a><br /></td></tr>
@@ -185,6 +190,7 @@ Enumerations</h2></td></tr>
 &#160;&#160;<a class="el" href="namespacecoral.html#a28b9a276ed3a04787d899304a5e49536ae562285cc08a3f52a4070a53d77619d8">coral::const_method</a>
 , <a class="el" href="namespacecoral.html#a28b9a276ed3a04787d899304a5e49536a5e10317a1e387e33dbcddd6dfc238202">coral::void_function</a>
 , <a class="el" href="namespacecoral.html#a28b9a276ed3a04787d899304a5e49536ac1c425268e68385d1ab5074c17a94f14">coral::function</a>
+, <a class="el" href="namespacecoral.html#a28b9a276ed3a04787d899304a5e49536a91e02cd2b8621d0c05197f645668c5c4">coral::network</a>
 <br />
  }</td></tr>
 <tr class="memdesc:a28b9a276ed3a04787d899304a5e49536"><td class="mdescLeft">&#160;</td><td class="mdescRight">The different types of nodes.  <a href="namespacecoral.html#a28b9a276ed3a04787d899304a5e49536">More...</a><br /></td></tr>
@@ -237,6 +243,8 @@ Functions</h2></td></tr>
 <tr class="memitem:a34fcc6acd1258dcc47130fc4a220d003"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacecoral.html#a34fcc6acd1258dcc47130fc4a220d003">coral::connection_type</a> () -&gt; <a class="el" href="namespacecoral.html#a4cb5aa0d2101c9b6b2a30b68f2560c15">ConnectionType</a></td></tr>
 <tr class="memdesc:a34fcc6acd1258dcc47130fc4a220d003"><td class="mdescLeft">&#160;</td><td class="mdescRight">Distinguish input arguments of a function from being input or input/output arguments.  <br /></td></tr>
 <tr class="separator:a34fcc6acd1258dcc47130fc4a220d003"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee4421e063227161f59f9cc10bd2d137" id="r_aee4421e063227161f59f9cc10bd2d137"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecoral.html#aee4421e063227161f59f9cc10bd2d137">coral::build_network_interface</a> (const std::shared_ptr&lt; <a class="el" href="classcoral_1_1_network.html">Network</a> &gt; &amp;net) -&gt; <a class="el" href="structcoral_1_1_node_interface.html">NodeInterface</a></td></tr>
+<tr class="separator:aee4421e063227161f59f9cc10bd2d137"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee87896ce99e23ffe24acea549eddb44" id="r_aee87896ce99e23ffe24acea549eddb44"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecoral.html#aee87896ce99e23ffe24acea549eddb44">coral::to_json</a> (<a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, const <a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;obj)</td></tr>
 <tr class="memdesc:aee87896ce99e23ffe24acea549eddb44"><td class="mdescLeft">&#160;</td><td class="mdescRight">json serialization of a Nodeobject-&gt;  <br /></td></tr>
 <tr class="separator:aee87896ce99e23ffe24acea549eddb44"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -257,7 +265,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="coral_8h.html">coral.h</a></li>
-    <li class="footer">Generated on Mon Jan 19 2026 09:28:36 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
+    <li class="footer">Generated on Mon Jan 26 2026 18:59:34 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
   </ul>
 </div>
 </body>

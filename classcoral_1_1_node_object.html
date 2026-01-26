@@ -117,6 +117,7 @@ $(function(){initNavTree('classcoral_1_1_node_object.html',''); initResizable(tr
 <a href="#pri-static-methods">Static Private Member Functions</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="#pri-static-attribs">Static Private Attributes</a> &#124;
+<a href="#friends">Friends</a> &#124;
 <a href="classcoral_1_1_node_object-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">coral::NodeObject Class Reference</div></div>
 </div><!--header-->
@@ -135,6 +136,8 @@ Inheritance diagram for coral::NodeObject:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
+<tr class="memitem:aa14aeeba3a5fa3df1c0061b5f9096fe2" id="r_aa14aeeba3a5fa3df1c0061b5f9096fe2"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa14aeeba3a5fa3df1c0061b5f9096fe2">NetworkExecutor</a></td></tr>
+<tr class="separator:aa14aeeba3a5fa3df1c0061b5f9096fe2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28dc1f098c04bf6854085144b2d223ca" id="r_a28dc1f098c04bf6854085144b2d223ca"><td class="memTemplParams" colspan="2">template&lt;typename T, typename ReturnType, typename... Args&gt; </td></tr>
 <tr class="memitem:a28dc1f098c04bf6854085144b2d223ca"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a28dc1f098c04bf6854085144b2d223ca">MethodPtr</a> = ReturnType (T::*)(Args...)</td></tr>
 <tr class="separator:a28dc1f098c04bf6854085144b2d223ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -163,6 +166,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a912eddef58836b136aa456a375d9889c" id="r_a912eddef58836b136aa456a375d9889c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a912eddef58836b136aa456a375d9889c">NodeObject</a> (const char *hash_str)</td></tr>
 <tr class="memdesc:a912eddef58836b136aa456a375d9889c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build a <a class="el" href="classcoral_1_1_node_object.html" title="A class that represents an object of any type.">NodeObject</a> from a hash string.  <br /></td></tr>
 <tr class="separator:a912eddef58836b136aa456a375d9889c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf9ed3aa5acb8cd71127f9d19750f6ff" id="r_acf9ed3aa5acb8cd71127f9d19750f6ff"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acf9ed3aa5acb8cd71127f9d19750f6ff">override_interface</a> (const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;<a class="el" href="#a4de86dd6185bbb224338f53d0d2ce696">arguments</a>, const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;inputs, const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;outputs)</td></tr>
+<tr class="separator:acf9ed3aa5acb8cd71127f9d19750f6ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a980e894f46c32298994668b0a6b24573" id="r_a980e894f46c32298994668b0a6b24573"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a980e894f46c32298994668b0a6b24573">ready</a> () const -&gt; bool</td></tr>
 <tr class="separator:a980e894f46c32298994668b0a6b24573"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a0ef7f6fe7906da6435f2bae2d45be6" id="r_a9a0ef7f6fe7906da6435f2bae2d45be6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9a0ef7f6fe7906da6435f2bae2d45be6">parse_string</a> (const std::string &amp;value_str)</td></tr>
@@ -235,6 +240,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a74687b5b87d6f370409357e6cf77247e" id="r_a74687b5b87d6f370409357e6cf77247e"><td class="memItemLeft" align="right" valign="top">static auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a74687b5b87d6f370409357e6cf77247e">get_registry</a> () -&gt; <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a></td></tr>
 <tr class="memdesc:a74687b5b87d6f370409357e6cf77247e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the registry of all types known to this class.  <br /></td></tr>
 <tr class="separator:a74687b5b87d6f370409357e6cf77247e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb3b8275e11cb37af2c1bf7cdb1115f8" id="r_adb3b8275e11cb37af2c1bf7cdb1115f8"><td class="memItemLeft" align="right" valign="top">static auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adb3b8275e11cb37af2c1bf7cdb1115f8">is_network_type</a> (const std::string &amp;hash_str) -&gt; bool</td></tr>
+<tr class="separator:adb3b8275e11cb37af2c1bf7cdb1115f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aadf5b2b826dbefe64688446e34888e25" id="r_aadf5b2b826dbefe64688446e34888e25"><td class="memItemLeft" align="right" valign="top">static auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aadf5b2b826dbefe64688446e34888e25">build_network_interface</a> (const std::shared_ptr&lt; entt::meta_any &gt; &amp;value) -&gt; <a class="el" href="structcoral_1_1_node_interface.html">NodeInterface</a></td></tr>
+<tr class="separator:aadf5b2b826dbefe64688446e34888e25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cf0a8b08fa5c692c4aee84414d6bdb7" id="r_a8cf0a8b08fa5c692c4aee84414d6bdb7"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8cf0a8b08fa5c692c4aee84414d6bdb7">set_network_executor</a> (<a class="el" href="#aa14aeeba3a5fa3df1c0061b5f9096fe2">NetworkExecutor</a> executor)</td></tr>
+<tr class="separator:a8cf0a8b08fa5c692c4aee84414d6bdb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a615ae21f45f25f1bf2efd9ee34d1d1be" id="r_a615ae21f45f25f1bf2efd9ee34d1d1be"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
 <tr class="memitem:a615ae21f45f25f1bf2efd9ee34d1d1be"><td class="memTemplItemLeft" align="right" valign="top">static auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a615ae21f45f25f1bf2efd9ee34d1d1be">register_json_header</a> (const std::string &amp;suffix=&quot;&quot;) -&gt; <a class="el" href="structcoral_1_1_node_object_initializer.html">NodeObjectInitializer</a> &amp;</td></tr>
 <tr class="memdesc:a615ae21f45f25f1bf2efd9ee34d1d1be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a new type in the json registry.  <br /></td></tr>
@@ -302,6 +313,8 @@ Private Member Functions</h2></td></tr>
 <tr class="separator:a426d8469564c4e97fbd0fa409e8e2984"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15ed4c80180b3489a9fd0a9aafdfee27" id="r_a15ed4c80180b3489a9fd0a9aafdfee27"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a15ed4c80180b3489a9fd0a9aafdfee27">initialize_arguments</a> ()</td></tr>
 <tr class="separator:a15ed4c80180b3489a9fd0a9aafdfee27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53e92e4d2048a1f4582d2512d7f4a483" id="r_a53e92e4d2048a1f4582d2512d7f4a483"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a53e92e4d2048a1f4582d2512d7f4a483">setup_network_if_needed</a> ()</td></tr>
+<tr class="separator:a53e92e4d2048a1f4582d2512d7f4a483"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-static-methods" name="pri-static-methods"></a>
 Static Private Member Functions</h2></td></tr>
@@ -337,13 +350,24 @@ Static Private Attributes</h2></td></tr>
 <tr class="memitem:a759c8e5b08d0dd5e10544064e88a01a4" id="r_a759c8e5b08d0dd5e10544064e88a01a4"><td class="memItemLeft" align="right" valign="top">static std::map&lt; std::string, <a class="el" href="structcoral_1_1_node_object_initializer.html">NodeObjectInitializer</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a759c8e5b08d0dd5e10544064e88a01a4">initializers</a></td></tr>
 <tr class="memdesc:a759c8e5b08d0dd5e10544064e88a01a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">A list of all known types and their initializers.  <br /></td></tr>
 <tr class="separator:a759c8e5b08d0dd5e10544064e88a01a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada1dda367088ab4f56240add60444c03" id="r_ada1dda367088ab4f56240add60444c03"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ada1dda367088ab4f56240add60444c03">network_type_hash</a></td></tr>
+<tr class="separator:ada1dda367088ab4f56240add60444c03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeabeb4f52e67ff91954d01c5ae50ccef" id="r_aeabeb4f52e67ff91954d01c5ae50ccef"><td class="memItemLeft" align="right" valign="top">static std::function&lt; <a class="el" href="structcoral_1_1_node_interface.html">NodeInterface</a>(const std::shared_ptr&lt; entt::meta_any &gt; &amp;)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeabeb4f52e67ff91954d01c5ae50ccef">network_interface_builder</a></td></tr>
+<tr class="separator:aeabeb4f52e67ff91954d01c5ae50ccef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a660a585fa2e5268d5624a9ca6d91470f" id="r_a660a585fa2e5268d5624a9ca6d91470f"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="#aa14aeeba3a5fa3df1c0061b5f9096fe2">NetworkExecutor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a660a585fa2e5268d5624a9ca6d91470f">network_executor</a></td></tr>
+<tr class="separator:a660a585fa2e5268d5624a9ca6d91470f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="friends" name="friends"></a>
+Friends</h2></td></tr>
+<tr class="memitem:a88b59289ffd793fecd040d32e397b1e9" id="r_a88b59289ffd793fecd040d32e397b1e9"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a88b59289ffd793fecd040d32e397b1e9">Network</a></td></tr>
+<tr class="separator:a88b59289ffd793fecd040d32e397b1e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A class that represents an object of any type. </p>
 <p>The object itself is stored in a std::shared_ptr&lt;entt::meta_any&gt;. To allow for serialization and to build non trivially constructible classes, the actual type stored in std::shared_ptr&lt;entt::meta_any&gt; is a shared pointer to the object.</p>
 <p>The object is built only when calling the operator() function. This allows you to connect arguments to this object, in case the building of the object requires other objects. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00346">346</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00366">366</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a286b4628d4bcf95b6d91c64c641fda00" name="a286b4628d4bcf95b6d91c64c641fda00"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a286b4628d4bcf95b6d91c64c641fda00">&#9670;&#160;</a></span>ConstMethodPtr</h2>
@@ -359,7 +383,7 @@ template&lt;typename T, typename ReturnType, typename... Args&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00851">851</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00923">923</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
 </div>
 </div>
@@ -377,7 +401,26 @@ template&lt;typename T, typename ReturnType, typename... Args&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00848">848</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00920">920</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+
+</div>
+</div>
+<a id="aa14aeeba3a5fa3df1c0061b5f9096fe2" name="aa14aeeba3a5fa3df1c0061b5f9096fe2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa14aeeba3a5fa3df1c0061b5f9096fe2">&#9670;&#160;</a></span>NetworkExecutor</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="#aa14aeeba3a5fa3df1c0061b5f9096fe2">coral::NodeObject::NetworkExecutor</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line"> std::function&lt;std::shared_ptr&lt;</div>
+<div class="line">      entt::meta_any&gt;(<a class="code hl_function" href="#a080ddae0f146a263c748bff2f23bbac2">NodeObject</a> &amp;, std::vector&lt;std::shared_ptr&lt;NodeObject&gt;&gt;)&gt;</div>
+<div class="ttc" id="aclasscoral_1_1_node_object_html_a080ddae0f146a263c748bff2f23bbac2"><div class="ttname"><a href="#a080ddae0f146a263c748bff2f23bbac2">coral::NodeObject::NodeObject</a></div><div class="ttdeci">NodeObject()=default</div></div>
+</div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00466">466</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
 </div>
 </div>
@@ -405,7 +448,7 @@ template&lt;typename T, typename ReturnType, typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00417">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00364">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00397">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00355">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l01410">operator=()</a>, <a class="el" href="coral_8h_source.html#l01385">operator=()</a>, and <a class="el" href="coral_8h_source.html#l00554">register_json_header()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00440">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00385">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00419">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00376">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l01482">operator=()</a>, <a class="el" href="coral_8h_source.html#l01457">operator=()</a>, and <a class="el" href="coral_8h_source.html#l00626">register_json_header()</a>.</p>
 
 </div>
 </div>
@@ -436,7 +479,7 @@ template&lt;typename T&gt; </div>
 
 <p>Construct a new object from trivially constructible and copyable types. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00355">355</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00376">376</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
 <p class="reference">References <a class="el" href="#a080ddae0f146a263c748bff2f23bbac2">NodeObject()</a>.</p>
 
@@ -468,9 +511,9 @@ template&lt;typename T&gt; </div>
 <p>Construct <a class="el" href="classcoral_1_1_node_object.html" title="A class that represents an object of any type.">NodeObject</a> from a std::shared_ptr&lt;entt::meta_any&gt;. </p>
 <p>The std::shared_ptr&lt;entt::meta_any&gt; is supposed to contain a shared pointer to a registered type. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00364">364</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00385">385</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01429">hash()</a>, and <a class="el" href="#a080ddae0f146a263c748bff2f23bbac2">NodeObject()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01501">hash()</a>, and <a class="el" href="#a080ddae0f146a263c748bff2f23bbac2">NodeObject()</a>.</p>
 
 </div>
 </div>
@@ -501,9 +544,9 @@ template&lt;typename T&gt; </div>
 
 <p>Construct a new object from a shared pointer to a type. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00372">372</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00393">393</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00091">coral::hash()</a>, <a class="el" href="coral_8h_source.html#l01609">initialize_arguments()</a>, <a class="el" href="coral_8h_source.html#l01570">initialize_inputs()</a>, <a class="el" href="coral_8h_source.html#l01581">initialize_outputs()</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l01517">initializers</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00095">coral::hash()</a>, <a class="el" href="coral_8h_source.html#l01686">initialize_arguments()</a>, <a class="el" href="coral_8h_source.html#l01647">initialize_inputs()</a>, <a class="el" href="coral_8h_source.html#l01658">initialize_outputs()</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, <a class="el" href="coral_8h_source.html#l01589">initializers</a>, and <a class="el" href="coral_8h_source.html#l01702">setup_network_if_needed()</a>.</p>
 
 </div>
 </div>
@@ -533,9 +576,9 @@ template&lt;typename T&gt; </div>
 <p>Try to construct a new object from a hash string. </p>
 <p>If the hash is not found, we store the actual string. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00397">397</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00419">419</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01609">initialize_arguments()</a>, <a class="el" href="coral_8h_source.html#l01570">initialize_inputs()</a>, <a class="el" href="coral_8h_source.html#l01581">initialize_outputs()</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, <a class="el" href="coral_8h_source.html#l01517">initializers</a>, and <a class="el" href="#a080ddae0f146a263c748bff2f23bbac2">NodeObject()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01686">initialize_arguments()</a>, <a class="el" href="coral_8h_source.html#l01647">initialize_inputs()</a>, <a class="el" href="coral_8h_source.html#l01658">initialize_outputs()</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, <a class="el" href="coral_8h_source.html#l01589">initializers</a>, <a class="el" href="#a080ddae0f146a263c748bff2f23bbac2">NodeObject()</a>, and <a class="el" href="coral_8h_source.html#l01702">setup_network_if_needed()</a>.</p>
 
 </div>
 </div>
@@ -564,13 +607,45 @@ template&lt;typename T&gt; </div>
 
 <p>Build a <a class="el" href="classcoral_1_1_node_object.html" title="A class that represents an object of any type.">NodeObject</a> from a hash string. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00417">417</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00440">440</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
 <p class="reference">References <a class="el" href="#a080ddae0f146a263c748bff2f23bbac2">NodeObject()</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="aadf5b2b826dbefe64688446e34888e25" name="aadf5b2b826dbefe64688446e34888e25"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aadf5b2b826dbefe64688446e34888e25">&#9670;&#160;</a></span>build_network_interface()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static auto coral::NodeObject::build_network_interface </td>
+          <td>(</td>
+          <td class="paramtype">const std::shared_ptr&lt; entt::meta_any &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>value</em></span></td><td>)</td>
+          <td> -&gt; <a class="el" href="structcoral_1_1_node_interface.html">NodeInterface</a>
+    </td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00470">470</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01593">network_interface_builder</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01823">coral::from_json()</a>, and <a class="el" href="coral_8h_source.html#l01702">setup_network_if_needed()</a>.</p>
+
+</div>
+</div>
 <a id="ad80f68f0485fcf05e7319e5fdb2a2723" name="ad80f68f0485fcf05e7319e5fdb2a2723"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad80f68f0485fcf05e7319e5fdb2a2723">&#9670;&#160;</a></span>get() <span class="overload">[1/2]</span></h2>
 
@@ -598,11 +673,11 @@ template&lt;typename T&gt; </div>
 
 <p>Get a writeable reference to the stored object-&gt; </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01219">1219</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01291">1291</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01162">get_shared()</a>, and <a class="el" href="coral_8h_source.html#l00438">ready()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01234">get_shared()</a>, and <a class="el" href="coral_8h_source.html#l00498">ready()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01609">initialize_arguments()</a>, <a class="el" href="coral_8h_source.html#l01581">initialize_outputs()</a>, and <a class="el" href="coral_8h_source.html#l00479">operator()()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01686">initialize_arguments()</a>, <a class="el" href="coral_8h_source.html#l01658">initialize_outputs()</a>, <a class="el" href="coral_8h_source.html#l00539">operator()()</a>, and <a class="el" href="coral_8h_source.html#l01702">setup_network_if_needed()</a>.</p>
 
 </div>
 </div>
@@ -633,9 +708,9 @@ template&lt;typename T&gt; </div>
 
 <p>Get a const reference to the stored object-&gt; </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01231">1231</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01303">1303</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01162">get_shared()</a>, and <a class="el" href="coral_8h_source.html#l00438">ready()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01234">get_shared()</a>, and <a class="el" href="coral_8h_source.html#l00498">ready()</a>.</p>
 
 </div>
 </div>
@@ -662,9 +737,11 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01417">1417</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01489">1489</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01502">initializer</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01574">initializer</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00964">coral::Network::register_node()</a>.</p>
 
 </div>
 </div>
@@ -695,11 +772,11 @@ template&lt;typename T&gt; </div>
 <p>Return the registry of all types known to this class. </p>
 <p>If you try to instantiate a class that is not in the registry, an exception will be thrown. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00427">427</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00450">450</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l01517">initializers</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l01589">initializers</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="main_8cc_source.html#l00025">dump_registry()</a>, and <a class="el" href="coral__network_8h_source.html#l00251">coral::Network::get_registry()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="main_8cc_source.html#l00025">dump_registry()</a>, and <a class="el" href="coral__network_8h_source.html#l00428">coral::Network::get_registry()</a>.</p>
 
 </div>
 </div>
@@ -732,11 +809,11 @@ template&lt;typename T&gt; </div>
 <p>Get a shared pointer of the stored object-&gt; </p>
 <p>Will throw if the object is not ready, or if the stored object is not of the requested type. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01162">1162</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01234">1234</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00091">coral::hash()</a>, <a class="el" href="coral_8h_source.html#l01429">hash()</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, <a class="el" href="coral_8h_source.html#l00438">ready()</a>, and <a class="el" href="coral_8h_source.html#l01452">type_name()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00095">coral::hash()</a>, <a class="el" href="coral_8h_source.html#l01501">hash()</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, <a class="el" href="coral_8h_source.html#l00498">ready()</a>, and <a class="el" href="coral_8h_source.html#l01524">type_name()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01219">get()</a>, and <a class="el" href="coral_8h_source.html#l01231">get()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01291">get()</a>, and <a class="el" href="coral_8h_source.html#l01303">get()</a>.</p>
 
 </div>
 </div>
@@ -765,9 +842,9 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01334">1334</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01406">1406</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00091">coral::hash()</a>, <a class="el" href="coral_8h_source.html#l01429">hash()</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l01452">type_name()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00095">coral::hash()</a>, <a class="el" href="coral_8h_source.html#l01501">hash()</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l01524">type_name()</a>.</p>
 
 </div>
 </div>
@@ -796,11 +873,11 @@ template&lt;typename T&gt; </div>
 
 <p>Get the hash of the stored object-&gt; </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01429">1429</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01501">1501</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00091">coral::hash()</a>, and <a class="el" href="coral_8h_source.html#l01502">initializer</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00095">coral::hash()</a>, and <a class="el" href="coral_8h_source.html#l01574">initializer</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01162">get_shared()</a>, <a class="el" href="coral_8h_source.html#l01334">get_shared()</a>, <a class="el" href="coral_8h_source.html#l00364">NodeObject()</a>, and <a class="el" href="coral_8h_source.html#l01385">operator=()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01234">get_shared()</a>, <a class="el" href="coral_8h_source.html#l01406">get_shared()</a>, <a class="el" href="coral_8h_source.html#l00385">NodeObject()</a>, and <a class="el" href="coral_8h_source.html#l01457">operator=()</a>.</p>
 
 </div>
 </div>
@@ -827,11 +904,11 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01609">1609</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01686">1686</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01507">arguments</a>, <a class="el" href="coral_8h_source.html#l01512">arguments_types</a>, <a class="el" href="coral_8h_source.html#l01219">get()</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l00221">coral::none</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01579">arguments</a>, <a class="el" href="coral_8h_source.html#l01584">arguments_types</a>, <a class="el" href="coral_8h_source.html#l01291">get()</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l00228">coral::none</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00397">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00372">NodeObject()</a>, and <a class="el" href="coral_8h_source.html#l00511">set_arguments()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00419">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00393">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00485">override_interface()</a>, and <a class="el" href="coral_8h_source.html#l00583">set_arguments()</a>.</p>
 
 </div>
 </div>
@@ -858,11 +935,11 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01570">1570</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01647">1647</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l01561">input_indices</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l01638">input_indices</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00397">NodeObject()</a>, and <a class="el" href="coral_8h_source.html#l00372">NodeObject()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00419">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00393">NodeObject()</a>, and <a class="el" href="coral_8h_source.html#l00485">override_interface()</a>.</p>
 
 </div>
 </div>
@@ -889,11 +966,11 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01581">1581</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01658">1658</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01507">arguments</a>, <a class="el" href="coral_8h_source.html#l01219">get()</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l01567">output_indices</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01579">arguments</a>, <a class="el" href="coral_8h_source.html#l01291">get()</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l01644">output_indices</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00397">NodeObject()</a>, and <a class="el" href="coral_8h_source.html#l00372">NodeObject()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00419">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00393">NodeObject()</a>, and <a class="el" href="coral_8h_source.html#l00485">override_interface()</a>.</p>
 
 </div>
 </div>
@@ -922,9 +999,41 @@ template&lt;typename T&gt; </div>
 
 <p>Return a Pointer to the <code class="param">index</code> -th input. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01279">1279</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01351">1351</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01507">arguments</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l01561">input_indices</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01579">arguments</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l01638">input_indices</a>.</p>
+
+</div>
+</div>
+<a id="adb3b8275e11cb37af2c1bf7cdb1115f8" name="adb3b8275e11cb37af2c1bf7cdb1115f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb3b8275e11cb37af2c1bf7cdb1115f8">&#9670;&#160;</a></span>is_network_type()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static auto coral::NodeObject::is_network_type </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>hash_str</em></span></td><td>)</td>
+          <td> -&gt; bool
+    </td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00461">461</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01590">network_type_hash</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01823">coral::from_json()</a>, and <a class="el" href="coral_8h_source.html#l01702">setup_network_if_needed()</a>.</p>
 
 </div>
 </div>
@@ -953,11 +1062,11 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01521">1521</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01598">1598</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00242">coral::elementary_constructor</a>, <a class="el" href="coral_8h_source.html#l00091">coral::hash()</a>, and <a class="el" href="coral_8h_source.html#l01517">initializers</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00249">coral::elementary_constructor</a>, <a class="el" href="coral_8h_source.html#l00095">coral::hash()</a>, and <a class="el" href="coral_8h_source.html#l01589">initializers</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01061">register_function()</a>, <a class="el" href="coral_8h_source.html#l00969">register_method()</a>, and <a class="el" href="coral_8h_source.html#l00871">register_method()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01133">register_function()</a>, <a class="el" href="coral_8h_source.html#l01041">register_method()</a>, and <a class="el" href="coral_8h_source.html#l00943">register_method()</a>.</p>
 
 </div>
 </div>
@@ -986,9 +1095,9 @@ template&lt;typename T&gt; </div>
 
 <p>Get the number of arguments that this node has. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01469">1469</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01541">1541</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01502">initializer</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01574">initializer</a>.</p>
 
 </div>
 </div>
@@ -1017,9 +1126,9 @@ template&lt;typename T&gt; </div>
 
 <p>Get the number of inputs. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01478">1478</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01550">1550</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01502">initializer</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01574">initializer</a>.</p>
 
 </div>
 </div>
@@ -1048,9 +1157,9 @@ template&lt;typename T&gt; </div>
 
 <p>Get the number of outputs. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01487">1487</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01559">1559</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01502">initializer</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01574">initializer</a>.</p>
 
 </div>
 </div>
@@ -1077,9 +1186,9 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01458">1458</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01530">1530</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01502">initializer</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01574">initializer</a>.</p>
 
 </div>
 </div>
@@ -1112,9 +1221,9 @@ template&lt;typename T&gt; </div>
 <dd>
 false If the executor function failed to run (i.e., if it failed when running or if some of the arguments were not ready.) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00479">479</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00539">539</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01507">arguments</a>, <a class="el" href="coral_8h_source.html#l01512">arguments_types</a>, <a class="el" href="coral_8h_source.html#l01219">get()</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, <a class="el" href="coral_8h_source.html#l00223">coral::input</a>, <a class="el" href="coral_8h_source.html#l00221">coral::none</a>, and <a class="el" href="coral_8h_source.html#l00438">ready()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01579">arguments</a>, <a class="el" href="coral_8h_source.html#l01584">arguments_types</a>, <a class="el" href="coral_8h_source.html#l00249">coral::elementary_constructor</a>, <a class="el" href="coral_8h_source.html#l01291">get()</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, <a class="el" href="coral_8h_source.html#l00230">coral::input</a>, <a class="el" href="coral_8h_source.html#l00228">coral::none</a>, and <a class="el" href="coral_8h_source.html#l00498">ready()</a>.</p>
 
 </div>
 </div>
@@ -1143,7 +1252,7 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01410">1410</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01482">1482</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
 <p class="reference">References <a class="el" href="#a080ddae0f146a263c748bff2f23bbac2">NodeObject()</a>.</p>
 
@@ -1174,9 +1283,9 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01385">1385</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01457">1457</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00091">coral::hash()</a>, <a class="el" href="coral_8h_source.html#l01429">hash()</a>, and <a class="el" href="#a080ddae0f146a263c748bff2f23bbac2">NodeObject()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00095">coral::hash()</a>, <a class="el" href="coral_8h_source.html#l01501">hash()</a>, and <a class="el" href="#a080ddae0f146a263c748bff2f23bbac2">NodeObject()</a>.</p>
 
 </div>
 </div>
@@ -1205,9 +1314,49 @@ template&lt;typename T&gt; </div>
 
 <p>Return a Pointer to the ith output. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01250">1250</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01322">1322</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01507">arguments</a>, and <a class="el" href="coral_8h_source.html#l01567">output_indices</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01579">arguments</a>, and <a class="el" href="coral_8h_source.html#l01644">output_indices</a>.</p>
+
+</div>
+</div>
+<a id="acf9ed3aa5acb8cd71127f9d19750f6ff" name="acf9ed3aa5acb8cd71127f9d19750f6ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf9ed3aa5acb8cd71127f9d19750f6ff">&#9670;&#160;</a></span>override_interface()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void coral::NodeObject::override_interface </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>arguments</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>inputs</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>outputs</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00485">485</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01579">arguments</a>, <a class="el" href="coral_8h_source.html#l01686">initialize_arguments()</a>, <a class="el" href="coral_8h_source.html#l01647">initialize_inputs()</a>, <a class="el" href="coral_8h_source.html#l01658">initialize_outputs()</a>, and <a class="el" href="coral_8h_source.html#l01574">initializer</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01702">setup_network_if_needed()</a>.</p>
 
 </div>
 </div>
@@ -1234,9 +1383,11 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00444">444</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00504">504</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01502">initializer</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01574">initializer</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01702">setup_network_if_needed()</a>.</p>
 
 </div>
 </div>
@@ -1264,9 +1415,9 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00438">438</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00498">498</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01219">get()</a>, <a class="el" href="coral_8h_source.html#l01231">get()</a>, <a class="el" href="coral_8h_source.html#l01162">get_shared()</a>, <a class="el" href="coral_8h_source.html#l00479">operator()()</a>, <a class="el" href="coral_8h_source.html#l01061">register_function()</a>, <a class="el" href="coral_8h_source.html#l00969">register_method()</a>, <a class="el" href="coral_8h_source.html#l00871">register_method()</a>, and <a class="el" href="coral_8h_source.html#l00456">to_string()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01291">get()</a>, <a class="el" href="coral_8h_source.html#l01303">get()</a>, <a class="el" href="coral_8h_source.html#l01234">get_shared()</a>, <a class="el" href="coral_8h_source.html#l00539">operator()()</a>, <a class="el" href="coral_8h_source.html#l01133">register_function()</a>, <a class="el" href="coral_8h_source.html#l01041">register_method()</a>, <a class="el" href="coral_8h_source.html#l00943">register_method()</a>, <a class="el" href="coral_8h_source.html#l01702">setup_network_if_needed()</a>, and <a class="el" href="coral_8h_source.html#l00516">to_string()</a>.</p>
 
 </div>
 </div>
@@ -1299,11 +1450,11 @@ template&lt;typename T&gt; </div>
 <p>Register an abstract type. </p>
 <p>This is a type that will never be constructed. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00693">693</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00765">765</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00240">coral::abstract</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l00531">register_json_header()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00247">coral::abstract</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l00603">register_json_header()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00719">register_derived_type()</a>, and <a class="el" href="coral_8h_source.html#l00795">register_derived_type()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00791">register_derived_type()</a>, and <a class="el" href="coral_8h_source.html#l00867">register_derived_type()</a>.</p>
 
 </div>
 </div>
@@ -1336,11 +1487,11 @@ template&lt;typename B, typename T&gt; </div>
 <p>Register a trivially constructible type T, derived from type B. </p>
 <p>If a function requires a base class, and you want to pass a derived class, you can register the derived class with this function. This will allow the function to accept the derived class as an argument. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00719">719</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00791">791</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01502">initializer</a>, <a class="el" href="coral_8h_source.html#l00693">register_abstract_type()</a>, and <a class="el" href="coral_8h_source.html#l00669">register_type()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01574">initializer</a>, <a class="el" href="coral_8h_source.html#l00765">register_abstract_type()</a>, and <a class="el" href="coral_8h_source.html#l00741">register_type()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00840">register_derived_type()</a>, and <a class="el" href="register__types_8h_source.html#l00045">coral::register_non_dimensional_types()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00912">register_derived_type()</a>, and <a class="el" href="register__types_8h_source.html#l00046">coral::register_non_dimensional_types()</a>.</p>
 
 </div>
 </div>
@@ -1372,9 +1523,9 @@ template&lt;typename B, typename T, typename Arg&gt; </div>
 
 <p>Same as above, for objects that require a single argument. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00840">840</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00912">912</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00719">register_derived_type()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00791">register_derived_type()</a>.</p>
 
 </div>
 </div>
@@ -1406,9 +1557,9 @@ template&lt;typename B, typename T, typename... Args&gt; </div>
 
 <p>Register a non-trivially constructible type T derived from type B. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00795">795</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00867">867</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01502">initializer</a>, <a class="el" href="coral_8h_source.html#l00693">register_abstract_type()</a>, and <a class="el" href="coral_8h_source.html#l00669">register_type()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01574">initializer</a>, <a class="el" href="coral_8h_source.html#l00765">register_abstract_type()</a>, and <a class="el" href="coral_8h_source.html#l00741">register_type()</a>.</p>
 
 </div>
 </div>
@@ -1441,11 +1592,11 @@ template&lt;typename T&gt; </div>
 <p>Register an elementary type. </p>
 <p>This is a type that does not require any arguments to be constructed, it is trivially copyable, and its values can be deduced from a string using dealii::Patterns::Tools::parse_string(). </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00595">595</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00667">667</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00242">coral::elementary_constructor</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l00531">register_json_header()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00249">coral::elementary_constructor</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l00603">register_json_header()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="register__types_8h_source.html#l00045">coral::register_non_dimensional_types()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="register__types_8h_source.html#l00046">coral::register_non_dimensional_types()</a>.</p>
 
 </div>
 </div>
@@ -1478,9 +1629,9 @@ template&lt;typename Lambda&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01148">1148</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01220">1220</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01061">register_function()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01133">register_function()</a>.</p>
 
 </div>
 </div>
@@ -1513,9 +1664,9 @@ template&lt;typename ReturnType, typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01138">1138</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01210">1210</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01061">register_function()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01133">register_function()</a>.</p>
 
 </div>
 </div>
@@ -1553,11 +1704,11 @@ template&lt;typename ReturnType, typename... Args&gt; </div>
 <p>The function can be void or return a value, and can have any number of arguments.</p>
 <p>The first argument of the method is the return type of the class, and the <code class="param">arg_names</code> must reflect this if non-void, i.e., <code class="param">arg_names</code>[0] is the name of the function, while <code class="param">arg_names</code>[1] is the (optional) output node (if non-void) by which we store this function name, while the rest of the arguments are the names of the arguments of the method. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01061">1061</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01133">1133</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01777">coral::cast_args()</a>, <a class="el" href="coral_8h_source.html#l00258">coral::function</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, <a class="el" href="coral_8h_source.html#l01521">is_registered_elementary_type()</a>, <a class="el" href="coral_8h_source.html#l00438">ready()</a>, <a class="el" href="coral_8h_source.html#l00531">register_json_header()</a>, <a class="el" href="coral_8h_source.html#l01531">set_output_only()</a>, and <a class="el" href="coral_8h_source.html#l00256">coral::void_function</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l02060">coral::cast_args()</a>, <a class="el" href="coral_8h_source.html#l00265">coral::function</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, <a class="el" href="coral_8h_source.html#l01598">is_registered_elementary_type()</a>, <a class="el" href="coral_8h_source.html#l00498">ready()</a>, <a class="el" href="coral_8h_source.html#l00603">register_json_header()</a>, <a class="el" href="coral_8h_source.html#l01608">set_output_only()</a>, and <a class="el" href="coral_8h_source.html#l00263">coral::void_function</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="register__types_8h_source.html#l00071">coral::register_dimensional_types()</a>, <a class="el" href="coral_8h_source.html#l01148">register_function()</a>, and <a class="el" href="coral_8h_source.html#l01138">register_function()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="register__types_8h_source.html#l00073">coral::register_dimensional_types()</a>, <a class="el" href="coral_8h_source.html#l01220">register_function()</a>, and <a class="el" href="coral_8h_source.html#l01210">register_function()</a>.</p>
 
 </div>
 </div>
@@ -1590,11 +1741,11 @@ template&lt;typename T&gt; </div>
 <p>Register a new type in the json registry. </p>
 <p>This method does not add constructors. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00531">531</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00603">603</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00091">coral::hash()</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l01517">initializers</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00095">coral::hash()</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l01589">initializers</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00693">register_abstract_type()</a>, <a class="el" href="coral_8h_source.html#l00595">register_elementary_type()</a>, <a class="el" href="coral_8h_source.html#l01061">register_function()</a>, <a class="el" href="coral_8h_source.html#l00554">register_json_header()</a>, <a class="el" href="coral_8h_source.html#l00969">register_method()</a>, <a class="el" href="coral_8h_source.html#l00871">register_method()</a>, <a class="el" href="coral_8h_source.html#l00669">register_type()</a>, and <a class="el" href="coral_8h_source.html#l00764">register_type()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00765">register_abstract_type()</a>, <a class="el" href="coral_8h_source.html#l00667">register_elementary_type()</a>, <a class="el" href="coral_8h_source.html#l01133">register_function()</a>, <a class="el" href="coral_8h_source.html#l00626">register_json_header()</a>, <a class="el" href="coral_8h_source.html#l01041">register_method()</a>, <a class="el" href="coral_8h_source.html#l00943">register_method()</a>, <a class="el" href="coral__network_8h_source.html#l00964">coral::Network::register_node()</a>, <a class="el" href="coral_8h_source.html#l00741">register_type()</a>, and <a class="el" href="coral_8h_source.html#l00836">register_type()</a>.</p>
 
 </div>
 </div>
@@ -1631,9 +1782,9 @@ template&lt;typename T, typename... Args&gt; </div>
 <p>Register a new type in the json registry, for types that require additional arguments. </p>
 <p>This method does not add constructors. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00554">554</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00626">626</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00267">coral::connection_type()</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, <a class="el" href="coral_8h_source.html#l00223">coral::input</a>, <a class="el" href="#a080ddae0f146a263c748bff2f23bbac2">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00221">coral::none</a>, <a class="el" href="coral_8h_source.html#l00225">coral::output</a>, and <a class="el" href="coral_8h_source.html#l00531">register_json_header()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00276">coral::connection_type()</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, <a class="el" href="coral_8h_source.html#l00230">coral::input</a>, <a class="el" href="#a080ddae0f146a263c748bff2f23bbac2">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00228">coral::none</a>, <a class="el" href="coral_8h_source.html#l00232">coral::output</a>, and <a class="el" href="coral_8h_source.html#l00603">register_json_header()</a>.</p>
 
 </div>
 </div>
@@ -1671,9 +1822,9 @@ template&lt;typename T, typename ReturnType, typename... Args&gt; </div>
 <p>The method can be void or return a value, and can have any number of arguments, but it must be a const method of the class.</p>
 <p>The first argument of the method is the object of the class, and the <code class="param">arg_names</code> must reflect this, i.e., <code class="param">arg_names</code>[0] is the name by which we store this function name in the json serializer, <code class="param">arg_names</code>[1] must be the (optional) name we give to the output argument, and the rest of the arguments are the names of the arguments of the method. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00969">969</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01041">1041</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01777">coral::cast_args()</a>, <a class="el" href="coral_8h_source.html#l00254">coral::const_method</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, <a class="el" href="coral_8h_source.html#l01521">is_registered_elementary_type()</a>, <a class="el" href="coral_8h_source.html#l00438">ready()</a>, <a class="el" href="coral_8h_source.html#l00531">register_json_header()</a>, <a class="el" href="coral_8h_source.html#l01531">set_output_only()</a>, and <a class="el" href="coral_8h_source.html#l00250">coral::void_const_method</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l02060">coral::cast_args()</a>, <a class="el" href="coral_8h_source.html#l00261">coral::const_method</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, <a class="el" href="coral_8h_source.html#l01598">is_registered_elementary_type()</a>, <a class="el" href="coral_8h_source.html#l00498">ready()</a>, <a class="el" href="coral_8h_source.html#l00603">register_json_header()</a>, <a class="el" href="coral_8h_source.html#l01608">set_output_only()</a>, and <a class="el" href="coral_8h_source.html#l00257">coral::void_const_method</a>.</p>
 
 </div>
 </div>
@@ -1711,11 +1862,11 @@ template&lt;typename T, typename ReturnType, typename... Args&gt; </div>
 <p>The method can be void or return a value, and can have any number of arguments.</p>
 <p>The first argument of the method is the object of the class, and the <code class="param">arg_names</code> must reflect this, i.e., <code class="param">arg_names</code>[0] is the name by which we store this function name in the json serializer, <code class="param">arg_names</code>[1] is the name of the class <code class="param">arg_names</code>[2] must be the (optional) name we give to the output argument, and the rest of the arguments are the names of the arguments of the method. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00871">871</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00943">943</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01777">coral::cast_args()</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, <a class="el" href="coral_8h_source.html#l01521">is_registered_elementary_type()</a>, <a class="el" href="coral_8h_source.html#l00252">coral::method</a>, <a class="el" href="coral_8h_source.html#l00438">ready()</a>, <a class="el" href="coral_8h_source.html#l00531">register_json_header()</a>, <a class="el" href="coral_8h_source.html#l01531">set_output_only()</a>, and <a class="el" href="coral_8h_source.html#l00248">coral::void_method</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l02060">coral::cast_args()</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, <a class="el" href="coral_8h_source.html#l01598">is_registered_elementary_type()</a>, <a class="el" href="coral_8h_source.html#l00259">coral::method</a>, <a class="el" href="coral_8h_source.html#l00498">ready()</a>, <a class="el" href="coral_8h_source.html#l00603">register_json_header()</a>, <a class="el" href="coral_8h_source.html#l01608">set_output_only()</a>, and <a class="el" href="coral_8h_source.html#l00255">coral::void_method</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="register__types_8h_source.html#l00071">coral::register_dimensional_types()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="register__types_8h_source.html#l00073">coral::register_dimensional_types()</a>.</p>
 
 </div>
 </div>
@@ -1748,11 +1899,11 @@ template&lt;typename T&gt; </div>
 <p>Register a trivially constructible type. </p>
 <p>This is a type that does not require any arguments to be constructed, but it is not trivially copyable. This is the case for example of dealii::Triangulation&lt;2&gt;. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00669">669</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00741">741</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00244">coral::empty_constructor</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l00531">register_json_header()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00251">coral::empty_constructor</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l00603">register_json_header()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00719">register_derived_type()</a>, <a class="el" href="coral_8h_source.html#l00795">register_derived_type()</a>, <a class="el" href="register__types_8h_source.html#l00071">coral::register_dimensional_types()</a>, <a class="el" href="register__types_8h_source.html#l00045">coral::register_non_dimensional_types()</a>, and <a class="el" href="coral_8h_source.html#l00830">register_type()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00791">register_derived_type()</a>, <a class="el" href="coral_8h_source.html#l00867">register_derived_type()</a>, <a class="el" href="register__types_8h_source.html#l00073">coral::register_dimensional_types()</a>, <a class="el" href="register__types_8h_source.html#l00046">coral::register_non_dimensional_types()</a>, and <a class="el" href="coral_8h_source.html#l00902">register_type()</a>.</p>
 
 </div>
 </div>
@@ -1784,9 +1935,9 @@ template&lt;typename T, typename Arg&gt; </div>
 
 <p>Same as above, for objects that require a single argument. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00830">830</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00902">902</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00669">register_type()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00741">register_type()</a>.</p>
 
 </div>
 </div>
@@ -1819,9 +1970,9 @@ template&lt;typename T, typename... Args&gt; </div>
 <p>Register a non-trivially constructible type. </p>
 <p>This is a type that does require arguments to be constructed, and that it is not trivially copyable. This is the case for example of dealii::FE_Q&lt;2&gt;(), that requires the degree of the finite element to be instantiated. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00764">764</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00836">836</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01777">coral::cast_args()</a>, <a class="el" href="coral_8h_source.html#l00246">coral::constructor</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l00531">register_json_header()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l02060">coral::cast_args()</a>, <a class="el" href="coral_8h_source.html#l00253">coral::constructor</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l00603">register_json_header()</a>.</p>
 
 </div>
 </div>
@@ -1850,9 +2001,9 @@ template&lt;typename T, typename... Args&gt; </div>
 
 <p>Set the arguments of the node executor. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00511">511</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00583">583</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01507">arguments</a>, <a class="el" href="coral_8h_source.html#l01512">arguments_types</a>, <a class="el" href="coral_8h_source.html#l01609">initialize_arguments()</a>, and <a class="el" href="coral_8h_source.html#l01502">initializer</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01579">arguments</a>, <a class="el" href="coral_8h_source.html#l01584">arguments_types</a>, <a class="el" href="coral_8h_source.html#l01686">initialize_arguments()</a>, and <a class="el" href="coral_8h_source.html#l01574">initializer</a>.</p>
 
 </div>
 </div>
@@ -1883,9 +2034,9 @@ template&lt;typename T, typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01302">1302</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01374">1374</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01507">arguments</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l01561">input_indices</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01579">arguments</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l01638">input_indices</a>.</p>
 
 </div>
 </div>
@@ -1912,9 +2063,40 @@ template&lt;typename T, typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01626">1626</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01744">1744</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01507">arguments</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l01561">input_indices</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01579">arguments</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l01638">input_indices</a>.</p>
+
+</div>
+</div>
+<a id="a8cf0a8b08fa5c692c4aee84414d6bdb7" name="a8cf0a8b08fa5c692c4aee84414d6bdb7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8cf0a8b08fa5c692c4aee84414d6bdb7">&#9670;&#160;</a></span>set_network_executor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void coral::NodeObject::set_network_executor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#aa14aeeba3a5fa3df1c0061b5f9096fe2">NetworkExecutor</a></td>          <td class="paramname"><span class="paramname"><em>executor</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00479">479</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01594">network_executor</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00964">coral::Network::register_node()</a>.</p>
 
 </div>
 </div>
@@ -1947,9 +2129,11 @@ template&lt;typename T, typename... Args&gt; </div>
 
 <p>Return a Pointer to the ith output. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01265">1265</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01337">1337</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01507">arguments</a>, and <a class="el" href="coral_8h_source.html#l01567">output_indices</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01579">arguments</a>, and <a class="el" href="coral_8h_source.html#l01644">output_indices</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00964">coral::Network::register_node()</a>.</p>
 
 </div>
 </div>
@@ -1980,11 +2164,11 @@ template&lt;typename T, typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01531">1531</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01608">1608</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l00225">coral::output</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l00232">coral::output</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01061">register_function()</a>, <a class="el" href="coral_8h_source.html#l00969">register_method()</a>, and <a class="el" href="coral_8h_source.html#l00871">register_method()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01133">register_function()</a>, <a class="el" href="coral_8h_source.html#l01041">register_method()</a>, and <a class="el" href="coral_8h_source.html#l00943">register_method()</a>.</p>
 
 </div>
 </div>
@@ -2011,9 +2195,40 @@ template&lt;typename T, typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01663">1663</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01781">1781</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01507">arguments</a>, <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l01567">output_indices</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01579">arguments</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l01644">output_indices</a>.</p>
+
+</div>
+</div>
+<a id="a53e92e4d2048a1f4582d2512d7f4a483" name="a53e92e4d2048a1f4582d2512d7f4a483"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a53e92e4d2048a1f4582d2512d7f4a483">&#9670;&#160;</a></span>setup_network_if_needed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void coral::NodeObject::setup_network_if_needed </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01702">1702</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00470">build_network_interface()</a>, <a class="el" href="coral_8h_source.html#l01291">get()</a>, <a class="el" href="coral_8h_source.html#l01574">initializer</a>, <a class="el" href="coral_8h_source.html#l00461">is_network_type()</a>, <a class="el" href="coral_8h_source.html#l01594">network_executor</a>, <a class="el" href="coral_8h_source.html#l00485">override_interface()</a>, <a class="el" href="coral_8h_source.html#l00504">parse_string()</a>, and <a class="el" href="coral_8h_source.html#l00498">ready()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00419">NodeObject()</a>, and <a class="el" href="coral_8h_source.html#l00393">NodeObject()</a>.</p>
 
 </div>
 </div>
@@ -2041,9 +2256,9 @@ template&lt;typename T, typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00456">456</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00516">516</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01502">initializer</a>, and <a class="el" href="coral_8h_source.html#l00438">ready()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01574">initializer</a>, and <a class="el" href="coral_8h_source.html#l00498">ready()</a>.</p>
 
 </div>
 </div>
@@ -2070,11 +2285,40 @@ template&lt;typename T, typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01452">1452</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01524">1524</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l01502">initializer</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l01574">initializer</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01162">get_shared()</a>, and <a class="el" href="coral_8h_source.html#l01334">get_shared()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01234">get_shared()</a>, and <a class="el" href="coral_8h_source.html#l01406">get_shared()</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Friends And Related Symbol Documentation</h2>
+<a id="a88b59289ffd793fecd040d32e397b1e9" name="a88b59289ffd793fecd040d32e397b1e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88b59289ffd793fecd040d32e397b1e9">&#9670;&#160;</a></span>Network</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">friend class <a class="el" href="classcoral_1_1_network.html">Network</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel friend">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00369">369</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00369">Network</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00369">Network</a>.</p>
 
 </div>
 </div>
@@ -2101,9 +2345,9 @@ template&lt;typename T, typename... Args&gt; </div>
 
 <p>The arguments to pass to the executor. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01507">1507</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01579">1579</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01609">initialize_arguments()</a>, <a class="el" href="coral_8h_source.html#l01581">initialize_outputs()</a>, <a class="el" href="coral_8h_source.html#l01279">input()</a>, <a class="el" href="coral_8h_source.html#l00479">operator()()</a>, <a class="el" href="coral_8h_source.html#l01250">output()</a>, <a class="el" href="coral_8h_source.html#l00511">set_arguments()</a>, <a class="el" href="coral_8h_source.html#l01302">set_input()</a>, <a class="el" href="coral_8h_source.html#l01626">set_inputs()</a>, <a class="el" href="coral_8h_source.html#l01265">set_output()</a>, and <a class="el" href="coral_8h_source.html#l01663">set_outputs()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01686">initialize_arguments()</a>, <a class="el" href="coral_8h_source.html#l01658">initialize_outputs()</a>, <a class="el" href="coral_8h_source.html#l01351">input()</a>, <a class="el" href="coral_8h_source.html#l00539">operator()()</a>, <a class="el" href="coral_8h_source.html#l01322">output()</a>, <a class="el" href="coral_8h_source.html#l00485">override_interface()</a>, <a class="el" href="coral_8h_source.html#l00583">set_arguments()</a>, <a class="el" href="coral_8h_source.html#l01374">set_input()</a>, <a class="el" href="coral_8h_source.html#l01744">set_inputs()</a>, <a class="el" href="coral_8h_source.html#l01337">set_output()</a>, and <a class="el" href="coral_8h_source.html#l01781">set_outputs()</a>.</p>
 
 </div>
 </div>
@@ -2129,9 +2373,9 @@ template&lt;typename T, typename... Args&gt; </div>
 
 <p>Arguments to connection type. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01512">1512</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01584">1584</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01609">initialize_arguments()</a>, <a class="el" href="coral_8h_source.html#l00479">operator()()</a>, and <a class="el" href="coral_8h_source.html#l00511">set_arguments()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01686">initialize_arguments()</a>, <a class="el" href="coral_8h_source.html#l00539">operator()()</a>, and <a class="el" href="coral_8h_source.html#l00583">set_arguments()</a>.</p>
 
 </div>
 </div>
@@ -2157,9 +2401,9 @@ template&lt;typename T, typename... Args&gt; </div>
 
 <p>Anything required to build a std::shared_ptr&lt;T&gt; object, and to manipulate it. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01502">1502</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01574">1574</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01417">get_info()</a>, <a class="el" href="coral_8h_source.html#l00427">get_registry()</a>, <a class="el" href="coral_8h_source.html#l01162">get_shared()</a>, <a class="el" href="coral_8h_source.html#l01334">get_shared()</a>, <a class="el" href="coral_8h_source.html#l01429">hash()</a>, <a class="el" href="coral_8h_source.html#l01609">initialize_arguments()</a>, <a class="el" href="coral_8h_source.html#l01570">initialize_inputs()</a>, <a class="el" href="coral_8h_source.html#l01581">initialize_outputs()</a>, <a class="el" href="coral_8h_source.html#l01279">input()</a>, <a class="el" href="coral_8h_source.html#l01469">n_arguments()</a>, <a class="el" href="coral_8h_source.html#l01478">n_inputs()</a>, <a class="el" href="coral_8h_source.html#l01487">n_outputs()</a>, <a class="el" href="coral_8h_source.html#l01458">node_type()</a>, <a class="el" href="coral_8h_source.html#l00397">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00372">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00479">operator()()</a>, <a class="el" href="coral_8h_source.html#l00444">parse_string()</a>, <a class="el" href="coral_8h_source.html#l00693">register_abstract_type()</a>, <a class="el" href="coral_8h_source.html#l00719">register_derived_type()</a>, <a class="el" href="coral_8h_source.html#l00795">register_derived_type()</a>, <a class="el" href="coral_8h_source.html#l00595">register_elementary_type()</a>, <a class="el" href="coral_8h_source.html#l01061">register_function()</a>, <a class="el" href="coral_8h_source.html#l00531">register_json_header()</a>, <a class="el" href="coral_8h_source.html#l00554">register_json_header()</a>, <a class="el" href="coral_8h_source.html#l00969">register_method()</a>, <a class="el" href="coral_8h_source.html#l00871">register_method()</a>, <a class="el" href="coral_8h_source.html#l00669">register_type()</a>, <a class="el" href="coral_8h_source.html#l00764">register_type()</a>, <a class="el" href="coral_8h_source.html#l00511">set_arguments()</a>, <a class="el" href="coral_8h_source.html#l01302">set_input()</a>, <a class="el" href="coral_8h_source.html#l01626">set_inputs()</a>, <a class="el" href="coral_8h_source.html#l01531">set_output_only()</a>, <a class="el" href="coral_8h_source.html#l01663">set_outputs()</a>, <a class="el" href="coral_8h_source.html#l00456">to_string()</a>, and <a class="el" href="coral_8h_source.html#l01452">type_name()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01489">get_info()</a>, <a class="el" href="coral_8h_source.html#l00450">get_registry()</a>, <a class="el" href="coral_8h_source.html#l01234">get_shared()</a>, <a class="el" href="coral_8h_source.html#l01406">get_shared()</a>, <a class="el" href="coral_8h_source.html#l01501">hash()</a>, <a class="el" href="coral_8h_source.html#l01686">initialize_arguments()</a>, <a class="el" href="coral_8h_source.html#l01647">initialize_inputs()</a>, <a class="el" href="coral_8h_source.html#l01658">initialize_outputs()</a>, <a class="el" href="coral_8h_source.html#l01351">input()</a>, <a class="el" href="coral_8h_source.html#l01541">n_arguments()</a>, <a class="el" href="coral_8h_source.html#l01550">n_inputs()</a>, <a class="el" href="coral_8h_source.html#l01559">n_outputs()</a>, <a class="el" href="coral_8h_source.html#l01530">node_type()</a>, <a class="el" href="coral_8h_source.html#l00419">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00393">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00539">operator()()</a>, <a class="el" href="coral_8h_source.html#l00485">override_interface()</a>, <a class="el" href="coral_8h_source.html#l00504">parse_string()</a>, <a class="el" href="coral_8h_source.html#l00765">register_abstract_type()</a>, <a class="el" href="coral_8h_source.html#l00791">register_derived_type()</a>, <a class="el" href="coral_8h_source.html#l00867">register_derived_type()</a>, <a class="el" href="coral_8h_source.html#l00667">register_elementary_type()</a>, <a class="el" href="coral_8h_source.html#l01133">register_function()</a>, <a class="el" href="coral_8h_source.html#l00603">register_json_header()</a>, <a class="el" href="coral_8h_source.html#l00626">register_json_header()</a>, <a class="el" href="coral_8h_source.html#l01041">register_method()</a>, <a class="el" href="coral_8h_source.html#l00943">register_method()</a>, <a class="el" href="coral_8h_source.html#l00741">register_type()</a>, <a class="el" href="coral_8h_source.html#l00836">register_type()</a>, <a class="el" href="coral_8h_source.html#l00583">set_arguments()</a>, <a class="el" href="coral_8h_source.html#l01374">set_input()</a>, <a class="el" href="coral_8h_source.html#l01744">set_inputs()</a>, <a class="el" href="coral_8h_source.html#l01608">set_output_only()</a>, <a class="el" href="coral_8h_source.html#l01781">set_outputs()</a>, <a class="el" href="coral_8h_source.html#l01702">setup_network_if_needed()</a>, <a class="el" href="coral_8h_source.html#l00516">to_string()</a>, and <a class="el" href="coral_8h_source.html#l01524">type_name()</a>.</p>
 
 </div>
 </div>
@@ -2185,9 +2429,9 @@ template&lt;typename T, typename... Args&gt; </div>
 
 <p>A list of all known types and their initializers. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01517">1517</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01589">1589</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00427">get_registry()</a>, <a class="el" href="coral_8h_source.html#l01521">is_registered_elementary_type()</a>, <a class="el" href="coral_8h_source.html#l00397">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00372">NodeObject()</a>, and <a class="el" href="coral_8h_source.html#l00531">register_json_header()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00450">get_registry()</a>, <a class="el" href="coral_8h_source.html#l01598">is_registered_elementary_type()</a>, <a class="el" href="coral_8h_source.html#l00419">NodeObject()</a>, <a class="el" href="coral_8h_source.html#l00393">NodeObject()</a>, and <a class="el" href="coral_8h_source.html#l00603">register_json_header()</a>.</p>
 
 </div>
 </div>
@@ -2213,9 +2457,87 @@ template&lt;typename T, typename... Args&gt; </div>
 
 <p>Input indices mapping to arguments. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01561">1561</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01638">1638</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01570">initialize_inputs()</a>, <a class="el" href="coral_8h_source.html#l01279">input()</a>, <a class="el" href="coral_8h_source.html#l01302">set_input()</a>, and <a class="el" href="coral_8h_source.html#l01626">set_inputs()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01647">initialize_inputs()</a>, <a class="el" href="coral_8h_source.html#l01351">input()</a>, <a class="el" href="coral_8h_source.html#l01374">set_input()</a>, and <a class="el" href="coral_8h_source.html#l01744">set_inputs()</a>.</p>
+
+</div>
+</div>
+<a id="a660a585fa2e5268d5624a9ca6d91470f" name="a660a585fa2e5268d5624a9ca6d91470f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a660a585fa2e5268d5624a9ca6d91470f">&#9670;&#160;</a></span>network_executor</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#aa14aeeba3a5fa3df1c0061b5f9096fe2">NetworkExecutor</a> coral::NodeObject::network_executor</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01594">1594</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00479">set_network_executor()</a>, and <a class="el" href="coral_8h_source.html#l01702">setup_network_if_needed()</a>.</p>
+
+</div>
+</div>
+<a id="aeabeb4f52e67ff91954d01c5ae50ccef" name="aeabeb4f52e67ff91954d01c5ae50ccef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeabeb4f52e67ff91954d01c5ae50ccef">&#9670;&#160;</a></span>network_interface_builder</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::function&lt;<a class="el" href="structcoral_1_1_node_interface.html">NodeInterface</a>( const std::shared_ptr&lt;entt::meta_any&gt; &amp;)&gt; coral::NodeObject::network_interface_builder</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01593">1593</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00470">build_network_interface()</a>, and <a class="el" href="coral__network_8h_source.html#l00964">coral::Network::register_node()</a>.</p>
+
+</div>
+</div>
+<a id="ada1dda367088ab4f56240add60444c03" name="ada1dda367088ab4f56240add60444c03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada1dda367088ab4f56240add60444c03">&#9670;&#160;</a></span>network_type_hash</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string coral::NodeObject::network_type_hash</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01590">1590</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00461">is_network_type()</a>, and <a class="el" href="coral__network_8h_source.html#l00964">coral::Network::register_node()</a>.</p>
 
 </div>
 </div>
@@ -2241,7 +2563,7 @@ template&lt;typename T, typename... Args&gt; </div>
 
 <p>The actual object is stored here as a std::shared_ptr&lt;entt::meta_any&gt;. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01496">1496</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01568">1568</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
 </div>
 </div>
@@ -2268,9 +2590,9 @@ template&lt;typename T, typename... Args&gt; </div>
 <p>Output indices mapping to arguments. </p>
 <p>If the content is -1, then we return the object itself. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01567">1567</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01644">1644</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01581">initialize_outputs()</a>, <a class="el" href="coral_8h_source.html#l01250">output()</a>, <a class="el" href="coral_8h_source.html#l01265">set_output()</a>, and <a class="el" href="coral_8h_source.html#l01663">set_outputs()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01658">initialize_outputs()</a>, <a class="el" href="coral_8h_source.html#l01322">output()</a>, <a class="el" href="coral_8h_source.html#l01337">set_output()</a>, and <a class="el" href="coral_8h_source.html#l01781">set_outputs()</a>.</p>
 
 </div>
 </div>
@@ -2283,7 +2605,7 @@ template&lt;typename T, typename... Args&gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacecoral.html">coral</a></li><li class="navelem"><a class="el" href="classcoral_1_1_node_object.html">NodeObject</a></li>
-    <li class="footer">Generated on Mon Jan 19 2026 09:28:37 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
+    <li class="footer">Generated on Mon Jan 26 2026 18:59:34 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
   </ul>
 </div>
 </body>

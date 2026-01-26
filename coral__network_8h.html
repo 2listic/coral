@@ -122,9 +122,11 @@ $(function(){initNavTree('coral__network_8h.html',''); initResizable(true); });
 <code>#include &lt;filesystem&gt;</code><br />
 <code>#include &lt;fstream&gt;</code><br />
 <code>#include &lt;iomanip&gt;</code><br />
+<code>#include &lt;limits&gt;</code><br />
 <code>#include &lt;map&gt;</code><br />
 <code>#include &lt;memory&gt;</code><br />
 <code>#include &lt;sstream&gt;</code><br />
+<code>#include &lt;cstdlib&gt;</code><br />
 <code>#include &quot;<a class="el" href="coral_8h_source.html">coral.h</a>&quot;</code><br />
 <code>#include &quot;taskflow/core/task.hpp&quot;</code><br />
 </div>
@@ -134,7 +136,11 @@ $(function(){initNavTree('coral__network_8h.html',''); initResizable(true); });
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcoral_1_1_connection.html">coral::Connection</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcoral_1_1_task_observer.html">coral::TaskObserver</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcoral_1_1_network.html">coral::Network</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcoral_1_1_network_1_1_dangling_port.html">coral::Network::DanglingPort</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
@@ -152,6 +158,8 @@ Functions</h2></td></tr>
 <tr class="separator:a62a918f0df1860a0ffe66808ceb79f36"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add6efbaa0aa6ba227518ce0a67978e88" id="r_add6efbaa0aa6ba227518ce0a67978e88"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecoral.html#add6efbaa0aa6ba227518ce0a67978e88">coral::from_json</a> (const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, <a class="el" href="classcoral_1_1_connection.html">Connection</a> &amp;conn)</td></tr>
 <tr class="separator:add6efbaa0aa6ba227518ce0a67978e88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee4421e063227161f59f9cc10bd2d137" id="r_aee4421e063227161f59f9cc10bd2d137"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecoral.html#aee4421e063227161f59f9cc10bd2d137">coral::build_network_interface</a> (const std::shared_ptr&lt; <a class="el" href="classcoral_1_1_network.html">Network</a> &gt; &amp;net) -&gt; <a class="el" href="structcoral_1_1_node_interface.html">NodeInterface</a></td></tr>
+<tr class="separator:aee4421e063227161f59f9cc10bd2d137"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -159,7 +167,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="coral__network_8h.html">coral_network.h</a></li>
-    <li class="footer">Generated on Mon Jan 19 2026 09:28:36 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
+    <li class="footer">Generated on Mon Jan 26 2026 18:59:34 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
   </ul>
 </div>
 </body>
