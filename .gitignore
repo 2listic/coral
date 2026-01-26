@@ -3,6 +3,8 @@ doc/latex
 
 .aider*
 
+.vscode/
+
 compile_commands.json
 CMakeCache.txt
 CMakeFiles/
