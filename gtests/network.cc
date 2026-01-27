@@ -17,7 +17,7 @@ TEST(Network, BareMinimal)
   coral::NodeObject::register_elementary_type<double>();
 
   auto sum = [](const double &a, const double &b) {
-    std::cout << "Computing sum of " << a << " and " << b << std::endl;
+    slog_debug("Computing sum of %g and %g", a, b);
     return a + b;
   };
   coral::NodeObject::register_function(sum,
@@ -94,10 +94,10 @@ TEST(Network, BareMinimal)
   json_file << serialized_json.dump(2);
   json_file.close();
 
-  std::cout << "Executing network with 3 nodes and 2 connections." << std::endl;
+  slog_debug("Executing network with 3 nodes and 2 connections.");
   // Run the network
   network.run();
-  std::cout << "Network executed." << std::endl;
+  slog_debug("Network executed.");
 
   ASSERT_EQ(n4->get_output(0)->get<double>(), 3.0)
     << "The output node should have the value 3.0";
@@ -553,8 +553,9 @@ TEST(Network, ParseAndExecuteNetwork)
   coral::Network network = json_data;
 
   // Output some debug information
-  std::cout << "Network has " << network.size() << " nodes and "
-            << network.n_connections() << " connections\n";
+  slog_debug("Network has %zu nodes and %u connections",
+             network.size(),
+             network.n_connections());
 
   // Execute the network
   network.run();

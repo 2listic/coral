@@ -34,7 +34,7 @@ FOREACH(_build_type ${_d2_build_types})
     add_executable(${_exe} ${_test_files})
 
     TARGET_LINK_LIBRARIES(${_exe} ${TEST_LIBRARIES_${_BUILD_TYPE}} 
-      ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})   
+      ${GTEST_LIBRARIES})
     DEAL_II_SETUP_TARGET(${_exe} ${_BUILD_TYPE})
     include_directories(${GTEST_INCLUDE_DIRS})
     

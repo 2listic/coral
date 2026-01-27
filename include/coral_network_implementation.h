@@ -95,6 +95,46 @@ namespace coral
   Network::operator=(Network &&) noexcept = default;
 
   CORAL_IMPL_INLINE void
+  Network::refresh_dynamic_inputs(unsigned int target_id)
+  {
+    for (const auto &[conn_id, conn] : connections)
+      {
+        (void)conn_id;
+        if (conn.target_id != target_id)
+          continue;
+        nodes.at(conn.target_id)
+          ->bind_input(
+            conn.target_input,
+            nodes.at(conn.source_id)->get_output(conn.source_output));
+      }
+  }
+
+
+
+  CORAL_IMPL_INLINE void
+  Network::execute_node_task(unsigned int         node_id,
+                             const NodeObjectPtr &node,
+                             const std::string   &node_name)
+  {
+    slog_info("Running node %u: %s (type = %s)",
+              node_id,
+              node_name.c_str(),
+              node->type_name().c_str());
+    try
+      {
+        refresh_dynamic_inputs(node_id);
+        (*node)();
+      }
+    catch (const std::exception &e)
+      {
+        throw std::runtime_error("Node " + std::to_string(node_id) +
+                                 " failed: " + e.what());
+      }
+  }
+
+
+
+  CORAL_IMPL_INLINE void
   Network::rebuild_taskflow()
   {
     taskflow.clear();
@@ -108,28 +148,7 @@ namespace coral
         node_tasks[node_id] =
           taskflow
             .emplace([this, node, node_id, name]() {
-              std::cout << "Running node " << node_id << ": " << name
-                        << " (type = " << node->type_name() << ")" << std::endl;
-              try
-                {
-                  for (const auto &[conn_id, conn] : this->connections)
-                    {
-                      (void)conn_id;
-                      if (conn.target_id != node_id)
-                        continue;
-                      auto target_node = this->nodes.at(conn.target_id);
-                      target_node->bind_input(conn.target_input,
-                                              this->nodes.at(conn.source_id)
-                                                ->get_output(
-                                                  conn.source_output));
-                    }
-                  (*node)();
-                }
-              catch (const std::exception &e)
-                {
-                  throw std::runtime_error("Node " + std::to_string(node_id) +
-                                           " failed: " + e.what());
-                }
+              this->execute_node_task(node_id, node, name);
             })
             .name(name == "" ? "node_" + std::to_string(node_id) + ": " +
                                  node->type_name() :
@@ -150,47 +169,25 @@ namespace coral
 
 
   CORAL_IMPL_INLINE void
-  Network::add_node(unsigned int                       id,
-                    const std::shared_ptr<NodeObject> &node,
-                    const std::string                 &node_name)
+  Network::add_node(unsigned int         id,
+                    const NodeObjectPtr &node,
+                    const std::string   &node_name)
   {
     nodes[id]      = node;
     nodes_name[id] = node_name;
-    node_tasks[id] =
-      taskflow
-        .emplace([this, node, id, node_name]() {
-          std::cout << "Running node " << id << ": " << node_name
-                    << " (type = " << node->type_name() << ")" << std::endl;
-          try
-            {
-              for (const auto &[conn_id, conn] : this->connections)
-                {
-                  (void)conn_id;
-                  if (conn.target_id != id)
-                    continue;
-                  auto target_node = this->nodes.at(conn.target_id);
-                  target_node->bind_input(conn.target_input,
-                                          this->nodes.at(conn.source_id)
-                                            ->get_output(conn.source_output));
-                }
-              (*node)();
-            }
-          catch (const std::exception &e)
-            {
-              throw std::runtime_error("Node " + std::to_string(id) +
-                                       " failed: " + e.what());
-            }
-        })
-        .name(node_name == "" ?
-                "node_" + std::to_string(id) + ": " + node->type_name() :
-                node_name);
+    node_tasks[id] = taskflow
+                       .emplace([this, node, id, node_name]() {
+                         this->execute_node_task(id, node, node_name);
+                       })
+                       .name(node_name == "" ? "node_" + std::to_string(id) +
+                                                 ": " + node->type_name() :
+                                               node_name);
   }
 
 
 
   CORAL_IMPL_INLINE unsigned int
-  Network::add_node(const std::shared_ptr<NodeObject> &node,
-                    const std::string                 &node_name)
+  Network::add_node(const NodeObjectPtr &node, const std::string &node_name)
   {
     unsigned int id = nodes.empty() ? 0 : nodes.rbegin()->first + 1;
     add_node(id, node, node_name);
@@ -229,7 +226,7 @@ namespace coral
     // Ensure both source and target nodes exist
     if (nodes.find(conn.source_id) == nodes.end())
       {
-        throw std::runtime_error("Source target node not found: " +
+        throw std::runtime_error("Source node not found: " +
                                  std::to_string(conn.source_id));
       }
 
@@ -272,8 +269,16 @@ namespace coral
     nodes[conn.target_id]->bind_input(
       conn.target_input, nodes[conn.source_id]->get_output(conn.source_output));
 
-    auto source_task = node_tasks[conn.source_id];
-    auto target_task = node_tasks[conn.target_id];
+    const auto source_it = node_tasks.find(conn.source_id);
+    if (source_it == node_tasks.end())
+      throw std::runtime_error("Source task not found: " +
+                               std::to_string(conn.source_id));
+    const auto target_it = node_tasks.find(conn.target_id);
+    if (target_it == node_tasks.end())
+      throw std::runtime_error("Target task not found: " +
+                               std::to_string(conn.target_id));
+    auto source_task = source_it->second;
+    auto target_task = target_it->second;
 
     // Connect the source and target tasks
     source_task.precede(target_task);
@@ -354,8 +359,8 @@ namespace coral
   CORAL_IMPL_INLINE json
   Network::get_registry() const
   {
-    std::set<std::string>                              active_types;
-    std::map<std::string, std::shared_ptr<NodeObject>> type_to_node;
+    std::set<std::string>                active_types;
+    std::map<std::string, NodeObjectPtr> type_to_node;
     for (const auto &[id, node] : nodes)
       {
         (void)id;
@@ -426,8 +431,8 @@ namespace coral
           }
         catch (const std::exception &e)
           {
-            std::cout << "Error with node " << key << ": " << node_data.dump(2)
-                      << std::endl;
+            const auto dump = node_data.dump(2);
+            slog_error("Error with node %s: %s", key.c_str(), dump.c_str());
             throw std::runtime_error("Failed to create node " + key + ": " +
                                      e.what());
           }
@@ -472,7 +477,7 @@ namespace coral
 
 
   CORAL_IMPL_INLINE auto
-  Network::get_node(unsigned int id) const -> std::shared_ptr<NodeObject>
+  Network::get_node(unsigned int id) const -> NodeObjectPtr
   {
     auto it = nodes.find(id);
     return it != nodes.end() ? it->second : nullptr;
@@ -974,9 +979,9 @@ namespace coral
       return std::make_shared<entt::meta_any>(t);
     };
 
-    initializer.executor = [](const NodeObjectPtr                     &node,
-                              std::vector<std::shared_ptr<NodeObject>> args)
-      -> std::shared_ptr<entt::meta_any> {
+    initializer.executor =
+      [](const NodeObjectPtr       &node,
+         std::vector<NodeObjectPtr> args) -> std::shared_ptr<entt::meta_any> {
       if (!node)
         throw std::runtime_error("Network executor received null node.");
       if (!node->ready())

@@ -58,12 +58,12 @@ namespace coral
       ConnectionType type           = ConnectionType::none;
     };
 
-    std::map<unsigned int, std::shared_ptr<NodeObject>> nodes;
-    std::map<unsigned int, std::string>                 nodes_name;
-    std::map<unsigned int, tf::Task>                    node_tasks;
-    std::map<unsigned int, Connection>                  connections;
-    tf::Taskflow                                        taskflow;
-    std::string                                         name;
+    std::map<unsigned int, NodeObjectPtr> nodes;
+    std::map<unsigned int, std::string>   nodes_name;
+    std::map<unsigned int, tf::Task>      node_tasks;
+    std::map<unsigned int, Connection>    connections;
+    tf::Taskflow                          taskflow;
+    std::string                           name;
 
     void
     rebuild_taskflow();
@@ -76,6 +76,14 @@ namespace coral
 
     auto
     nodes_to_json() const -> nlohmann::json;
+
+    void
+    refresh_dynamic_inputs(unsigned int target_id);
+
+    void
+    execute_node_task(unsigned int         node_id,
+                      const NodeObjectPtr &node,
+                      const std::string   &node_name);
 
   public:
     Network();
@@ -90,13 +98,12 @@ namespace coral
     register_node();
 
     void
-    add_node(unsigned int                       id,
-             const std::shared_ptr<NodeObject> &node,
-             const std::string                 &node_name = "");
+    add_node(unsigned int         id,
+             const NodeObjectPtr &node,
+             const std::string   &node_name = "");
 
     unsigned int
-    add_node(const std::shared_ptr<NodeObject> &node,
-             const std::string                 &node_name = "");
+    add_node(const NodeObjectPtr &node, const std::string &node_name = "");
 
     void
     set_node_name(unsigned int id, const std::string &name);
@@ -150,7 +157,7 @@ namespace coral
     clear_network();
 
     auto
-    get_node(unsigned int id) const -> std::shared_ptr<NodeObject>;
+    get_node(unsigned int id) const -> NodeObjectPtr;
 
     auto
     size() const -> size_t;

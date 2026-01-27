@@ -164,10 +164,16 @@ namespace coral
       initializer.json_serializer["value"] = initializer.to_string(object);
 
     // Execution is only safe when the node is owned by a shared_ptr.
-    const auto self = shared_from_this();
-    if (!self)
-      throw std::runtime_error(
-        "NodeObject execution requires shared ownership.");
+    NodeObjectPtr self;
+    try
+      {
+        self = shared_from_this();
+      }
+    catch (const std::bad_weak_ptr &)
+      {
+        throw std::runtime_error(
+          "NodeObject execution requires shared ownership.");
+      }
     object = initializer.executor(self, arguments);
     // Check if we have to copy back the original value
     if (initializer.json_serializer.contains("value") &&
@@ -180,8 +186,7 @@ namespace coral
 
 
   CORAL_IMPL_INLINE void
-  NodeObject::set_arguments(
-    const std::vector<std::shared_ptr<NodeObject>> &args)
+  NodeObject::set_arguments(const std::vector<NodeObjectPtr> &args)
   {
     if (args.size() != initializer.json_serializer["arguments"].size())
       throw std::runtime_error(
@@ -310,10 +315,15 @@ namespace coral
           (expected_hash == input_hash) || (base_hash == input_hash);
 
         if (!is_valid)
-          throw std::runtime_error(
-            "The hash type of input " + std::to_string(i) + " (" + input_hash +
-            ") does not match the expected hash (" + expected_hash +
-            ") or its base type (" + base_hash + ".");
+          {
+            const std::string base_suffix =
+              base_hash.empty() ? std::string() :
+                                  " or its base type (" + base_hash + ")";
+            throw std::runtime_error("The hash type of input " +
+                                     std::to_string(i) + " (" + input_hash +
+                                     ") does not match the expected hash (" +
+                                     expected_hash + ")" + base_suffix + ".");
+          }
 
         arguments[input_indices[i]] = input_node->get_output(input_index);
         input_bound[i]              = true;
@@ -624,6 +634,128 @@ namespace coral
 
 
 
+  namespace detail
+  {
+    CORAL_IMPL_INLINE auto
+    validate_and_reorder_network_interface(
+      const json                  &args,
+      const json                  &inputs,
+      const json                  &outputs,
+      const detail::NodeInterface &expected_iface)
+      -> std::tuple<json, json, json>
+    {
+      if (!args.is_array() || !inputs.is_array() || !outputs.is_array())
+        throw std::runtime_error("Network interface must be arrays.");
+
+      if (args.size() != expected_iface.arguments.size())
+        throw std::runtime_error(
+          "Network arguments do not match expected size.");
+
+      std::vector<int>  provided_to_expected(args.size(), -1);
+      std::vector<bool> expected_matched(expected_iface.arguments.size(),
+                                         false);
+
+      for (size_t provided_idx = 0; provided_idx < args.size(); ++provided_idx)
+        {
+          const auto &provided = args[provided_idx];
+          if (!provided.contains("type"))
+            throw std::runtime_error("Network argument is missing type.");
+          if (!provided.contains("connection_type"))
+            throw std::runtime_error(
+              "Network argument is missing connection_type.");
+
+          for (size_t expected_idx = 0;
+               expected_idx < expected_iface.arguments.size();
+               ++expected_idx)
+            {
+              if (expected_matched[expected_idx])
+                continue;
+
+              const auto &expected = expected_iface.arguments[expected_idx];
+
+              if (provided.contains("name") && expected.contains("name") &&
+                  provided.at("name") == expected.at("name"))
+                {
+                  if (provided.at("type") != expected.at("type"))
+                    throw std::runtime_error(
+                      "Network argument '" +
+                      provided.at("name").get<std::string>() +
+                      "' type does not match expected value.");
+                  if (provided.at("connection_type") !=
+                      expected.at("connection_type"))
+                    throw std::runtime_error(
+                      "Network argument '" +
+                      provided.at("name").get<std::string>() +
+                      "' connection_type does not match expected value.");
+                  provided_to_expected[provided_idx] =
+                    static_cast<int>(expected_idx);
+                  expected_matched[expected_idx] = true;
+                  break;
+                }
+
+              if (provided.at("type") == expected.at("type") &&
+                  provided.at("connection_type") ==
+                    expected.at("connection_type"))
+                {
+                  provided_to_expected[provided_idx] =
+                    static_cast<int>(expected_idx);
+                  expected_matched[expected_idx] = true;
+                  break;
+                }
+            }
+
+          if (provided_to_expected[provided_idx] == -1)
+            throw std::runtime_error(
+              "Network argument does not match any expected argument.");
+        }
+
+      std::vector<int> expected_to_provided(expected_iface.arguments.size(),
+                                            -1);
+      for (size_t provided_idx = 0; provided_idx < args.size(); ++provided_idx)
+        expected_to_provided[static_cast<size_t>(
+          provided_to_expected[provided_idx])] = static_cast<int>(provided_idx);
+
+      json reordered_args = json::array();
+      for (size_t expected_idx = 0; expected_idx < expected_to_provided.size();
+           ++expected_idx)
+        {
+          const int provided_idx = expected_to_provided[expected_idx];
+          if (provided_idx < 0)
+            throw std::runtime_error(
+              "Network argument does not match any expected argument.");
+          reordered_args.push_back(args[static_cast<size_t>(provided_idx)]);
+        }
+
+      json remapped_inputs = json::array();
+      for (const auto &input_idx : inputs)
+        {
+          const auto provided_idx = input_idx.get<size_t>();
+          if (provided_idx >= provided_to_expected.size())
+            throw std::runtime_error("Network input index out of range.");
+          remapped_inputs.push_back(provided_to_expected[provided_idx]);
+        }
+
+      json remapped_outputs = json::array();
+      for (const auto &output_idx : outputs)
+        {
+          const auto provided_idx = output_idx.get<size_t>();
+          if (provided_idx >= provided_to_expected.size())
+            throw std::runtime_error("Network output index out of range.");
+          remapped_outputs.push_back(provided_to_expected[provided_idx]);
+        }
+
+      if (remapped_inputs != expected_iface.inputs)
+        throw std::runtime_error("Network inputs do not match expected order.");
+      if (remapped_outputs != expected_iface.outputs)
+        throw std::runtime_error(
+          "Network outputs do not match expected order.");
+
+      return std::make_tuple(reordered_args,
+                             expected_iface.inputs,
+                             expected_iface.outputs);
+    }
+  } // namespace detail
+
   CORAL_IMPL_INLINE void
   from_json(const json &j, NodeObjectPtr &obj)
   {
@@ -685,135 +817,16 @@ namespace coral
         const auto &any      = detail::meta_any_ref(*obj);
         const auto  expected = NodeObject::build_network_interface(any);
 
-        auto validate_and_reorder_interface =
-          [](const json                  &args,
-             const json                  &inputs,
-             const json                  &outputs,
-             const detail::NodeInterface &expected_iface)
-          -> std::tuple<json, json, json> {
-          if (!args.is_array() || !inputs.is_array() || !outputs.is_array())
-            throw std::runtime_error("Network interface must be arrays.");
-
-          if (args.size() != expected_iface.arguments.size())
-            throw std::runtime_error(
-              "Network arguments do not match expected size.");
-
-          std::vector<int>  provided_to_expected(args.size(), -1);
-          std::vector<bool> expected_matched(expected_iface.arguments.size(),
-                                             false);
-
-          for (size_t provided_idx = 0; provided_idx < args.size();
-               ++provided_idx)
-            {
-              const auto &provided = args[provided_idx];
-              if (!provided.contains("type"))
-                throw std::runtime_error("Network argument is missing type.");
-              if (!provided.contains("connection_type"))
-                throw std::runtime_error(
-                  "Network argument is missing connection_type.");
-
-              for (size_t expected_idx = 0;
-                   expected_idx < expected_iface.arguments.size();
-                   ++expected_idx)
-                {
-                  if (expected_matched[expected_idx])
-                    continue;
-
-                  const auto &expected = expected_iface.arguments[expected_idx];
-
-                  if (provided.contains("name") && expected.contains("name") &&
-                      provided.at("name") == expected.at("name"))
-                    {
-                      if (provided.at("type") != expected.at("type"))
-                        throw std::runtime_error(
-                          "Network argument '" +
-                          provided.at("name").get<std::string>() +
-                          "' type does not match expected value.");
-                      if (provided.at("connection_type") !=
-                          expected.at("connection_type"))
-                        throw std::runtime_error(
-                          "Network argument '" +
-                          provided.at("name").get<std::string>() +
-                          "' connection_type does not match expected value.");
-                      provided_to_expected[provided_idx] = expected_idx;
-                      expected_matched[expected_idx]     = true;
-                      break;
-                    }
-
-                  if (provided.at("type") == expected.at("type") &&
-                      provided.at("connection_type") ==
-                        expected.at("connection_type"))
-                    {
-                      provided_to_expected[provided_idx] = expected_idx;
-                      expected_matched[expected_idx]     = true;
-                      break;
-                    }
-                }
-
-              if (provided_to_expected[provided_idx] == -1)
-                throw std::runtime_error(
-                  "Network argument does not match any expected argument.");
-            }
-
-          std::vector<int> expected_to_provided(expected_iface.arguments.size(),
-                                                -1);
-          for (size_t provided_idx = 0; provided_idx < args.size();
-               ++provided_idx)
-            expected_to_provided[provided_to_expected[provided_idx]] =
-              static_cast<int>(provided_idx);
-
-          json reordered_args = json::array();
-          for (size_t expected_idx = 0;
-               expected_idx < expected_to_provided.size();
-               ++expected_idx)
-            {
-              const int provided_idx = expected_to_provided[expected_idx];
-              if (provided_idx < 0)
-                throw std::runtime_error(
-                  "Network argument does not match any expected argument.");
-              reordered_args.push_back(args[static_cast<size_t>(provided_idx)]);
-            }
-
-          json remapped_inputs = json::array();
-          for (const auto &input_idx : inputs)
-            {
-              const auto provided_idx = input_idx.get<size_t>();
-              if (provided_idx >= provided_to_expected.size())
-                throw std::runtime_error("Network input index out of range.");
-              remapped_inputs.push_back(provided_to_expected[provided_idx]);
-            }
-
-          json remapped_outputs = json::array();
-          for (const auto &output_idx : outputs)
-            {
-              const auto provided_idx = output_idx.get<size_t>();
-              if (provided_idx >= provided_to_expected.size())
-                throw std::runtime_error("Network output index out of range.");
-              remapped_outputs.push_back(provided_to_expected[provided_idx]);
-            }
-
-          if (remapped_inputs != expected_iface.inputs)
-            throw std::runtime_error(
-              "Network inputs do not match expected order.");
-          if (remapped_outputs != expected_iface.outputs)
-            throw std::runtime_error(
-              "Network outputs do not match expected order.");
-
-          return std::make_tuple(reordered_args,
-                                 expected_iface.inputs,
-                                 expected_iface.outputs);
-        };
-
         if (has_any_interface)
           {
             if (!has_full_interface)
               throw std::runtime_error(
                 "Network interface override requires arguments, inputs, and outputs.");
             auto [reordered_args, reordered_inputs, reordered_outputs] =
-              validate_and_reorder_interface(j.at("arguments"),
-                                             j.at("inputs"),
-                                             j.at("outputs"),
-                                             expected);
+              detail::validate_and_reorder_network_interface(j.at("arguments"),
+                                                             j.at("inputs"),
+                                                             j.at("outputs"),
+                                                             expected);
             obj->override_interface(reordered_args,
                                     reordered_inputs,
                                     reordered_outputs);

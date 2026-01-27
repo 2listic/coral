@@ -79,6 +79,14 @@ FOREACH(_build_type ${_d2_build_types})
 
     STRING(TOUPPER "${_build_type}" _BUILD_TYPE)
 
+    # Setup slog (C library)
+    SET(_slog_lib "slog${_p}")
+    if (NOT TARGET ${_slog_lib})
+      ADD_LIBRARY(${_slog_lib} STATIC source/slog/slog.c)
+      TARGET_INCLUDE_DIRECTORIES(
+        ${_slog_lib} PUBLIC ./include ./include/slog)
+    endif()
+
     # Setup library
     SET(_lib "${_main_target}_lib${_p}")
     MESSAGE("-- Configuring library ${_lib}")
@@ -86,7 +94,8 @@ FOREACH(_build_type ${_d2_build_types})
     if (CORAL_HEADER_ONLY)
       ADD_LIBRARY(${_lib} INTERFACE)
       TARGET_INCLUDE_DIRECTORIES(
-        ${_lib} INTERFACE ./include ${CMAKE_CURRENT_SOURCE_DIR}/entt/single_include)
+        ${_lib} INTERFACE ./include ./include/slog ${CMAKE_CURRENT_SOURCE_DIR}/entt/single_include)
+      TARGET_LINK_LIBRARIES(${_lib} INTERFACE ${_slog_lib})
       TARGET_COMPILE_DEFINITIONS(
         ${_lib} INTERFACE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         CORAL_HEADER_ONLY=1
@@ -96,7 +105,8 @@ FOREACH(_build_type ${_d2_build_types})
         source/coral_implementation.cc
         source/coral_network_implementation.cc)
       TARGET_INCLUDE_DIRECTORIES(
-        ${_lib} PUBLIC ./include ${CMAKE_CURRENT_SOURCE_DIR}/entt/single_include)
+        ${_lib} PUBLIC ./include ./include/slog ${CMAKE_CURRENT_SOURCE_DIR}/entt/single_include)
+      TARGET_LINK_LIBRARIES(${_lib} ${_slog_lib})
       TARGET_COMPILE_DEFINITIONS(
         ${_lib} PUBLIC SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         CORAL_HEADER_ONLY=0

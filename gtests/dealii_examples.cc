@@ -234,23 +234,26 @@ TEST(dealiiExamples, NetworkFromJsonStep00)
   network.from_json(json_data);
 
   // Print some debugging information
-  std::cout << "Network has " << network.n_nodes() << " nodes and "
-            << network.n_connections() << " connections\n";
+  slog_debug("Network has %u nodes and %u connections",
+             network.n_nodes(),
+             network.n_connections());
 
   // Check for node types
   for (unsigned int i = 0; i < network.n_nodes(); ++i)
     {
       auto node = network.get_node(i);
-      std::cout << "Node " << i << ": " << network.get_node_name(i) << " ("
-                << (node ? "exists" : "nullptr") << ")";
+      slog_debug("Node %u: %s (%s)",
+                 i,
+                 network.get_node_name(i).c_str(),
+                 (node ? "exists" : "nullptr"));
 
       if (node->node_type() == NodeType::elementary_constructor)
         {
-          std::cout << " value: " << node->to_string() << std::endl;
+          slog_debug(" value: %s", node->to_string().c_str());
         }
       else
         {
-          std::cout << " type: " << node->type_name() << std::endl;
+          slog_debug(" type: %s", node->type_name().c_str());
         }
     }
 
@@ -259,9 +262,8 @@ TEST(dealiiExamples, NetworkFromJsonStep00)
   auto tria_node = network.get_node(0);
 
   // Print the triangulation state after running the network
-  std::cout << "After execution, triangulation has "
-            << tria_node->get<Triangulation<2>>().n_active_cells()
-            << " active cells\n";
+  slog_debug("After execution, triangulation has %u active cells",
+             tria_node->get<Triangulation<2>>().n_active_cells());
 
   // Verify results
   auto &tria = tria_node->get<Triangulation<2>>();

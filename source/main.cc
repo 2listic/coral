@@ -14,6 +14,7 @@
 #include "coral.h"
 #include "coral_network.h"
 #include "register_types.h"
+#include "slog.h"
 #include "taskflow/taskflow.hpp" // Taskflow library
 
 using json   = nlohmann::json;
@@ -29,16 +30,39 @@ dump_registry(const fs::path &outpath)
   output << std::setw(4) << json << std::endl;
 }
 
+namespace
+{
+  struct SlogGuard
+  {
+    SlogGuard()
+    {
+      slog_init("coral", SLOG_FLAGS_ALL, 1);
+      slog_config_t cfg;
+      slog_config_get(&cfg);
+      cfg.nFlush = 1;
+      slog_config_set(&cfg);
+    }
+
+    ~SlogGuard()
+    {
+      slog_destroy();
+    }
+  };
+} // namespace
+
 int
 main(int argc, char *argv[])
 {
+  SlogGuard slog_guard;
+  (void)slog_guard;
+
   // Parse command line arguments
 
   CLI::App app{"dealii-backend. A backend for coral."};
 
   app.failure_message([&](const CLI::App *app, const CLI::Error &error) {
-    std::cerr << "Error: " << error.what() << "\n\n\n";
-    std::cerr << app->help() << std::endl;
+    slog_error("Error: %s", error.what());
+    slog_error("%s", app->help().c_str());
     return "";
   });
 
@@ -89,13 +113,12 @@ main(int argc, char *argv[])
   // do the job
 
   coral::register_all_types();
-  std::cout << "Registered all types." << std::endl;
+  slog_info("Registered all types.");
 
   if (dump_reg)
     {
       dump_registry(register_path);
-      std::cout << "Dumped registered node to " << register_path << "."
-                << std::endl;
+      slog_info("Dumped registered nodes to %s.", register_path.c_str());
     }
 
   if (!run)
@@ -104,27 +127,27 @@ main(int argc, char *argv[])
   std::ifstream input{input_json};
   if (!input.good())
     {
-      std::cerr << "Could not open " << input_json << "." << std::endl;
+      slog_error("Could not open %s.", input_json.c_str());
       return EXIT_FAILURE;
     }
-  std::cout << "File " << input_json << " opened." << std::endl;
+  slog_info("File %s opened.", input_json.c_str());
 
   json data;
   input >> data;
-  std::cout << "File " << input_json << " read." << std::endl;
+  slog_info("File %s read.", input_json.c_str());
 
   coral::Network network;
   network.from_json(data);
-  std::cout << "Build network from data." << std::endl;
+  slog_info("Built network from data.");
 
   if (dump_graph)
     {
       network.output_dot(graph_path);
-      std::cout << "Network graph " << graph_path << "." << std::endl;
+      slog_info("Wrote network graph to %s.", graph_path.c_str());
     }
 
   network.run();
-  std::cout << "Network run." << std::endl;
+  slog_info("Network run completed.");
 
   return EXIT_SUCCESS;
 }

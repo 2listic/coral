@@ -7,11 +7,14 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
+
+#include "slog.h"
 
 #if defined(__GNUC__)
 #  pragma GCC diagnostic push
@@ -46,7 +49,7 @@ namespace coral
     template <typename... Args>
     inline std::tuple<
       std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
-    cast_args(const std::vector<std::shared_ptr<NodeObject>> &args);
+    cast_args(const std::vector<NodeObjectPtr> &args);
 
     std::shared_ptr<entt::meta_any> &
     meta_any_ref(NodeObject &node);
@@ -63,12 +66,21 @@ namespace coral
       return aliases;
     }
 
+    inline auto
+    type_aliases_mutex() -> std::mutex &
+    {
+      static std::mutex m;
+      return m;
+    }
+
     // Thread-safety: identifiers are stored in a shared static set without
     // synchronization.
     inline const char *
     store_identifier(const std::string &id)
     {
-      static std::set<std::string> identifiers;
+      static std::mutex                 mutex;
+      static std::set<std::string>      identifiers;
+      const std::lock_guard<std::mutex> lock(mutex);
       return identifiers.insert(id).first->c_str();
     }
 
@@ -126,13 +138,19 @@ namespace coral
       using underlying_type = std::remove_cv_t<std::remove_reference_t<T>>;
       using stored_type     = std::shared_ptr<underlying_type>;
 
-      const auto alias_it =
-        type_aliases().find(typeid(underlying_type).hash_code());
+      std::string alias;
+      {
+        const std::lock_guard<std::mutex> lock(type_aliases_mutex());
+        const auto                        it =
+          type_aliases().find(typeid(underlying_type).hash_code());
+        if (it != type_aliases().end())
+          alias = it->second;
+      }
 
       const auto  resolved_underlying = entt::resolve<underlying_type>();
       std::string base_identifier =
-        (alias_it != type_aliases().end()) ?
-          alias_it->second :
+        !alias.empty() ?
+          alias :
           (resolved_underlying ?
              type_identifier(resolved_underlying) :
              std::string(entt::type_id<underlying_type>().name()));
@@ -179,6 +197,7 @@ namespace coral
     set_type_alias(const std::string &alias)
     {
       using underlying_type = std::remove_cv_t<std::remove_reference_t<T>>;
+      const std::lock_guard<std::mutex> lock(type_aliases_mutex());
       type_aliases()[typeid(underlying_type).hash_code()] = alias;
     }
 
@@ -376,13 +395,11 @@ namespace coral
       /**
        * Execution function for this node.
        */
-      std::function<std::shared_ptr<entt::meta_any>(
-        const NodeObjectPtr &,
-        std::vector<std::shared_ptr<NodeObject>> args)>
+      std::function<std::shared_ptr<
+        entt::meta_any>(const NodeObjectPtr &, std::vector<NodeObjectPtr> args)>
         executor =
-          [](const NodeObjectPtr &, std::vector<std::shared_ptr<NodeObject>>)
-        -> std::shared_ptr<entt::meta_any> {
-        std::cout << "empty node. ";
+          [](const NodeObjectPtr &,
+             std::vector<NodeObjectPtr>) -> std::shared_ptr<entt::meta_any> {
         return std::make_shared<entt::meta_any>();
       };
 
@@ -565,7 +582,7 @@ namespace coral
      * Set the arguments of the node executor.
      */
     void
-    set_arguments(const std::vector<std::shared_ptr<NodeObject>> &args);
+    set_arguments(const std::vector<NodeObjectPtr> &args);
 
     /**
      * Register a new type in the json registry. This method does not add
@@ -639,9 +656,8 @@ namespace coral
       };
 
       // Add to the initializer the emtpy executor.
-      initializer.executor =
-        [](const NodeObjectPtr &,
-           const std::vector<std::shared_ptr<NodeObject>> &args)
+      initializer.executor = [](const NodeObjectPtr &,
+                                const std::vector<NodeObjectPtr> &args)
         -> std::shared_ptr<entt::meta_any> {
         if (args.size() != 0)
           throw std::runtime_error("Wrong number of arguments.");
@@ -685,9 +701,8 @@ namespace coral
       initializer.json_serializer["outputs"].push_back(-1);
 
       // Add to the initializer the emtpy executor.
-      initializer.executor =
-        [](const NodeObjectPtr &,
-           const std::vector<std::shared_ptr<NodeObject>> &args)
+      initializer.executor = [](const NodeObjectPtr &,
+                                const std::vector<NodeObjectPtr> &args)
         -> std::shared_ptr<entt::meta_any> {
         if (args.size() != 0)
           throw std::runtime_error("Wrong number of arguments.");
@@ -710,11 +725,8 @@ namespace coral
 
       // Add to the initializer the emtpy executor.
       initializer.executor =
-        [&initializer](const NodeObjectPtr &,
-                       std::vector<std::shared_ptr<NodeObject>>)
-        -> std::shared_ptr<entt::meta_any> {
-        std::cout << "empty_constructor: " << initializer.type_name
-                  << std::endl;
+        [](const NodeObjectPtr &,
+           std::vector<NodeObjectPtr>) -> std::shared_ptr<entt::meta_any> {
         return std::make_shared<entt::meta_any>(std::shared_ptr<T>());
       };
       return initializer;
@@ -819,10 +831,8 @@ namespace coral
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr,
-             &initializer,
-             method_name](const NodeObjectPtr &,
-                          std::vector<std::shared_ptr<NodeObject>> args)
+            [ptr, &initializer, method_name](const NodeObjectPtr &,
+                                             std::vector<NodeObjectPtr> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 1 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
@@ -830,8 +840,9 @@ namespace coral
             args.erase(args.begin()); // remove the first element
 
             auto tuple = detail::cast_args<Args...>(args);
-            std::cout << method_name << ": " << initializer.type_name
-                      << std::endl;
+            slog_debug("%s: %s",
+                       method_name.c_str(),
+                       initializer.type_name.c_str());
             std::apply(
               [&obj, ptr](auto &&...unpackedArgs) {
                 (obj.*ptr)(*unpackedArgs...);
@@ -856,8 +867,7 @@ namespace coral
           // Add to the initializer the emtpy executor.
           initializer.executor =
             [ptr, &initializer, method_name, output_is_elementary](
-              const NodeObjectPtr &,
-              std::vector<std::shared_ptr<NodeObject>> args)
+              const NodeObjectPtr &, std::vector<NodeObjectPtr> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 2 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
@@ -868,11 +878,12 @@ namespace coral
 
             // Create a copy of args without the first two elements for function
             // execution
-            std::vector<std::shared_ptr<NodeObject>> function_args(
-              args.begin() + 2, args.end());
+            std::vector<NodeObjectPtr> function_args(args.begin() + 2,
+                                                     args.end());
 
-            std::cout << method_name << ": " << initializer.type_name
-                      << std::endl;
+            slog_debug("%s: %s",
+                       method_name.c_str(),
+                       initializer.type_name.c_str());
             auto tuple = detail::cast_args<Args...>(function_args);
             ret        = std::apply(
               [&obj, ptr](auto &&...unpackedArgs) {
@@ -920,10 +931,8 @@ namespace coral
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr,
-             &initializer,
-             method_name](const NodeObjectPtr &,
-                          std::vector<std::shared_ptr<NodeObject>> args)
+            [ptr, &initializer, method_name](const NodeObjectPtr &,
+                                             std::vector<NodeObjectPtr> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 1 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
@@ -931,7 +940,7 @@ namespace coral
             args.erase(args.begin()); // remove the first element
 
             auto tuple = detail::cast_args<Args...>(args);
-            std::cout << "method: " << initializer.type_name << std::endl;
+            slog_debug("method: %s", initializer.type_name.c_str());
             std::apply(
               [&obj, ptr](auto &&...unpackedArgs) {
                 (obj.*ptr)(*unpackedArgs...);
@@ -956,8 +965,7 @@ namespace coral
           // Add to the initializer the emtpy executor.
           initializer.executor =
             [ptr, &initializer, method_name, output_is_elementary](
-              const NodeObjectPtr &,
-              std::vector<std::shared_ptr<NodeObject>> args)
+              const NodeObjectPtr &, std::vector<NodeObjectPtr> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 2 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
@@ -967,7 +975,7 @@ namespace coral
             auto &ret = args[1]->get<ReturnType>();
             args.erase(args.begin()); // remove the class
             args.erase(args.begin()); // remove the return type
-            std::cout << "method: " << initializer.type_name << std::endl;
+            slog_debug("method: %s", initializer.type_name.c_str());
             auto tuple = detail::cast_args<Args...>(args);
             ret        = std::apply(
               [&obj, ptr](auto &&...unpackedArgs) {
@@ -1019,17 +1027,16 @@ namespace coral
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr,
-             &initializer,
-             method_name](const NodeObjectPtr &,
-                          std::vector<std::shared_ptr<NodeObject>> args)
+            [ptr, &initializer, method_name](const NodeObjectPtr &,
+                                             std::vector<NodeObjectPtr> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
 
             auto tuple = detail::cast_args<Args...>(args);
-            std::cout << "void function: " << method_name << " ["
-                      << initializer.type_name << "]" << std::endl;
+            slog_debug("void function: %s [%s]",
+                       method_name.c_str(),
+                       initializer.type_name.c_str());
             std::apply([ptr](auto &&...unpackedArgs) { ptr(*unpackedArgs...); },
                        tuple);
             return std::make_shared<entt::meta_any>(
@@ -1052,8 +1059,7 @@ namespace coral
           // Add the method to the initializer
           initializer.executor =
             [ptr, &initializer, method_name, output_is_elementary](
-              const NodeObjectPtr &,
-              std::vector<std::shared_ptr<NodeObject>> args)
+              const NodeObjectPtr &, std::vector<NodeObjectPtr> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 1 + sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
@@ -1063,8 +1069,9 @@ namespace coral
             args.erase(args.begin()); // remove the first element
 
             auto tuple = detail::cast_args<Args...>(args);
-            std::cout << "non-void function: " << method_name << " ["
-                      << initializer.type_name << "]" << std::endl;
+            slog_debug("non-void function: %s [%s]",
+                       method_name.c_str(),
+                       initializer.type_name.c_str());
             ret = std::apply(
               [ptr](auto &&...unpackedArgs) { return ptr(*unpackedArgs...); },
               tuple);
@@ -1267,7 +1274,7 @@ namespace coral
     /**
      * The arguments to pass to the executor.
      */
-    std::vector<std::shared_ptr<NodeObject>> arguments;
+    std::vector<NodeObjectPtr> arguments;
 
     /**
      * Arguments to connection type.
@@ -1420,9 +1427,8 @@ namespace coral
     auto &initializer = register_json_header<T>(suffix);
 
     // Now take care of the arguments.
-    std::vector<std::shared_ptr<NodeObject>> args = {
-      std::make_shared<NodeObject>(
-        std::shared_ptr<std::remove_cv_t<std::remove_reference_t<Args>>>())...};
+    std::vector<NodeObjectPtr> args = {std::make_shared<NodeObject>(
+      std::shared_ptr<std::remove_cv_t<std::remove_reference_t<Args>>>())...};
 
     std::vector<ConnectionType> arg_connection_types = {
       connection_type<Args>()...};
@@ -1470,7 +1476,7 @@ namespace coral
     template <typename... Args, std::size_t... Is>
     inline std::tuple<
       std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
-    cast_args_impl(const std::vector<std::shared_ptr<NodeObject>> &args,
+    cast_args_impl(const std::vector<NodeObjectPtr> &args,
                    std::index_sequence<Is...>)
     {
       try
@@ -1494,7 +1500,7 @@ namespace coral
     template <typename... Args>
     inline std::tuple<
       std::shared_ptr<std::remove_const_t<std::remove_reference_t<Args>>>...>
-    cast_args(const std::vector<std::shared_ptr<NodeObject>> &args)
+    cast_args(const std::vector<NodeObjectPtr> &args)
     {
       return cast_args_impl<Args...>(args, std::index_sequence_for<Args...>{});
     }
@@ -1532,14 +1538,13 @@ namespace coral
     initializer.json_serializer["outputs"].push_back(-1);
 
     // And the executor.
-    initializer.executor =
-      [&initializer](const NodeObjectPtr &,
-                     std::vector<std::shared_ptr<NodeObject>> args)
+    initializer.executor = [&initializer](const NodeObjectPtr &,
+                                          std::vector<NodeObjectPtr> args)
       -> std::shared_ptr<entt::meta_any> {
       if (args.size() != sizeof...(Args))
         throw std::runtime_error("Wrong number of arguments.");
       auto tuple = detail::cast_args<Args...>(args);
-      std::cout << "constructor: " << initializer.type_name << std::endl;
+      slog_debug("constructor: %s", initializer.type_name.c_str());
       return std::apply(
         [](auto &&...unpackedArgs) {
           return std::make_shared<entt::meta_any>(
