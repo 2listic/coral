@@ -173,6 +173,11 @@ namespace coral
                     const NodeObjectPtr &node,
                     const std::string   &node_name)
   {
+    if (nodes.find(id) != nodes.end())
+      slog_warn("Overwriting existing node id %u", id);
+    if (!node)
+      slog_error("Adding null node id %u", id);
+
     nodes[id]      = node;
     nodes_name[id] = node_name;
     node_tasks[id] = taskflow
@@ -182,6 +187,11 @@ namespace coral
                        .name(node_name == "" ? "node_" + std::to_string(id) +
                                                  ": " + node->type_name() :
                                                node_name);
+
+    slog_debug("Added node %u name='%s' type='%s'",
+               id,
+               node_name.c_str(),
+               node ? node->type_name().c_str() : "<null>");
   }
 
 
@@ -222,6 +232,14 @@ namespace coral
   CORAL_IMPL_INLINE void
   Network::add_connection(unsigned int id, const Connection &conn)
   {
+    if (connections.find(id) != connections.end())
+      slog_warn("Overwriting existing connection id %u", id);
+    slog_debug("Adding connection %u: %u[%u] -> %u[%u]",
+               id,
+               conn.source_id,
+               conn.source_output,
+               conn.target_id,
+               conn.target_input);
     connections[id] = conn;
     // Ensure both source and target nodes exist
     if (nodes.find(conn.source_id) == nodes.end())
@@ -282,6 +300,9 @@ namespace coral
 
     // Connect the source and target tasks
     source_task.precede(target_task);
+    slog_debug("Connected task precedence: %u -> %u",
+               conn.source_id,
+               conn.target_id);
   }
 
 
@@ -326,6 +347,9 @@ namespace coral
     const std::vector<unsigned int> &node_ids,
     const std::vector<unsigned int> &connection_ids)
   {
+    slog_info("Removing %zu nodes and %zu connections",
+              node_ids.size(),
+              connection_ids.size());
     for (const auto id : connection_ids)
       connections.erase(id);
 
@@ -409,6 +433,8 @@ namespace coral
     clear_network();
 
     const auto &nodes_data = workflow["nodes"];
+    slog_info("Loading network from json: %zu nodes",
+              nodes_data.size());
 
     // First pass: create all nodes
     for (const auto &[key, value] : nodes_data.items())
@@ -441,6 +467,8 @@ namespace coral
     // Second pass: connect nodes based on edges
     if (workflow.contains("edges"))
       {
+        slog_info("Loading network edges: %zu edges",
+                  workflow["edges"].size());
         for (const auto &[edge_key, edge_value] : workflow["edges"].items())
           {
             // Create a Connection object from JSON
@@ -452,6 +480,10 @@ namespace coral
             add_connection(conn_id, conn);
           }
       }
+    else
+      {
+        slog_warn("Network JSON has no 'edges' section");
+      }
   }
 
 
@@ -460,7 +492,19 @@ namespace coral
   Network::run()
   {
     tf::Executor executor;
-    executor.run(taskflow).get();
+    slog_info("Running network (%zu nodes, %zu connections)",
+              nodes.size(),
+              connections.size());
+    try
+      {
+        executor.run(taskflow).get();
+      }
+    catch (const std::exception &e)
+      {
+        slog_error("Network run failed: %s", e.what());
+        throw;
+      }
+    slog_info("Network run finished");
   }
 
 
@@ -468,6 +512,10 @@ namespace coral
   CORAL_IMPL_INLINE void
   Network::clear_network()
   {
+    if (!nodes.empty() || !connections.empty())
+      slog_debug("Clearing network (%zu nodes, %zu connections)",
+                 nodes.size(),
+                 connections.size());
     nodes.clear();
     node_tasks.clear();
     connections.clear();

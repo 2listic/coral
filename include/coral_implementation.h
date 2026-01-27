@@ -77,6 +77,11 @@ namespace coral
                                  const json &inputs,
                                  const json &outputs)
   {
+    slog_debug("Overriding node interface for '%s': %zu args, %zu inputs, %zu outputs",
+               initializer.type_name.c_str(),
+               arguments.size(),
+               inputs.size(),
+               outputs.size());
     initializer.json_serializer["arguments"] = arguments;
     initializer.json_serializer["inputs"]    = inputs;
     initializer.json_serializer["outputs"]   = outputs;
@@ -99,7 +104,13 @@ namespace coral
   NodeObject::parse_string(const std::string &value_str)
   {
     if (initializer.parse_string)
-      object = initializer.parse_string(value_str);
+      {
+        // Avoid logging full payloads (they can be huge); just trace metadata.
+        slog_debug("Parsing value for '%s' (size=%zu)",
+                   initializer.type_name.c_str(),
+                   value_str.size());
+        object = initializer.parse_string(value_str);
+      }
     else
       {
         throw std::runtime_error(
@@ -286,7 +297,11 @@ namespace coral
         const auto iface = NodeObject::build_network_interface(object);
         if (!iface.arguments.empty() || !iface.inputs.empty() ||
             !iface.outputs.empty())
-          override_interface(iface.arguments, iface.inputs, iface.outputs);
+          {
+            slog_debug("Applying dynamic network interface for '%s'",
+                       initializer.type_name.c_str());
+            override_interface(iface.arguments, iface.inputs, iface.outputs);
+          }
       }
   }
 
@@ -324,6 +339,12 @@ namespace coral
             const std::string base_suffix =
               base_hash.empty() ? std::string() :
                                   " or its base type (" + base_hash + ")";
+            slog_error("Type mismatch binding input %u for '%s': got '%s', expected '%s'%s",
+                       i,
+                       initializer.type_name.c_str(),
+                       input_hash.c_str(),
+                       expected_hash.c_str(),
+                       base_hash.empty() ? "" : " (or base type)");
             throw std::runtime_error("The hash type of input " +
                                      std::to_string(i) + " (" + input_hash +
                                      ") does not match the expected hash (" +
@@ -824,7 +845,10 @@ namespace coral
         if (value.is_string())
           obj->parse_string(value.get<std::string>());
         else if (is_network)
-          obj->parse_string(value.dump());
+          {
+            slog_debug("Parsing network node value as nested JSON object");
+            obj->parse_string(value.dump());
+          }
         else
           throw std::runtime_error(
             "Non-network node 'value' must be a string.");
@@ -852,6 +876,7 @@ namespace coral
             if (!has_full_interface)
               throw std::runtime_error(
                 "Network interface override requires arguments, inputs, and outputs.");
+            slog_debug("Applying network interface override (with reordering) for network node");
             auto [reordered_args, reordered_inputs, reordered_outputs] =
               detail::validate_and_reorder_network_interface(j.at("arguments"),
                                                              j.at("inputs"),
@@ -863,6 +888,7 @@ namespace coral
           }
         else
           {
+            slog_debug("Applying default network interface for network node");
             obj->override_interface(expected.arguments,
                                     expected.inputs,
                                     expected.outputs);
