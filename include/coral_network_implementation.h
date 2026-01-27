@@ -121,7 +121,7 @@ namespace coral
                              const NodeObjectPtr &node,
                              const std::string   &node_name)
   {
-    slog_info("Running node %u: %s (type = %s)",
+    slog_info("Start running node %u: %s (type = %s)",
               node_id,
               node_name.c_str(),
               node->type_name().c_str());
@@ -135,6 +135,10 @@ namespace coral
         throw std::runtime_error("Node " + std::to_string(node_id) +
                                  " failed: " + e.what());
       }
+    slog_info("Node %u: %s (type = %s) run",
+              node_id,
+              node_name.c_str(),
+              node->type_name().c_str());
   }
 
 
