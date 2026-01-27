@@ -85,6 +85,8 @@ FOREACH(_build_type ${_d2_build_types})
       ADD_LIBRARY(${_slog_lib} STATIC source/slog/slog.c)
       TARGET_INCLUDE_DIRECTORIES(
         ${_slog_lib} PUBLIC ./include ./include/slog)
+      # libdealii_backend_lib is a shared library; ensure slog can be linked into it.
+      set_target_properties(${_slog_lib} PROPERTIES POSITION_INDEPENDENT_CODE ON)
     endif()
 
     # Setup library
