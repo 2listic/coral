@@ -1,3 +1,6 @@
 [submodule "entt"]
-	path = entt
+	path = core/entt
 	url = https://github.com/skypjack/entt.git
+[submodule "imgui-node-editor"]
+	path = gui/editor/imgui-node-editor
+	url = https://github.com/thedmd/imgui-node-editor.git
