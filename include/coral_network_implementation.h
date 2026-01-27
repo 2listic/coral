@@ -928,7 +928,7 @@ namespace coral
     auto &initializer = NodeObject::register_json_header<Network>();
     initializer.json_serializer["node_type"] = "network";
     initializer.node_type                    = NodeType::network;
-    initializer.json_serializer["value"]     = "{}";
+    initializer.json_serializer["value"]     = json::object();
 
     NodeObject::network_type_hash = coral::detail::hash<Network>();
     NodeObject::network_interface_builder =
@@ -972,9 +972,14 @@ namespace coral
       auto j = json::parse(payload);
       if (j.is_string())
         j = json::parse(j.get<std::string>());
-      if (!j.contains("workflow") && j.contains("value") &&
-          j.at("value").is_string())
-        j = json::parse(j.at("value").get<std::string>());
+      if (!j.contains("workflow") && j.contains("value"))
+        {
+          const auto &inner = j.at("value");
+          if (inner.is_string())
+            j = json::parse(inner.get<std::string>());
+          else
+            j = inner;
+        }
       t->from_json(j);
       return std::make_shared<entt::meta_any>(t);
     };
@@ -988,7 +993,13 @@ namespace coral
         {
           const auto info = node->get_info();
           if (info.contains("value"))
-            node->parse_string(info.at("value").get<std::string>());
+            {
+              const auto &value = info.at("value");
+              if (value.is_string())
+                node->parse_string(value.get<std::string>());
+              else
+                node->parse_string(value.dump());
+            }
           else
             throw std::runtime_error(
               "Network node has no value to initialize.");

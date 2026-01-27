@@ -178,8 +178,13 @@ namespace coral
     // Check if we have to copy back the original value
     if (initializer.json_serializer.contains("value") &&
         initializer.parse_string)
-      object = initializer.parse_string(
-        initializer.json_serializer["value"].template get<std::string>());
+      {
+        const auto &value = initializer.json_serializer["value"];
+        if (value.is_string())
+          object = initializer.parse_string(value.get<std::string>());
+        else
+          object = initializer.parse_string(value.dump());
+      }
     return object.operator bool();
   }
 
@@ -496,7 +501,25 @@ namespace coral
   {
     auto &j = initializer.json_serializer;
     if (initializer.to_string && object && *object)
-      j["value"] = initializer.to_string(object);
+      {
+        const std::string value_str = initializer.to_string(object);
+        if (initializer.node_type == NodeType::network)
+          {
+            try
+              {
+                j["value"] = json::parse(value_str);
+              }
+            catch (const std::exception &)
+              {
+                // Fallback to string if parsing fails for any reason.
+                j["value"] = value_str;
+              }
+          }
+        else
+          {
+            j["value"] = value_str;
+          }
+      }
     return j;
   }
 
@@ -797,7 +820,14 @@ namespace coral
       (*obj)();
     if (j.contains("value"))
       {
-        obj->parse_string(j.at("value").get<std::string>());
+        const auto &value = j.at("value");
+        if (value.is_string())
+          obj->parse_string(value.get<std::string>());
+        else if (is_network)
+          obj->parse_string(value.dump());
+        else
+          throw std::runtime_error(
+            "Non-network node 'value' must be a string.");
         if (obj->ready())
           {
             // Refresh serialized value to match the parsed object.
