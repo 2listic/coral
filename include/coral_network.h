@@ -64,6 +64,7 @@ namespace coral
     std::map<unsigned int, Connection>    connections;
     tf::Taskflow                          taskflow;
     std::string                           name;
+    size_t                                n_threads;
 
     void
     rebuild_taskflow();

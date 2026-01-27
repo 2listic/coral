@@ -63,7 +63,12 @@ namespace coral
   }
 
   CORAL_IMPL_INLINE
-  Network::Network() = default;
+  Network::Network()
+  {
+      const char *env_th = std::getenv("THREADS");
+      n_threads = env_th ? static_cast<size_t>(std::stoull(env_th)) : std::thread::hardware_concurrency();
+      slog_info("Created network with executor pool size of %zu.", n_threads);
+  }
 
   CORAL_IMPL_INLINE
   Network::Network(const Network &other)
