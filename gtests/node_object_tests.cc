@@ -171,3 +171,142 @@ TEST(NodeObject, LambdaNoInputIntOutput)
   ASSERT_TRUE(out->ready());
   ASSERT_EQ(out->get<int>(), 42);
 }
+
+TEST(NodeObject, OutputBindingRules)
+{
+  NodeObject::register_elementary_type<int>();
+
+  // Elementary nodes expose only self output, which is not bindable.
+  NodeObjectPtr value = make_node(7);
+  ASSERT_EQ(value->n_outputs(), 1u);
+  EXPECT_FALSE(value->is_bindable(0));
+  EXPECT_THROW(value->bind_output(0, make_node(9)), std::runtime_error);
+
+  auto add = [](int a, int b) { return a + b; };
+  NodeObject::register_function(add, {"add", "sum", "a", "b"});
+  NodeObjectPtr fun = make_method_node("add", add);
+  ASSERT_EQ(fun->n_outputs(), 1u);
+  EXPECT_TRUE(fun->is_bindable(0));
+
+  NodeObjectPtr out = make_node(0);
+  fun->bind_output(0, out);
+  EXPECT_EQ(fun->get_output(0), out);
+}
+
+TEST(NodeObject, OutputBindingErrors)
+{
+  NodeObject::register_elementary_type<int>();
+
+  NodeObjectPtr value = make_node(1);
+  EXPECT_THROW(value->is_bindable(1), std::runtime_error);
+  EXPECT_THROW(value->bind_output(1, make_node(2)), std::runtime_error);
+
+  auto add = [](int a, int b) { return a + b; };
+  NodeObject::register_function(add, {"add", "sum", "a", "b"});
+  NodeObjectPtr fun = make_method_node("add", add);
+  ASSERT_EQ(fun->n_outputs(), 1u);
+  EXPECT_THROW(fun->bind_output(0, nullptr), std::runtime_error);
+}
+
+TEST(NodeObject, InputBindingErrors)
+{
+  NodeObject::register_elementary_type<int>();
+
+  auto add = [](int a, int b) { return a + b; };
+  NodeObject::register_function(add, {"add", "sum", "a", "b"});
+  NodeObjectPtr fun = make_method_node("add", add);
+
+  ASSERT_GT(fun->n_inputs(), 0u);
+  EXPECT_THROW(fun->bind_input(fun->n_inputs(), make_node(1)),
+               std::runtime_error);
+  EXPECT_THROW(fun->bind_input(0, nullptr), std::runtime_error);
+}
+
+TEST(NodeObject, InputBindingWorks)
+{
+  NodeObject::register_elementary_type<int>();
+
+  auto consume = [](int a, int b) {
+    (void)a;
+    (void)b;
+  };
+  NodeObject::register_function(consume, {"consume_ints", "a", "b"});
+
+  NodeObjectPtr fun = make_method_node("consume_ints", consume);
+  NodeObjectPtr a   = make_node(10);
+  NodeObjectPtr b   = make_node(20);
+
+  ASSERT_EQ(fun->n_inputs(), 2u);
+  fun->bind_input(0, a);
+  fun->bind_input(1, b);
+
+  EXPECT_EQ(fun->get_input(0), a);
+  EXPECT_EQ(fun->get_input(1), b);
+}
+
+TEST(NodeObject, BindingStateQueries)
+{
+  NodeObject::register_elementary_type<int>();
+
+  auto add = [](int a, int b) { return a + b; };
+  NodeObject::register_function(add, {"add", "sum", "a", "b"});
+
+  NodeObjectPtr fun = make_method_node("add", add);
+  ASSERT_EQ(fun->n_inputs(), 2u);
+  ASSERT_EQ(fun->n_outputs(), 1u);
+
+  EXPECT_FALSE(fun->is_input_bound(0));
+  EXPECT_FALSE(fun->is_input_bound(1));
+  EXPECT_TRUE(fun->has_unbound_inputs());
+  EXPECT_FALSE(fun->is_output_bound(0));
+  EXPECT_TRUE(fun->has_unbound_outputs());
+
+  NodeObjectPtr a   = make_node(1);
+  NodeObjectPtr b   = make_node(2);
+  NodeObjectPtr out = make_node(0);
+
+  fun->bind_input(0, a);
+  fun->bind_input(1, b);
+  fun->bind_output(0, out);
+
+  EXPECT_TRUE(fun->is_input_bound(0));
+  EXPECT_TRUE(fun->is_input_bound(1));
+  EXPECT_FALSE(fun->has_unbound_inputs());
+  EXPECT_TRUE(fun->is_output_bound(0));
+  EXPECT_FALSE(fun->has_unbound_outputs());
+
+  NodeObjectPtr value = make_node(3);
+  EXPECT_TRUE(value->is_output_bound(0));
+  EXPECT_FALSE(value->has_unbound_outputs());
+  EXPECT_THROW(value->is_output_bound(1), std::runtime_error);
+  EXPECT_THROW(value->is_bindable(1), std::runtime_error);
+  EXPECT_THROW(value->get_output(1), std::runtime_error);
+  EXPECT_THROW(value->get_input(0), std::runtime_error);
+  EXPECT_THROW(value->is_input_bound(0), std::runtime_error);
+  EXPECT_THROW(value->is_passthrough_input(0), std::runtime_error);
+}
+
+TEST(NodeObject, PassThroughOutputBindingState)
+{
+  NodeObject::register_elementary_type<int>();
+
+  auto bump = [](int &a) { ++a; };
+  NodeObject::register_function(bump, {"bump", "a"});
+
+  NodeObjectPtr fun = make_method_node("bump", bump);
+  ASSERT_EQ(fun->n_inputs(), 1u);
+  ASSERT_EQ(fun->n_outputs(), 1u);
+
+  EXPECT_TRUE(fun->is_passthrough_input(0));
+  EXPECT_FALSE(fun->is_bindable(0));
+  EXPECT_FALSE(fun->is_output_bound(0));
+  EXPECT_TRUE(fun->has_unbound_outputs());
+
+  NodeObjectPtr value = make_node(1);
+  fun->bind_input(0, value);
+
+  EXPECT_TRUE(fun->is_output_bound(0));
+  EXPECT_FALSE(fun->has_unbound_outputs());
+  EXPECT_THROW(fun->bind_output(0, make_node(2)), std::runtime_error);
+  EXPECT_THROW(fun->is_passthrough_input(1), std::runtime_error);
+}

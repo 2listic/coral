@@ -161,11 +161,11 @@ TEST(Modules, HyperCubeNetworkConnectedRun)
   ASSERT_EQ(refinements->get<unsigned int>(), 4u);
   network.run();
   ASSERT_EQ(refinements->get<unsigned int>(), 4u);
-  auto tri_node = network.output(0);
+  auto tri_node = network.get_output(0);
 
   ASSERT_EQ(refinements->get<unsigned int>(), 4u);
-  ASSERT_EQ(network_node->input(0), refinements);
-  ASSERT_EQ(network_node->input(0)->get<unsigned int>(), 4u);
+  ASSERT_EQ(network_node->get_input(0), refinements);
+  ASSERT_EQ(network_node->get_input(0)->get<unsigned int>(), 4u);
 
   ASSERT_EQ(tri_node->get<dealii::Triangulation<2>>().n_active_cells(), 256);
 }
@@ -211,7 +211,8 @@ TEST(Modules, NetworkNodeArgumentsOrder2)
 
 TEST(Modules, NetworkNodeNoArguments)
 {
-  const std::string path = SOURCE_DIR "/test_files/networknode-noarguments.json";
+  const std::string path =
+    SOURCE_DIR "/test_files/networknode-noarguments.json";
 
   coral::register_all_types();
 
@@ -250,7 +251,8 @@ TEST(Modules, VtkGen1)
 
   // Check that the output file was created and is not empty
   std::ifstream output{output_file};
-  ASSERT_TRUE(output.good()) << "Output file " << output_file << " was not created";
+  ASSERT_TRUE(output.good())
+    << "Output file " << output_file << " was not created";
 
   output.seekg(0, std::ios::end);
   std::streampos file_size = output.tellg();
@@ -282,7 +284,8 @@ TEST(Modules, VtkGen2)
 
   // Check that the output file was created and is not empty
   std::ifstream output{output_file};
-  ASSERT_TRUE(output.good()) << "Output file " << output_file << " was not created";
+  ASSERT_TRUE(output.good())
+    << "Output file " << output_file << " was not created";
 
   output.seekg(0, std::ios::end);
   std::streampos file_size = output.tellg();
@@ -314,7 +317,8 @@ TEST(Modules, VtkGen3)
 
   // Check that the output file was created and is not empty
   std::ifstream output{output_file};
-  ASSERT_TRUE(output.good()) << "Output file " << output_file << " was not created";
+  ASSERT_TRUE(output.good())
+    << "Output file " << output_file << " was not created";
 
   output.seekg(0, std::ios::end);
   std::streampos file_size = output.tellg();
@@ -346,7 +350,8 @@ TEST(Modules, VtkSingle)
 
   // Check that the output file was created and is not empty
   std::ifstream output{output_file};
-  ASSERT_TRUE(output.good()) << "Output file " << output_file << " was not created";
+  ASSERT_TRUE(output.good())
+    << "Output file " << output_file << " was not created";
 
   output.seekg(0, std::ios::end);
   std::streampos file_size = output.tellg();

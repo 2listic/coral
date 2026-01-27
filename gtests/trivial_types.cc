@@ -17,7 +17,7 @@ TEST(TrivialTypes, Int)
   ASSERT_EQ(42, obj.get<type>());
   const auto &j = obj.get_info();
   std::string s = j.at("type");
-  ASSERT_EQ(s, coral::hash<type>());
+  ASSERT_EQ(s, coral::detail::hash<type>());
 }
 
 TEST(TrivialTypes, Double)
@@ -28,7 +28,7 @@ TEST(TrivialTypes, Double)
   ASSERT_EQ(42.0, obj.get<type>());
   const auto &j = obj.get_info();
   std::string s = j.at("type");
-  ASSERT_EQ(s, coral::hash<type>());
+  ASSERT_EQ(s, coral::detail::hash<type>());
 }
 
 TEST(TrivialTypes, String)
@@ -39,7 +39,7 @@ TEST(TrivialTypes, String)
   ASSERT_EQ("Hello world!", obj.get<type>());
   const auto &j = obj.get_info();
   std::string s = j.at("type");
-  ASSERT_EQ(s, coral::hash<type>());
+  ASSERT_EQ(s, coral::detail::hash<type>());
 }
 
 TEST(TrivialTypes, Point)
@@ -52,7 +52,7 @@ TEST(TrivialTypes, Point)
   ASSERT_EQ(type(1.0, 2.0), obj.get<type>());
   const auto &j = obj.get_info();
   std::string s = j.at("type");
-  ASSERT_EQ(s, coral::hash<type>());
+  ASSERT_EQ(s, coral::detail::hash<type>());
 
   // Verify JSON serialization is working correctly
   ASSERT_TRUE(j.contains("value"));
@@ -83,13 +83,13 @@ TEST(TrivialTypes, CopyType)
 TEST(TrivialTypes, RunInitializerInt)
 {
   NodeObject::register_elementary_type<int>();
-  NodeObject obj = 42;
-  ASSERT_EQ(42, obj.get<int>());
+  NodeObjectPtr obj = make_node(42);
+  ASSERT_EQ(42, obj->get<int>());
 
   // Check that the value is set correctly
-  ASSERT_EQ(obj.get_info().at("value"), "42");
+  ASSERT_EQ(obj->get_info().at("value"), "42");
 
   // Check that the initializer does not change the value
-  obj();
-  ASSERT_EQ(42, obj.get<int>());
+  (*obj)();
+  ASSERT_EQ(42, obj->get<int>());
 }

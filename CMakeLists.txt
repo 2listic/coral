@@ -58,6 +58,7 @@ PROJECT(${_main_target})
 DEAL_II_INITIALIZE_CACHED_VARIABLES()
 OPTION(ENABLE_GOOGLE_TESTING 
 "Enable googletest style tests in this application." ON)
+OPTION(CORAL_HEADER_ONLY "Build CORAL as a header-only library." OFF)
 
 # We add one library and one target for each type of deal.II library
 # we found. If you compiled deal.II with both Release and Debug
@@ -78,15 +79,42 @@ FOREACH(_build_type ${_d2_build_types})
 
     STRING(TOUPPER "${_build_type}" _BUILD_TYPE)
 
+    # Setup slog (C library)
+    SET(_slog_lib "slog${_p}")
+    if (NOT TARGET ${_slog_lib})
+      ADD_LIBRARY(${_slog_lib} STATIC source/slog/slog.c)
+      TARGET_INCLUDE_DIRECTORIES(
+        ${_slog_lib} PUBLIC ./include ./include/slog)
+      # libdealii_backend_lib is a shared library; ensure slog can be linked into it.
+      set_target_properties(${_slog_lib} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    endif()
+
     # Setup library
     SET(_lib "${_main_target}_lib${_p}")
     MESSAGE("-- Configuring library ${_lib}")
 
-    ADD_LIBRARY(${_lib} INTERFACE)
-    TARGET_INCLUDE_DIRECTORIES(
-      ${_lib} INTERFACE ./include ${CMAKE_CURRENT_SOURCE_DIR}/entt/single_include)
-    # DEAL_II_SETUP_TARGET(${_lib} ${_BUILD_TYPE})
-    TARGET_COMPILE_DEFINITIONS(${_lib} INTERFACE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+    if (CORAL_HEADER_ONLY)
+      ADD_LIBRARY(${_lib} INTERFACE)
+      TARGET_INCLUDE_DIRECTORIES(
+        ${_lib} INTERFACE ./include ./include/slog ${CMAKE_CURRENT_SOURCE_DIR}/entt/single_include)
+      TARGET_LINK_LIBRARIES(${_lib} INTERFACE ${_slog_lib})
+      TARGET_COMPILE_DEFINITIONS(
+        ${_lib} INTERFACE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+        CORAL_HEADER_ONLY=1
+        JSON_DIAGNOSTICS=1)
+    else()
+      ADD_LIBRARY(${_lib} SHARED
+        source/coral_implementation.cc
+        source/coral_network_implementation.cc)
+      TARGET_INCLUDE_DIRECTORIES(
+        ${_lib} PUBLIC ./include ./include/slog ${CMAKE_CURRENT_SOURCE_DIR}/entt/single_include)
+      TARGET_LINK_LIBRARIES(${_lib} ${_slog_lib})
+      TARGET_COMPILE_DEFINITIONS(
+        ${_lib} PUBLIC SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+        CORAL_HEADER_ONLY=0
+        JSON_DIAGNOSTICS=1)
+      DEAL_II_SETUP_TARGET(${_lib} ${_BUILD_TYPE})
+    endif()
     SET(TEST_LIBRARIES_${_BUILD_TYPE} ${_lib})
 
     # Setup one executable per dimension/per build type

@@ -107,6 +107,8 @@ namespace boost
         return r;
       }
 
+
+
       template <class T>
       std::string
       typeid_name()
@@ -132,12 +134,16 @@ namespace boost
         return r.substr(0, r.find('<'));
       }
 
+
+
       template <class T>
       std::string
       sequence_template_name()
       {
         return detail::class_template_name<T>();
       }
+
+
 
       template <class T>
       std::string
@@ -146,12 +152,16 @@ namespace boost
         return detail::class_template_name<T>();
       }
 
+
+
       template <class T>
       std::string
       map_template_name()
       {
         return detail::class_template_name<T>();
       }
+
+
 
       template <class T>
       std::string
@@ -169,12 +179,16 @@ namespace boost
         return "_Tp";
       }
 
+
+
       template <class T>
       std::string
       class_template_name()
       {
         return "_Tm";
       }
+
+
 
       template <class T>
       std::string
@@ -183,6 +197,8 @@ namespace boost
         return "_Sq";
       }
 
+
+
       template <class T>
       std::string
       set_template_name()
@@ -190,12 +206,16 @@ namespace boost
         return "_St";
       }
 
+
+
       template <class T>
       std::string
       map_template_name()
       {
         return "_Mp";
       }
+
+
 
       template <class T>
       std::string
@@ -568,6 +588,8 @@ namespace boost
         return 0;
       }
 
+
+
       template <class... T>
       std::string
       tn_add_each()
@@ -579,6 +601,8 @@ namespace boost
 
         return st;
       }
+
+
 
       template <class R, class... A>
       std::string
@@ -609,6 +633,8 @@ namespace boost
 
         return r;
       }
+
+
 
       template <class R, class... A>
       struct tn_holder<R(A...)>
@@ -933,6 +959,8 @@ namespace boost
                                                    "");
       }
 
+
+
       template <class T, std::size_t N>
       std::pair<std::string, std::string>
       array_prefix_suffix(tn_identity<T[N]>)
@@ -944,6 +972,8 @@ namespace boost
 
         return r;
       }
+
+
 
       template <class T>
       std::string
@@ -961,6 +991,8 @@ namespace boost
             return r.first + '(' + suffix + ")[]" + r.second;
           }
       }
+
+
 
       template <class T>
       struct tn_holder<T[]>
@@ -1016,6 +1048,8 @@ namespace boost
         return r.first + '(' + suffix + ")" + r.second;
       }
   }
+
+
 
   template <class T, std::size_t N>
   struct tn_holder<T[N]>
