@@ -41,19 +41,19 @@ namespace
 {
   struct SlogCliConfig
   {
-    std::string name = "coral";
-    std::string flags = "all";
+    std::string name        = "coral";
+    std::string flags       = "all";
     int         thread_safe = 1;
 
     // -1 means "leave slog default".
-    int n_to_screen  = -1;
-    int n_to_file    = -1;
-    int n_keep_open  = -1;
-    int n_trace_tid  = -1;
-    int n_use_heap   = -1;
-    int n_indent     = -1;
-    int n_rotate     = -1;
-    int n_flush      = 1;
+    int n_to_screen = -1;
+    int n_to_file   = -1;
+    int n_keep_open = -1;
+    int n_trace_tid = -1;
+    int n_use_heap  = -1;
+    int n_indent    = -1;
+    int n_rotate    = -1;
+    int n_flush     = 1;
 
     std::string file_name;
     std::string file_path;
@@ -68,7 +68,9 @@ namespace
     std::transform(value.begin(),
                    value.end(),
                    value.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                   [](unsigned char c) {
+                     return static_cast<char>(std::tolower(c));
+                   });
     return value;
   }
 
@@ -81,8 +83,8 @@ namespace
     if (lowered == "none" || lowered == "0")
       return 0;
 
-    uint16_t flags = 0;
-    std::string token;
+    uint16_t           flags = 0;
+    std::string        token;
     std::istringstream ss(lowered);
     while (std::getline(ss, token, ','))
       {
@@ -102,11 +104,15 @@ namespace
           token = "warn";
 
         std::string enum_name = token;
-        if (enum_name.rfind("slog_", 0) != 0 && enum_name.rfind("SLOG_", 0) != 0)
+        if (enum_name.rfind("slog_", 0) != 0 &&
+            enum_name.rfind("SLOG_", 0) != 0)
           enum_name = "SLOG_" + to_lower_copy(token);
 
-        // magic_enum expects the exact enumerator name, but supports case-insensitive matching.
-        auto value = magic_enum::enum_cast<slog_flag_t>(enum_name, magic_enum::case_insensitive);
+        // magic_enum expects the exact enumerator name, but supports
+        // case-insensitive matching.
+        auto value =
+          magic_enum::enum_cast<slog_flag_t>(enum_name,
+                                             magic_enum::case_insensitive);
         if (!value)
           throw std::runtime_error("Unknown slog flag: '" + token + "'");
 
@@ -122,7 +128,8 @@ namespace
     auto v = magic_enum::enum_cast<Enum>(value, magic_enum::case_insensitive);
     if (v)
       return *v;
-    throw std::runtime_error(std::string("Unknown ") + what + ": '" + value + "'");
+    throw std::runtime_error(std::string("Unknown ") + what + ": '" + value +
+                             "'");
   }
 
   static slog_date_ctrl_t
@@ -177,7 +184,9 @@ namespace
         slog_destroy();
 
       const uint16_t flags = parse_slog_flags(cli.flags);
-      slog_init(cli.name.c_str(), flags, static_cast<uint8_t>(cli.thread_safe != 0));
+      slog_init(cli.name.c_str(),
+                flags,
+                static_cast<uint8_t>(cli.thread_safe != 0));
 
       slog_config_t cfg;
       slog_config_get(&cfg);
@@ -199,15 +208,24 @@ namespace
 
       if (!cli.separator.empty())
         {
-          std::snprintf(cfg.sSeparator, sizeof(cfg.sSeparator), "%s", cli.separator.c_str());
+          std::snprintf(cfg.sSeparator,
+                        sizeof(cfg.sSeparator),
+                        "%s",
+                        cli.separator.c_str());
         }
       if (!cli.file_name.empty())
         {
-          std::snprintf(cfg.sFileName, sizeof(cfg.sFileName), "%s", cli.file_name.c_str());
+          std::snprintf(cfg.sFileName,
+                        sizeof(cfg.sFileName),
+                        "%s",
+                        cli.file_name.c_str());
         }
       if (!cli.file_path.empty())
         {
-          std::snprintf(cfg.sFilePath, sizeof(cfg.sFilePath), "%s", cli.file_path.c_str());
+          std::snprintf(cfg.sFilePath,
+                        sizeof(cfg.sFilePath),
+                        "%s",
+                        cli.file_path.c_str());
         }
 
       if (!cli.date_control.empty())
@@ -248,14 +266,16 @@ main(int argc, char *argv[])
   SlogCliConfig slog_cli;
 
   auto *slog_group = app.add_option_group("slog", "SLog logging configuration");
-  slog_group->add_option("--slog-name",
-                         slog_cli.name,
-                         "SLog instance name (used for log file naming)")
+  slog_group
+    ->add_option("--slog-name",
+                 slog_cli.name,
+                 "SLog instance name (used for log file naming)")
     ->capture_default_str();
-  slog_group->add_option(
-    "--slog-flags",
-    slog_cli.flags,
-    "Enabled slog flags (comma-separated: notag,note,info,warn,debug,trace,error,fatal,all,none)")
+  slog_group
+    ->add_option(
+      "--slog-flags",
+      slog_cli.flags,
+      "Enabled slog flags (comma-separated: notag,note,info,warn,debug,trace,error,fatal,all,none)")
     ->capture_default_str();
   slog_group
     ->add_option("--slog-thread-safe",
@@ -264,53 +284,64 @@ main(int argc, char *argv[])
     ->check(CLI::Range(0, 1))
     ->capture_default_str();
 
-  slog_group->add_option("--slog-to-screen",
-                         slog_cli.n_to_screen,
-                         "Enable screen logging (0/1, default: keep slog default)")
+  slog_group
+    ->add_option("--slog-to-screen",
+                 slog_cli.n_to_screen,
+                 "Enable screen logging (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-to-file",
-                         slog_cli.n_to_file,
-                         "Enable file logging (0/1, default: keep slog default)")
+  slog_group
+    ->add_option("--slog-to-file",
+                 slog_cli.n_to_file,
+                 "Enable file logging (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-keep-open",
-                         slog_cli.n_keep_open,
-                         "Keep log file handle open (0/1, default: keep slog default)")
+  slog_group
+    ->add_option("--slog-keep-open",
+                 slog_cli.n_keep_open,
+                 "Keep log file handle open (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-rotate",
-                         slog_cli.n_rotate,
-                         "Enable log rotation (0/1, default: keep slog default)")
+  slog_group
+    ->add_option("--slog-rotate",
+                 slog_cli.n_rotate,
+                 "Enable log rotation (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-indent",
-                         slog_cli.n_indent,
-                         "Enable indentation formatting (0/1, default: keep slog default)")
+  slog_group
+    ->add_option(
+      "--slog-indent",
+      slog_cli.n_indent,
+      "Enable indentation formatting (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-flush",
-                         slog_cli.n_flush,
-                         "Flush stdout after screen log (0/1)")
+  slog_group
+    ->add_option("--slog-flush",
+                 slog_cli.n_flush,
+                 "Flush stdout after screen log (0/1)")
     ->check(CLI::Range(0, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-use-heap",
-                         slog_cli.n_use_heap,
-                         "Use heap allocation in slog (0/1, default: keep slog default)")
+  slog_group
+    ->add_option(
+      "--slog-use-heap",
+      slog_cli.n_use_heap,
+      "Use heap allocation in slog (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-trace-tid",
-                         slog_cli.n_trace_tid,
-                         "Trace thread id in output (0/1, default: keep slog default)")
+  slog_group
+    ->add_option("--slog-trace-tid",
+                 slog_cli.n_trace_tid,
+                 "Trace thread id in output (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
 
   slog_group->add_option("--slog-file-name",
                          slog_cli.file_name,
                          "Log file name (when file logging is enabled)");
-  slog_group->add_option("--slog-file-path",
-                         slog_cli.file_path,
-                         "Log file directory path (when file logging is enabled)");
+  slog_group->add_option(
+    "--slog-file-path",
+    slog_cli.file_path,
+    "Log file directory path (when file logging is enabled)");
   slog_group->add_option("--slog-separator",
                          slog_cli.separator,
                          "Separator between header and message");
@@ -413,8 +444,9 @@ main(int argc, char *argv[])
   slog_info("File %s read.", input_json.c_str());
 
 
-  const char *env_th = std::getenv("THREADS");
-  const size_t n_threads = env_th ? static_cast<size_t>(std::stoull(env_th)) : std::thread::hardware_concurrency();
+  const char  *env_th    = std::getenv("THREADS");
+  const size_t n_threads = env_th ? static_cast<size_t>(std::stoull(env_th)) :
+                                    std::thread::hardware_concurrency();
   slog_info("Thread pool size of %zu.", n_threads);
 
   coral::Network network;

@@ -77,11 +77,12 @@ namespace coral
                                  const json &inputs,
                                  const json &outputs)
   {
-    slog_debug("Overriding node interface for '%s': %zu args, %zu inputs, %zu outputs",
-               initializer.type_name.c_str(),
-               arguments.size(),
-               inputs.size(),
-               outputs.size());
+    slog_debug(
+      "Overriding node interface for '%s': %zu args, %zu inputs, %zu outputs",
+      initializer.type_name.c_str(),
+      arguments.size(),
+      inputs.size(),
+      outputs.size());
     initializer.json_serializer["arguments"] = arguments;
     initializer.json_serializer["inputs"]    = inputs;
     initializer.json_serializer["outputs"]   = outputs;
@@ -339,12 +340,13 @@ namespace coral
             const std::string base_suffix =
               base_hash.empty() ? std::string() :
                                   " or its base type (" + base_hash + ")";
-            slog_error("Type mismatch binding input %u for '%s': got '%s', expected '%s'%s",
-                       i,
-                       initializer.type_name.c_str(),
-                       input_hash.c_str(),
-                       expected_hash.c_str(),
-                       base_hash.empty() ? "" : " (or base type)");
+            slog_error(
+              "Type mismatch binding input %u for '%s': got '%s', expected '%s'%s",
+              i,
+              initializer.type_name.c_str(),
+              input_hash.c_str(),
+              expected_hash.c_str(),
+              base_hash.empty() ? "" : " (or base type)");
             throw std::runtime_error("The hash type of input " +
                                      std::to_string(i) + " (" + input_hash +
                                      ") does not match the expected hash (" +
@@ -876,7 +878,8 @@ namespace coral
             if (!has_full_interface)
               throw std::runtime_error(
                 "Network interface override requires arguments, inputs, and outputs.");
-            slog_debug("Applying network interface override (with reordering) for network node");
+            slog_debug(
+              "Applying network interface override (with reordering) for network node");
             auto [reordered_args, reordered_inputs, reordered_outputs] =
               detail::validate_and_reorder_network_interface(j.at("arguments"),
                                                              j.at("inputs"),

@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include <fstream>
 #include <filesystem>
-#include <vector>
+#include <fstream>
 #include <string>
+#include <vector>
 
 #include "coral_network.h"
 #include "register_types.h"
@@ -46,7 +46,7 @@ namespace
   }
 
   void
-  verify_status_files(const coral::Network &network,
+  verify_status_files(const coral::Network        &network,
                       const std::filesystem::path &touch_dir)
   {
     // Get all node names from the network
@@ -60,9 +60,12 @@ namespace
         if (name.empty())
           continue;
 
-        std::filesystem::path running_file   = touch_dir / (std::to_string(node_id) + ".running");
-        std::filesystem::path succeeded_file = touch_dir / (std::to_string(node_id) + ".succeeded");
-        std::filesystem::path failed_file    = touch_dir / (std::to_string(node_id) + ".failed");
+        std::filesystem::path running_file =
+          touch_dir / (std::to_string(node_id) + ".running");
+        std::filesystem::path succeeded_file =
+          touch_dir / (std::to_string(node_id) + ".succeeded");
+        std::filesystem::path failed_file =
+          touch_dir / (std::to_string(node_id) + ".failed");
 
         // Check that .running file exists
         EXPECT_TRUE(std::filesystem::exists(running_file))
@@ -200,7 +203,7 @@ TEST(Modules, HyperCubeNetworkConnectedRun)
 
   coral::Network network;
   network.set_touch_file_base_path(output_dir);
-  auto           net_id = network.add_node(network_node);
+  auto net_id = network.add_node(network_node);
   ASSERT_EQ(refinements->get<unsigned int>(), 4u);
   auto ref_id = network.add_node(refinements);
   ASSERT_EQ(refinements->get<unsigned int>(), 4u);
@@ -249,12 +252,11 @@ TEST_P(NetworkNodeTest, ParseAndRun)
   verify_status_files(network, output_dir);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-  NetworkNodeVariants,
-  NetworkNodeTest,
-  ::testing::Values("networknode-order1",
-                    "networknode-order2",
-                    "networknode-noarguments"));
+INSTANTIATE_TEST_SUITE_P(NetworkNodeVariants,
+                         NetworkNodeTest,
+                         ::testing::Values("networknode-order1",
+                                           "networknode-order2",
+                                           "networknode-noarguments"));
 
 // Parametrized test for VTK generation tests
 class VtkGenerationTest : public ::testing::TestWithParam<std::string>
@@ -266,7 +268,7 @@ TEST_P(VtkGenerationTest, GenerateAndVerify)
 
   ScopedTestOutputDir output_dir("Modules_Vtk_" + filename);
 
-  const std::string path        = SOURCE_DIR "/test_files/" + filename + ".json";
+  const std::string path = SOURCE_DIR "/test_files/" + filename + ".json";
   const std::string output_file = "grid-1.vtk";
 
   coral::register_all_types();

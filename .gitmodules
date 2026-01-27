@@ -1,3 +1,3 @@
 [submodule "entt"]
-	path = entt
+	path = core/entt
 	url = https://github.com/skypjack/entt.git

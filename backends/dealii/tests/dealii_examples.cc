@@ -17,7 +17,7 @@ using coral_test::ScopedTestOutputDir;
 TEST(dealiiExamples, step01)
 {
   ScopedTestOutputDir output_dir("dealiiExamples_step01");
-  
+
   register_non_dimensional_types();
   register_dimensional_types<2, 2>();
 
@@ -27,16 +27,16 @@ TEST(dealiiExamples, step01)
   auto make_grid =
     make_node("GridGenerator::generate_from_name_and_arguments<2>");
 
-  std::string vtk_path = output_dir.path() / "grid-1.vtk";
-  auto tria           = make_node<Triangulation<2>>();
-  auto grid_name      = make_node("hyper_cube");
-  auto grid_arguments = make_node("0: 1: false");
-  auto ref            = make_node("Triangulation<2>::refine_global");
-  auto n_ref          = make_node(2u);
-  auto filename       = make_node(vtk_path);
-  auto out_file       = make_node<std::ofstream>();
-  auto grid_out       = make_node<GridOut>();
-  auto write_vtk      = make_node("GridOut::write_vtk<2>");
+  std::string vtk_path       = output_dir.path() / "grid-1.vtk";
+  auto        tria           = make_node<Triangulation<2>>();
+  auto        grid_name      = make_node("hyper_cube");
+  auto        grid_arguments = make_node("0: 1: false");
+  auto        ref            = make_node("Triangulation<2>::refine_global");
+  auto        n_ref          = make_node(2u);
+  auto        filename       = make_node(vtk_path);
+  auto        out_file       = make_node<std::ofstream>();
+  auto        grid_out       = make_node<GridOut>();
+  auto        write_vtk      = make_node("GridOut::write_vtk<2>");
 
   // connect(make_grid, {{tria, 0}, {grid_name, 0}, {grid_arguments, 0}});
 
@@ -153,16 +153,16 @@ TEST(dealiiExamples, NetworkStep01)
   auto make_grid =
     make_node("GridGenerator::generate_from_name_and_arguments<2>");
 
-  std::string vtk_path = output_dir.path() / "grid-1.vtk";
-  auto tria           = make_node<Triangulation<2>>();
-  auto grid_name      = make_node("hyper_cube");
-  auto grid_arguments = make_node("0: 1: false");
-  auto ref            = make_node("Triangulation<2>::refine_global");
-  auto n_ref          = make_node(2u);
-  auto filename       = make_node(vtk_path);
-  auto out_file       = make_node<std::ofstream>();
-  auto grid_out       = make_node<GridOut>();
-  auto write_vtk      = make_node("GridOut::write_vtk<2>");
+  std::string vtk_path       = output_dir.path() / "grid-1.vtk";
+  auto        tria           = make_node<Triangulation<2>>();
+  auto        grid_name      = make_node("hyper_cube");
+  auto        grid_arguments = make_node("0: 1: false");
+  auto        ref            = make_node("Triangulation<2>::refine_global");
+  auto        n_ref          = make_node(2u);
+  auto        filename       = make_node(vtk_path);
+  auto        out_file       = make_node<std::ofstream>();
+  auto        grid_out       = make_node<GridOut>();
+  auto        write_vtk      = make_node("GridOut::write_vtk<2>");
 
   // Add nodes to the network
   unsigned int tria_id           = network.add_node(tria);

@@ -1,11 +1,11 @@
 #ifndef GTESTS_TEST_UTILS_H
 #define GTESTS_TEST_UTILS_H
 
+#include <gtest/gtest.h>
+
+#include <cstdlib>
 #include <filesystem>
 #include <string>
-#include <cstdlib>
-
-#include <gtest/gtest.h>
 
 namespace coral_test
 {
@@ -54,12 +54,14 @@ namespace coral_test
     /**
      * @brief Construct a test output directory.
      * @param test_name Name of the test (typically "TestSuite_TestName")
-     * @param base_dir Base directory for test outputs (default: "./test_output")
+     * @param base_dir Base directory for test outputs (default:
+     * "./test_output")
      */
     explicit ScopedTestOutputDir(
-      const std::string              &test_name,
-      const std::filesystem::path    &base_dir = "./test_output")
-      : base_dir_(base_dir), dir_path_(base_dir / test_name)
+      const std::string           &test_name,
+      const std::filesystem::path &base_dir = "./test_output")
+      : base_dir_(base_dir)
+      , dir_path_(base_dir / test_name)
     {
       // Creation policy: if exists, clear contents; if not, create
       if (std::filesystem::exists(dir_path_))
@@ -84,8 +86,9 @@ namespace coral_test
     ~ScopedTestOutputDir()
     {
       // Check environment variables for custom behavior
-      bool keep_succeeded = std::getenv("CORAL_KEEP_SUCCEEDED_OUTPUT") != nullptr;
-      bool delete_failed  = std::getenv("CORAL_DELETE_FAILED_OUTPUT") != nullptr;
+      bool keep_succeeded =
+        std::getenv("CORAL_KEEP_SUCCEEDED_OUTPUT") != nullptr;
+      bool delete_failed = std::getenv("CORAL_DELETE_FAILED_OUTPUT") != nullptr;
 
       // Get test result
       const testing::TestInfo *test_info =
@@ -93,7 +96,7 @@ namespace coral_test
 
       if (test_info)
         {
-          bool test_failed = test_info->result()->Failed();
+          bool test_failed   = test_info->result()->Failed();
           bool should_delete = false;
 
           if (test_failed)

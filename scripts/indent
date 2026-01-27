@@ -14,7 +14,7 @@
 ##
 ## ---------------------------------------------------------------------
 
-if test ! -d source ; then
+if test ! -d core/source ; then
   echo "*** This script must be run from the top-level directory of your project."
   exit
 fi
@@ -29,7 +29,9 @@ fi
 # collect a list of files and then spawn a parallel process to
 # indent all of them
 echo "--- Indenting all header and source files"
-SRC_FILES=$(find . -path "./entt" -prune -o -name "*.cc" -print)
-H_FILES=$(find . -path "./entt" -prune -o -name "*.h" -print)
+SRC_FILES=$(find . -path "./core/entt" -prune -o -path "./build*" -prune -o -name "*.cc" -print)
+H_FILES=$(find . -path "./core/entt" -prune -o -path "./build*" -prune -o -name "*.h" -print)
+echo "  ${SRC_FILES}"
+echo "  ${H_FILES}"
 clang-format -i $SRC_FILES
 clang-format -i $H_FILES

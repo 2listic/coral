@@ -1,0 +1,144 @@
+{
+  "author": "coral-editor",
+  "date_time_utc": "2026-01-11T01:37:21.000Z",
+  "version": 1,
+  "workflow": {
+    "edges": {
+      "0": {
+        "source": 0,
+        "source_output": 0,
+        "target": 3,
+        "target_input": 0
+      },
+      "1": {
+        "source": 1,
+        "source_output": 0,
+        "target": 3,
+        "target_input": 1
+      },
+      "2": {
+        "source": 2,
+        "source_output": 0,
+        "target": 3,
+        "target_input": 2
+      },
+      "3": {
+        "source": 3,
+        "source_output": 0,
+        "target": 5,
+        "target_input": 0
+      },
+      "4": {
+        "source": 4,
+        "source_output": 0,
+        "target": 5,
+        "target_input": 1
+      },
+      "5": {
+        "source": 5,
+        "source_output": 0,
+        "target": 9,
+        "target_input": 1
+      },
+      "6": {
+        "source": 8,
+        "source_output": 0,
+        "target": 9,
+        "target_input": 0
+      },
+      "7": {
+        "source": 6,
+        "source_output": 0,
+        "target": 7,
+        "target_input": 0
+      },
+      "8": {
+        "source": 7,
+        "source_output": 0,
+        "target": 9,
+        "target_input": 2
+      }
+    },
+    "nodes": {
+      "0": {
+        "name": "tria",
+        "position": {
+          "x": -82.0,
+          "y": -190.0
+        },
+        "type": "dealii::Triangulation<2, 2>"
+      },
+      "1": {
+        "name": "name",
+        "position": {
+          "x": -58.0,
+          "y": -14.0
+        },
+        "type": "std::string",
+        "value": "hyper_cube"
+      },
+      "2": {
+        "name": "argument",
+        "position": {
+          "x": 123.0,
+          "y": 163.0
+        },
+        "type": "std::string",
+        "value": "0: 1: false"
+      },
+      "3": {
+        "position": {
+          "x": 312.0,
+          "y": -212.0
+        },
+        "type": "GridGenerator::generate_from_name_and_arguments<2>"
+      },
+      "4": {
+        "name": "refinement",
+        "position": {
+          "x": 481.0,
+          "y": 50.0
+        },
+        "type": "unsigned int",
+        "value": "2"
+      },
+      "5": {
+        "position": {
+          "x": 952.0,
+          "y": -43.0
+        },
+        "type": "Triangulation<2>::refine_global"
+      },
+      "6": {
+        "name": "output_file_name",
+        "position": {
+          "x": 82.0,
+          "y": 434.0
+        },
+        "type": "std::string",
+        "value": "grid-1.vtk"
+      },
+      "7": {
+        "position": {
+          "x": 575.0,
+          "y": 571.0
+        },
+        "type": "std::ofstream"
+      },
+      "8": {
+        "position": {
+          "x": 524.0,
+          "y": 258.0
+        },
+        "type": "dealii::GridOut"
+      },
+      "9": {
+        "position": {
+          "x": 920.0,
+          "y": 357.0
+        },
+        "type": "GridOut::write_vtk<2>"
+      }
+    }
+  }
+}
