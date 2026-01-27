@@ -41,9 +41,13 @@ var searchData=
   ['convergence_5ftable_2eh_38',['convergence_table.h',['http://www.dealii.org/developer/doxygen/deal.II/convergence__table_8h.html',1,'']]],
   ['copy_5fdata_2eh_39',['copy_data.h',['http://www.dealii.org/developer/doxygen/deal.II/copy__data_8h.html',1,'']]],
   ['coral_2eh_40',['coral.h',['../coral_8h.html',1,'']]],
-  ['coral_5fnetwork_2eh_41',['coral_network.h',['../coral__network_8h.html',1,'']]],
-  ['coupled_5flaplace_5fproblem_2eh_42',['coupled_laplace_problem.h',['http://www.dealii.org/developer/doxygen/deal.II/coupled__laplace__problem_8h.html',1,'']]],
-  ['coupling_2ecc_43',['coupling.cc',['http://www.dealii.org/developer/doxygen/deal.II/coupling_8cc.html',1,'']]],
-  ['coupling_2eh_44',['coupling.h',['http://www.dealii.org/developer/doxygen/deal.II/coupling_8h.html',1,'']]],
-  ['crystal_5fgrowth_5fphase_5ffield_5fmodel_2eh_45',['Crystal_Growth_Phase_Field_Model.h',['http://www.dealii.org/developer/doxygen/deal.II/Crystal__Growth__Phase__Field__Model_8h.html',1,'']]]
+  ['coral_5fimplementation_2ecc_41',['coral_implementation.cc',['../coral__implementation_8cc.html',1,'']]],
+  ['coral_5fimplementation_2eh_42',['coral_implementation.h',['../coral__implementation_8h.html',1,'']]],
+  ['coral_5fnetwork_2eh_43',['coral_network.h',['../coral__network_8h.html',1,'']]],
+  ['coral_5fnetwork_5fimplementation_2ecc_44',['coral_network_implementation.cc',['../coral__network__implementation_8cc.html',1,'']]],
+  ['coral_5fnetwork_5fimplementation_2eh_45',['coral_network_implementation.h',['../coral__network__implementation_8h.html',1,'']]],
+  ['coupled_5flaplace_5fproblem_2eh_46',['coupled_laplace_problem.h',['http://www.dealii.org/developer/doxygen/deal.II/coupled__laplace__problem_8h.html',1,'']]],
+  ['coupling_2ecc_47',['coupling.cc',['http://www.dealii.org/developer/doxygen/deal.II/coupling_8cc.html',1,'']]],
+  ['coupling_2eh_48',['coupling.h',['http://www.dealii.org/developer/doxygen/deal.II/coupling_8h.html',1,'']]],
+  ['crystal_5fgrowth_5fphase_5ffield_5fmodel_2eh_49',['Crystal_Growth_Phase_Field_Model.h',['http://www.dealii.org/developer/doxygen/deal.II/Crystal__Growth__Phase__Field__Model_8h.html',1,'']]]
 ];

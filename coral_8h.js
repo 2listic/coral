@@ -1,8 +1,5 @@
 var coral_8h =
 [
-    [ "coral::is_callable< Arg, typename >", "structcoral_1_1is__callable.html", null ],
-    [ "coral::NodeObjectInitializer", "structcoral_1_1_node_object_initializer.html", "structcoral_1_1_node_object_initializer" ],
-    [ "coral::NodeInterface", "structcoral_1_1_node_interface.html", "structcoral_1_1_node_interface" ],
     [ "coral::NodeObject", "classcoral_1_1_node_object.html", "classcoral_1_1_node_object" ],
     [ "coral::NodeObjectPtr", "namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f", null ],
     [ "coral::ConnectionType", "namespacecoral.html#a4cb5aa0d2101c9b6b2a30b68f2560c15", [
@@ -26,23 +23,20 @@ var coral_8h =
       [ "coral::NodeType::function", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536ac1c425268e68385d1ab5074c17a94f14", null ],
       [ "coral::NodeType::network", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536a91e02cd2b8621d0c05197f645668c5c4", null ]
     ] ],
-    [ "coral::build_network_interface", "namespacecoral.html#aee4421e063227161f59f9cc10bd2d137", null ],
-    [ "coral::cast_args", "namespacecoral.html#afb50a11423f04de62d5a063d3f9a9c46", null ],
-    [ "coral::cast_args_impl", "namespacecoral.html#aafd46bf6e1eea4080b783d6c466453fc", null ],
-    [ "coral::connect", "namespacecoral.html#a1341a8134c74614a80c197df24374a48", null ],
+    [ "coral::build_network_interface", "namespacecoral.html#abb74a8b0ad0a55b0e8dfd7bd24b6d709", null ],
+    [ "coral::detail::cast_args", "namespacecoral_1_1detail.html#a3b888edddd8d3466b73ebb7af6dcc6c9", null ],
+    [ "coral::connect", "namespacecoral.html#a7431aba48f81b14d34f0e28f7529b96c", null ],
     [ "coral::connection_type", "namespacecoral.html#a34fcc6acd1258dcc47130fc4a220d003", null ],
-    [ "coral::from_json", "namespacecoral.html#a7ae1c85bdb3a645886678978978cea5e", null ],
-    [ "coral::hash", "namespacecoral.html#a5b5133967da138b0e8c23a1dcea2e326", null ],
-    [ "coral::hash", "namespacecoral.html#a5efd0be00828bbae3390806f9188974d", null ],
-    [ "coral::hash", "namespacecoral.html#a2d00125635720af769177d7d8a33b151", null ],
-    [ "coral::hash", "namespacecoral.html#a2551f390114c66cca3c5b7835c2504e6", null ],
+    [ "coral::from_json", "namespacecoral.html#ace8dc0fb3c221977678117a59f3c27c5", null ],
     [ "coral::make_method_node", "namespacecoral.html#a4fbf4f7d71920aa426067eb4c3a219e5", null ],
     [ "coral::make_node", "namespacecoral.html#aed92ee9769d9710df9eb7e1a33fe21df", null ],
     [ "coral::make_node", "namespacecoral.html#a9426e4a0f9f090e55049bfba670e3c16", null ],
-    [ "coral::set_type_alias", "namespacecoral.html#a4b8990311e45ffb96dc2c215f7ab2793", null ],
+    [ "coral::detail::meta_any_ref", "namespacecoral_1_1detail.html#ad9e50ec19e781c76acfd7c2fdd644bf6", null ],
+    [ "coral::detail::meta_any_ref", "namespacecoral_1_1detail.html#a56434191cc3d1c7a0f2f034e8fe37b4e", null ],
     [ "coral::detail::shared_ptr_to_base", "namespacecoral_1_1detail.html#acec65c58404e1b8907a8abca95478393", null ],
     [ "coral::detail::store_identifier", "namespacecoral_1_1detail.html#a5732557bf017773a945f1d12d2386cb5", null ],
-    [ "coral::to_json", "namespacecoral.html#aee87896ce99e23ffe24acea549eddb44", null ],
+    [ "coral::to_json", "namespacecoral.html#af932747a207cdabd991ef26f4e5f0d85", null ],
     [ "coral::detail::type_aliases", "namespacecoral_1_1detail.html#a86e45aeb9dc55749fbb61e3dc96a791b", null ],
+    [ "coral::detail::type_aliases_mutex", "namespacecoral_1_1detail.html#ae6d171ae8fa8cd7cf917ebbf38f95330", null ],
     [ "coral::detail::type_identifier", "namespacecoral_1_1detail.html#a5efcada0f0100cf2787a7d695e579e03", null ]
 ];

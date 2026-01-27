@@ -1,18 +1,19 @@
 var namespacecoral =
 [
     [ "detail", "namespacecoral_1_1detail.html", [
+      [ "cast_args", "namespacecoral_1_1detail.html#a3b888edddd8d3466b73ebb7af6dcc6c9", null ],
+      [ "meta_any_ref", "namespacecoral_1_1detail.html#ad9e50ec19e781c76acfd7c2fdd644bf6", null ],
+      [ "meta_any_ref", "namespacecoral_1_1detail.html#a56434191cc3d1c7a0f2f034e8fe37b4e", null ],
       [ "shared_ptr_to_base", "namespacecoral_1_1detail.html#acec65c58404e1b8907a8abca95478393", null ],
       [ "store_identifier", "namespacecoral_1_1detail.html#a5732557bf017773a945f1d12d2386cb5", null ],
       [ "type_aliases", "namespacecoral_1_1detail.html#a86e45aeb9dc55749fbb61e3dc96a791b", null ],
-      [ "type_identifier", "namespacecoral_1_1detail.html#a5efcada0f0100cf2787a7d695e579e03", null ]
+      [ "type_aliases_mutex", "namespacecoral_1_1detail.html#ae6d171ae8fa8cd7cf917ebbf38f95330", null ],
+      [ "type_identifier", "namespacecoral_1_1detail.html#a5efcada0f0100cf2787a7d695e579e03", null ],
+      [ "validate_and_reorder_network_interface", "namespacecoral_1_1detail.html#aec0ece85369f1d212233bf4ebb7751fe", null ]
     ] ],
     [ "Connection", "classcoral_1_1_connection.html", "classcoral_1_1_connection" ],
-    [ "is_callable", "structcoral_1_1is__callable.html", null ],
     [ "Network", "classcoral_1_1_network.html", "classcoral_1_1_network" ],
-    [ "NodeInterface", "structcoral_1_1_node_interface.html", "structcoral_1_1_node_interface" ],
     [ "NodeObject", "classcoral_1_1_node_object.html", "classcoral_1_1_node_object" ],
-    [ "NodeObjectInitializer", "structcoral_1_1_node_object_initializer.html", "structcoral_1_1_node_object_initializer" ],
-    [ "TaskObserver", "classcoral_1_1_task_observer.html", "classcoral_1_1_task_observer" ],
     [ "NodeObjectPtr", "namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f", null ],
     [ "ConnectionType", "namespacecoral.html#a4cb5aa0d2101c9b6b2a30b68f2560c15", [
       [ "none", "namespacecoral.html#a4cb5aa0d2101c9b6b2a30b68f2560c15a334c4a4c42fdb79d7ebc3e73b517e6f8", null ],
@@ -35,26 +36,19 @@ var namespacecoral =
       [ "function", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536ac1c425268e68385d1ab5074c17a94f14", null ],
       [ "network", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536a91e02cd2b8621d0c05197f645668c5c4", null ]
     ] ],
-    [ "build_network_interface", "namespacecoral.html#aee4421e063227161f59f9cc10bd2d137", null ],
-    [ "cast_args", "namespacecoral.html#afb50a11423f04de62d5a063d3f9a9c46", null ],
-    [ "cast_args_impl", "namespacecoral.html#aafd46bf6e1eea4080b783d6c466453fc", null ],
-    [ "connect", "namespacecoral.html#a1341a8134c74614a80c197df24374a48", null ],
+    [ "build_network_interface", "namespacecoral.html#abb74a8b0ad0a55b0e8dfd7bd24b6d709", null ],
+    [ "connect", "namespacecoral.html#a7431aba48f81b14d34f0e28f7529b96c", null ],
     [ "connection_type", "namespacecoral.html#a34fcc6acd1258dcc47130fc4a220d003", null ],
-    [ "from_json", "namespacecoral.html#add6efbaa0aa6ba227518ce0a67978e88", null ],
-    [ "from_json", "namespacecoral.html#aa341cd0e2301f166dbc542fdf0e671dc", null ],
-    [ "from_json", "namespacecoral.html#a7ae1c85bdb3a645886678978978cea5e", null ],
-    [ "hash", "namespacecoral.html#a5b5133967da138b0e8c23a1dcea2e326", null ],
-    [ "hash", "namespacecoral.html#a5efd0be00828bbae3390806f9188974d", null ],
-    [ "hash", "namespacecoral.html#a2d00125635720af769177d7d8a33b151", null ],
-    [ "hash", "namespacecoral.html#a2551f390114c66cca3c5b7835c2504e6", null ],
+    [ "from_json", "namespacecoral.html#a2160aa07e86a7d765fba0f7cfe62aecc", null ],
+    [ "from_json", "namespacecoral.html#a7ccbf4973b3b7ed050baecededeeebf8", null ],
+    [ "from_json", "namespacecoral.html#ace8dc0fb3c221977678117a59f3c27c5", null ],
     [ "make_method_node", "namespacecoral.html#a4fbf4f7d71920aa426067eb4c3a219e5", null ],
     [ "make_node", "namespacecoral.html#aed92ee9769d9710df9eb7e1a33fe21df", null ],
     [ "make_node", "namespacecoral.html#a9426e4a0f9f090e55049bfba670e3c16", null ],
     [ "register_all_types", "namespacecoral.html#a8a727a04a0a181eb30a962949718b629", null ],
     [ "register_dimensional_types", "namespacecoral.html#aa364f2f2bd0df69cc7c99db3df22543f", null ],
     [ "register_non_dimensional_types", "namespacecoral.html#ac0a93248e4f3c01e12240a573debbd1e", null ],
-    [ "set_type_alias", "namespacecoral.html#a4b8990311e45ffb96dc2c215f7ab2793", null ],
-    [ "to_json", "namespacecoral.html#a62a918f0df1860a0ffe66808ceb79f36", null ],
-    [ "to_json", "namespacecoral.html#abb1b2aa90b4791b020ce6e2b7f7d8d9e", null ],
-    [ "to_json", "namespacecoral.html#aee87896ce99e23ffe24acea549eddb44", null ]
+    [ "to_json", "namespacecoral.html#ab4613ef12841001f1bc4b113512d37c3", null ],
+    [ "to_json", "namespacecoral.html#a1858779a708edb9f913e2b9d5a5f0a2b", null ],
+    [ "to_json", "namespacecoral.html#af932747a207cdabd991ef26f4e5f0d85", null ]
 ];

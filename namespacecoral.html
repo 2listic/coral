@@ -127,22 +127,13 @@ Namespaces</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcoral_1_1_connection.html">Connection</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcoral_1_1is__callable.html">is_callable</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><b>is_callable&lt; Arg, std::void_t&lt; decltype(std::function{std::declval&lt; Arg &gt;()})&gt; &gt;</b></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Directed edge between two nodes and their ports.  <a href="classcoral_1_1_connection.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcoral_1_1_network.html">Network</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcoral_1_1_node_interface.html">NodeInterface</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Graph of nodes and connections with Taskflow execution.  <a href="classcoral_1_1_network.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcoral_1_1_node_object.html">NodeObject</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class that represents an object of any type.  <a href="classcoral_1_1_node_object.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structcoral_1_1_node_object_initializer.html">NodeObjectInitializer</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store all std::functions that need to be used to build a <a class="el" href="classcoral_1_1_node_object.html" title="A class that represents an object of any type.">NodeObject</a>, and the corresponding json serialization.  <a href="structcoral_1_1_node_object_initializer.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcoral_1_1_task_observer.html">TaskObserver</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
@@ -185,26 +176,6 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:afb50a11423f04de62d5a063d3f9a9c46" id="r_afb50a11423f04de62d5a063d3f9a9c46"><td class="memTemplParams" colspan="2">template&lt;typename... Args&gt; </td></tr>
-<tr class="memitem:afb50a11423f04de62d5a063d3f9a9c46"><td class="memTemplItemLeft" align="right" valign="top">std::tuple&lt; std::shared_ptr&lt; std::remove_const_t&lt; std::remove_reference_t&lt; Args &gt; &gt; &gt;... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#afb50a11423f04de62d5a063d3f9a9c46">cast_args</a> (const std::vector&lt; std::shared_ptr&lt; <a class="el" href="classcoral_1_1_node_object.html">NodeObject</a> &gt; &gt; &amp;args)</td></tr>
-<tr class="memdesc:afb50a11423f04de62d5a063d3f9a9c46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cast a vector of <a class="el" href="classcoral_1_1_node_object.html" title="A class that represents an object of any type.">NodeObject</a> arguments to a tuple of shared pointers.  <br /></td></tr>
-<tr class="separator:afb50a11423f04de62d5a063d3f9a9c46"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2d00125635720af769177d7d8a33b151" id="r_a2d00125635720af769177d7d8a33b151"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:a2d00125635720af769177d7d8a33b151"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a2d00125635720af769177d7d8a33b151">hash</a> (const std::string &amp;suffix=&quot;&quot;) -&gt; std::string</td></tr>
-<tr class="memdesc:a2d00125635720af769177d7d8a33b151"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provide a string that can be used as a hash for a type.  <br /></td></tr>
-<tr class="separator:a2d00125635720af769177d7d8a33b151"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b5133967da138b0e8c23a1dcea2e326" id="r_a5b5133967da138b0e8c23a1dcea2e326"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5b5133967da138b0e8c23a1dcea2e326">hash</a> (const entt::meta_any &amp;obj, const std::string &amp;suffix=&quot;&quot;) -&gt; std::string</td></tr>
-<tr class="separator:a5b5133967da138b0e8c23a1dcea2e326"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b8990311e45ffb96dc2c215f7ab2793" id="r_a4b8990311e45ffb96dc2c215f7ab2793"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:a4b8990311e45ffb96dc2c215f7ab2793"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a4b8990311e45ffb96dc2c215f7ab2793">set_type_alias</a> (const std::string &amp;alias)</td></tr>
-<tr class="memdesc:a4b8990311e45ffb96dc2c215f7ab2793"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allow callers to override the canonical name used for a given type.  <br /></td></tr>
-<tr class="separator:a4b8990311e45ffb96dc2c215f7ab2793"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5efd0be00828bbae3390806f9188974d" id="r_a5efd0be00828bbae3390806f9188974d"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5efd0be00828bbae3390806f9188974d">hash</a> (const std::shared_ptr&lt; entt::meta_any &gt; &amp;obj, const std::string &amp;suffix=&quot;&quot;) -&gt; std::string</td></tr>
-<tr class="separator:a5efd0be00828bbae3390806f9188974d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2551f390114c66cca3c5b7835c2504e6" id="r_a2551f390114c66cca3c5b7835c2504e6"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:a2551f390114c66cca3c5b7835c2504e6"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a2551f390114c66cca3c5b7835c2504e6">hash</a> (const T &amp;&amp;, const std::string &amp;suffix=&quot;&quot;) -&gt; std::string</td></tr>
-<tr class="memdesc:a2551f390114c66cca3c5b7835c2504e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provide a string that can be used as a hash for a type.  <br /></td></tr>
-<tr class="separator:a2551f390114c66cca3c5b7835c2504e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9426e4a0f9f090e55049bfba670e3c16" id="r_a9426e4a0f9f090e55049bfba670e3c16"><td class="memTemplParams" colspan="2">template&lt;typename... Args&gt; </td></tr>
 <tr class="memitem:a9426e4a0f9f090e55049bfba670e3c16"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a9426e4a0f9f090e55049bfba670e3c16">make_node</a> (Args &amp;&amp;...args) -&gt; <a class="el" href="#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a></td></tr>
 <tr class="memdesc:a9426e4a0f9f090e55049bfba670e3c16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a pointer to a <a class="el" href="classcoral_1_1_node_object.html" title="A class that represents an object of any type.">NodeObject</a> from the arguments of the constructor.  <br /></td></tr>
@@ -221,29 +192,26 @@ Functions</h2></td></tr>
 <tr class="memitem:a34fcc6acd1258dcc47130fc4a220d003"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a34fcc6acd1258dcc47130fc4a220d003">connection_type</a> () -&gt; <a class="el" href="#a4cb5aa0d2101c9b6b2a30b68f2560c15">ConnectionType</a></td></tr>
 <tr class="memdesc:a34fcc6acd1258dcc47130fc4a220d003"><td class="mdescLeft">&#160;</td><td class="mdescRight">Distinguish input arguments of a function from being input or input/output arguments.  <br /></td></tr>
 <tr class="separator:a34fcc6acd1258dcc47130fc4a220d003"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aee4421e063227161f59f9cc10bd2d137" id="r_aee4421e063227161f59f9cc10bd2d137"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aee4421e063227161f59f9cc10bd2d137">build_network_interface</a> (const std::shared_ptr&lt; <a class="el" href="classcoral_1_1_network.html">Network</a> &gt; &amp;net) -&gt; <a class="el" href="structcoral_1_1_node_interface.html">NodeInterface</a></td></tr>
-<tr class="separator:aee4421e063227161f59f9cc10bd2d137"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aee87896ce99e23ffe24acea549eddb44" id="r_aee87896ce99e23ffe24acea549eddb44"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aee87896ce99e23ffe24acea549eddb44">to_json</a> (<a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, const <a class="el" href="#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;obj)</td></tr>
-<tr class="memdesc:aee87896ce99e23ffe24acea549eddb44"><td class="mdescLeft">&#160;</td><td class="mdescRight">json serialization of a Nodeobject-&gt;  <br /></td></tr>
-<tr class="separator:aee87896ce99e23ffe24acea549eddb44"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ae1c85bdb3a645886678978978cea5e" id="r_a7ae1c85bdb3a645886678978978cea5e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7ae1c85bdb3a645886678978978cea5e">from_json</a> (const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, <a class="el" href="#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;obj)</td></tr>
-<tr class="memdesc:a7ae1c85bdb3a645886678978978cea5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">json deserialization of a Nodeobject-&gt;  <br /></td></tr>
-<tr class="separator:a7ae1c85bdb3a645886678978978cea5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aafd46bf6e1eea4080b783d6c466453fc" id="r_aafd46bf6e1eea4080b783d6c466453fc"><td class="memTemplParams" colspan="2">template&lt;typename... Args, std::size_t... Is&gt; </td></tr>
-<tr class="memitem:aafd46bf6e1eea4080b783d6c466453fc"><td class="memTemplItemLeft" align="right" valign="top">std::tuple&lt; std::shared_ptr&lt; std::remove_const_t&lt; std::remove_reference_t&lt; Args &gt; &gt; &gt;... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#aafd46bf6e1eea4080b783d6c466453fc">cast_args_impl</a> (const std::vector&lt; std::shared_ptr&lt; <a class="el" href="classcoral_1_1_node_object.html">NodeObject</a> &gt; &gt; &amp;args, std::index_sequence&lt; Is... &gt;)</td></tr>
-<tr class="memdesc:aafd46bf6e1eea4080b783d6c466453fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implementation of cast_args function.  <br /></td></tr>
-<tr class="separator:aafd46bf6e1eea4080b783d6c466453fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1341a8134c74614a80c197df24374a48" id="r_a1341a8134c74614a80c197df24374a48"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1341a8134c74614a80c197df24374a48">connect</a> (<a class="el" href="#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;node, const std::vector&lt; std::pair&lt; <a class="el" href="#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a>, unsigned int &gt; &gt; &amp;inputs={})</td></tr>
-<tr class="memdesc:a1341a8134c74614a80c197df24374a48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Connect the inputs of a node.  <br /></td></tr>
-<tr class="separator:a1341a8134c74614a80c197df24374a48"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa341cd0e2301f166dbc542fdf0e671dc" id="r_aa341cd0e2301f166dbc542fdf0e671dc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa341cd0e2301f166dbc542fdf0e671dc">from_json</a> (const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, <a class="el" href="classcoral_1_1_network.html">Network</a> &amp;net)</td></tr>
-<tr class="separator:aa341cd0e2301f166dbc542fdf0e671dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb1b2aa90b4791b020ce6e2b7f7d8d9e" id="r_abb1b2aa90b4791b020ce6e2b7f7d8d9e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abb1b2aa90b4791b020ce6e2b7f7d8d9e">to_json</a> (<a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, const <a class="el" href="classcoral_1_1_network.html">Network</a> &amp;net)</td></tr>
-<tr class="separator:abb1b2aa90b4791b020ce6e2b7f7d8d9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a62a918f0df1860a0ffe66808ceb79f36" id="r_a62a918f0df1860a0ffe66808ceb79f36"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a62a918f0df1860a0ffe66808ceb79f36">to_json</a> (<a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, const <a class="el" href="classcoral_1_1_connection.html">Connection</a> &amp;conn)</td></tr>
-<tr class="separator:a62a918f0df1860a0ffe66808ceb79f36"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:add6efbaa0aa6ba227518ce0a67978e88" id="r_add6efbaa0aa6ba227518ce0a67978e88"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#add6efbaa0aa6ba227518ce0a67978e88">from_json</a> (const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, <a class="el" href="classcoral_1_1_connection.html">Connection</a> &amp;conn)</td></tr>
-<tr class="separator:add6efbaa0aa6ba227518ce0a67978e88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb74a8b0ad0a55b0e8dfd7bd24b6d709" id="r_abb74a8b0ad0a55b0e8dfd7bd24b6d709"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abb74a8b0ad0a55b0e8dfd7bd24b6d709">build_network_interface</a> (const std::shared_ptr&lt; <a class="el" href="classcoral_1_1_network.html">Network</a> &gt; &amp;net) -&gt; detail::NodeInterface</td></tr>
+<tr class="memdesc:abb74a8b0ad0a55b0e8dfd7bd24b6d709"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store all std::functions that need to be used to build a <a class="el" href="classcoral_1_1_node_object.html" title="A class that represents an object of any type.">NodeObject</a>, and the corresponding json serialization.  <br /></td></tr>
+<tr class="separator:abb74a8b0ad0a55b0e8dfd7bd24b6d709"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af932747a207cdabd991ef26f4e5f0d85" id="r_af932747a207cdabd991ef26f4e5f0d85"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af932747a207cdabd991ef26f4e5f0d85">to_json</a> (<a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, const <a class="el" href="#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;obj)</td></tr>
+<tr class="memdesc:af932747a207cdabd991ef26f4e5f0d85"><td class="mdescLeft">&#160;</td><td class="mdescRight">json serialization of a Nodeobject-&gt;  <br /></td></tr>
+<tr class="separator:af932747a207cdabd991ef26f4e5f0d85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace8dc0fb3c221977678117a59f3c27c5" id="r_ace8dc0fb3c221977678117a59f3c27c5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ace8dc0fb3c221977678117a59f3c27c5">from_json</a> (const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, <a class="el" href="#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;obj)</td></tr>
+<tr class="memdesc:ace8dc0fb3c221977678117a59f3c27c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">json deserialization of a Nodeobject-&gt;  <br /></td></tr>
+<tr class="separator:ace8dc0fb3c221977678117a59f3c27c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7431aba48f81b14d34f0e28f7529b96c" id="r_a7431aba48f81b14d34f0e28f7529b96c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7431aba48f81b14d34f0e28f7529b96c">connect</a> (<a class="el" href="#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;node, const std::vector&lt; std::pair&lt; <a class="el" href="#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a>, unsigned int &gt; &gt; &amp;inputs={})</td></tr>
+<tr class="memdesc:a7431aba48f81b14d34f0e28f7529b96c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Connect the inputs of a node.  <br /></td></tr>
+<tr class="separator:a7431aba48f81b14d34f0e28f7529b96c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ccbf4973b3b7ed050baecededeeebf8" id="r_a7ccbf4973b3b7ed050baecededeeebf8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7ccbf4973b3b7ed050baecededeeebf8">from_json</a> (const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, <a class="el" href="classcoral_1_1_network.html">Network</a> &amp;net)</td></tr>
+<tr class="separator:a7ccbf4973b3b7ed050baecededeeebf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1858779a708edb9f913e2b9d5a5f0a2b" id="r_a1858779a708edb9f913e2b9d5a5f0a2b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1858779a708edb9f913e2b9d5a5f0a2b">to_json</a> (<a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, const <a class="el" href="classcoral_1_1_network.html">Network</a> &amp;net)</td></tr>
+<tr class="separator:a1858779a708edb9f913e2b9d5a5f0a2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4613ef12841001f1bc4b113512d37c3" id="r_ab4613ef12841001f1bc4b113512d37c3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab4613ef12841001f1bc4b113512d37c3">to_json</a> (<a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, const <a class="el" href="classcoral_1_1_connection.html">Connection</a> &amp;conn)</td></tr>
+<tr class="separator:ab4613ef12841001f1bc4b113512d37c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2160aa07e86a7d765fba0f7cfe62aecc" id="r_a2160aa07e86a7d765fba0f7cfe62aecc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2160aa07e86a7d765fba0f7cfe62aecc">from_json</a> (const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;j, <a class="el" href="classcoral_1_1_connection.html">Connection</a> &amp;conn)</td></tr>
+<tr class="separator:a2160aa07e86a7d765fba0f7cfe62aecc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0a93248e4f3c01e12240a573debbd1e" id="r_ac0a93248e4f3c01e12240a573debbd1e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac0a93248e4f3c01e12240a573debbd1e">register_non_dimensional_types</a> ()</td></tr>
 <tr class="separator:ac0a93248e4f3c01e12240a573debbd1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa364f2f2bd0df69cc7c99db3df22543f" id="r_aa364f2f2bd0df69cc7c99db3df22543f"><td class="memTemplParams" colspan="2">template&lt;int dim, int spacedim&gt; </td></tr>
@@ -304,7 +272,7 @@ Functions</h2></td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00225">225</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00278">278</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
 </div>
 </div>
@@ -332,7 +300,8 @@ Functions</h2></td></tr>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a28b9a276ed3a04787d899304a5e49536a334c4a4c42fdb79d7ebc3e73b517e6f8" name="a28b9a276ed3a04787d899304a5e49536a334c4a4c42fdb79d7ebc3e73b517e6f8"></a>none&#160;</td><td class="fielddoc"><p>The node has not been initialized with an object. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a28b9a276ed3a04787d899304a5e49536ace28071e1a0424ba1b7956dd3853c7fb" name="a28b9a276ed3a04787d899304a5e49536ace28071e1a0424ba1b7956dd3853c7fb"></a>abstract&#160;</td><td class="fielddoc"><p>This is an abstract type. It will never be instantiated. </p>
+<tr><td class="fieldname"><a id="a28b9a276ed3a04787d899304a5e49536ace28071e1a0424ba1b7956dd3853c7fb" name="a28b9a276ed3a04787d899304a5e49536ace28071e1a0424ba1b7956dd3853c7fb"></a>abstract&#160;</td><td class="fielddoc"><p>This is an abstract type. </p>
+<p>It will never be instantiated </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a28b9a276ed3a04787d899304a5e49536ad440b687957b4692b38a1c308a8fe62a" name="a28b9a276ed3a04787d899304a5e49536ad440b687957b4692b38a1c308a8fe62a"></a>elementary_constructor&#160;</td><td class="fielddoc"><p>Trivially copyable and constructible types. </p>
 </td></tr>
@@ -352,127 +321,46 @@ Functions</h2></td></tr>
 </td></tr>
 <tr><td class="fieldname"><a id="a28b9a276ed3a04787d899304a5e49536ac1c425268e68385d1ab5074c17a94f14" name="a28b9a276ed3a04787d899304a5e49536ac1c425268e68385d1ab5074c17a94f14"></a>function&#160;</td><td class="fielddoc"><p>non void function </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a28b9a276ed3a04787d899304a5e49536a91e02cd2b8621d0c05197f645668c5c4" name="a28b9a276ed3a04787d899304a5e49536a91e02cd2b8621d0c05197f645668c5c4"></a>network&#160;</td><td class="fielddoc"><p><a class="el" href="classcoral_1_1_network.html">Network</a> node. </p>
+<tr><td class="fieldname"><a id="a28b9a276ed3a04787d899304a5e49536a91e02cd2b8621d0c05197f645668c5c4" name="a28b9a276ed3a04787d899304a5e49536a91e02cd2b8621d0c05197f645668c5c4"></a>network&#160;</td><td class="fielddoc"><p><a class="el" href="classcoral_1_1_network.html" title="Graph of nodes and connections with Taskflow execution.">Network</a> node. </p>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00242">242</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00310">310</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="aee4421e063227161f59f9cc10bd2d137" name="aee4421e063227161f59f9cc10bd2d137"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aee4421e063227161f59f9cc10bd2d137">&#9670;&#160;</a></span>build_network_interface()</h2>
+<a id="abb74a8b0ad0a55b0e8dfd7bd24b6d709" name="abb74a8b0ad0a55b0e8dfd7bd24b6d709"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb74a8b0ad0a55b0e8dfd7bd24b6d709">&#9670;&#160;</a></span>build_network_interface()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">auto coral::build_network_interface </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::build_network_interface </td>
           <td>(</td>
           <td class="paramtype">const std::shared_ptr&lt; <a class="el" href="classcoral_1_1_network.html">Network</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>net</em></span></td><td>)</td>
-          <td> -&gt; <a class="el" href="structcoral_1_1_node_interface.html">NodeInterface</a></td>
+          <td> -&gt; detail::NodeInterface</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l01188">1188</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p>Store all std::functions that need to be used to build a <a class="el" href="classcoral_1_1_node_object.html" title="A class that represents an object of any type.">NodeObject</a>, and the corresponding json serialization. </p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00964">coral::Network::register_node()</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l01235">1235</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="classcoral_1_1_network.html#a8bbf5fb835d8ee0cbe116a9275cbf51d">coral::Network::operator=()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00983">coral::Network::register_node()</a>.</p>
 
 </div>
 </div>
-<a id="afb50a11423f04de62d5a063d3f9a9c46" name="afb50a11423f04de62d5a063d3f9a9c46"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb50a11423f04de62d5a063d3f9a9c46">&#9670;&#160;</a></span>cast_args()</h2>
+<a id="a7431aba48f81b14d34f0e28f7529b96c" name="a7431aba48f81b14d34f0e28f7529b96c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7431aba48f81b14d34f0e28f7529b96c">&#9670;&#160;</a></span>connect()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;typename... Args&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::tuple&lt; std::shared_ptr&lt; std::remove_const_t&lt; std::remove_reference_t&lt; Args &gt; &gt; &gt;... &gt; coral::cast_args </td>
-          <td>(</td>
-          <td class="paramtype">const std::vector&lt; std::shared_ptr&lt; <a class="el" href="classcoral_1_1_node_object.html">NodeObject</a> &gt; &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>args</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Cast a vector of <a class="el" href="classcoral_1_1_node_object.html" title="A class that represents an object of any type.">NodeObject</a> arguments to a tuple of shared pointers. </p>
-
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l02060">2060</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral_8h_source.html#l02038">cast_args_impl()</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01133">coral::NodeObject::register_function()</a>, <a class="el" href="coral_8h_source.html#l01041">coral::NodeObject::register_method()</a>, <a class="el" href="coral_8h_source.html#l00943">coral::NodeObject::register_method()</a>, and <a class="el" href="coral_8h_source.html#l00836">coral::NodeObject::register_type()</a>.</p>
-
-</div>
-</div>
-<a id="aafd46bf6e1eea4080b783d6c466453fc" name="aafd46bf6e1eea4080b783d6c466453fc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aafd46bf6e1eea4080b783d6c466453fc">&#9670;&#160;</a></span>cast_args_impl()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename... Args, std::size_t... Is&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::tuple&lt; std::shared_ptr&lt; std::remove_const_t&lt; std::remove_reference_t&lt; Args &gt; &gt; &gt;... &gt; coral::cast_args_impl </td>
-          <td>(</td>
-          <td class="paramtype">const std::vector&lt; std::shared_ptr&lt; <a class="el" href="classcoral_1_1_node_object.html">NodeObject</a> &gt; &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>args</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::index_sequence&lt; Is... &gt;</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Implementation of cast_args function. </p>
-
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l02038">2038</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l02060">cast_args()</a>.</p>
-
-</div>
-</div>
-<a id="a1341a8134c74614a80c197df24374a48" name="a1341a8134c74614a80c197df24374a48"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1341a8134c74614a80c197df24374a48">&#9670;&#160;</a></span>connect()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void coral::connect </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::connect </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>node</em></span>, </td>
         </tr>
@@ -482,11 +370,6 @@ template&lt;typename... Args, std::size_t... Is&gt; </div>
           <td class="paramtype">const std::vector&lt; std::pair&lt; <a class="el" href="#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a>, unsigned int &gt; &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>inputs</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Connect the inputs of a node. </p>
@@ -494,12 +377,14 @@ template&lt;typename... Args, std::size_t... Is&gt; </div>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">node</td><td>The node to connect </td></tr>
-    <tr><td class="paramname">inputs</td><td>The pair input/output connector of the node </td></tr>
+    <tr><td class="paramname">inputs</td><td>The pair input/output connector of the node</td></tr>
   </table>
   </dd>
 </dl>
-
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l02076">2076</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<div class="fragment"><div class="line"><a class="code hl_function" href="#a7431aba48f81b14d34f0e28f7529b96c">coral::connect</a>(node, {{upstream, 0}});</div>
+<div class="ttc" id="anamespacecoral_html_a7431aba48f81b14d34f0e28f7529b96c"><div class="ttname"><a href="#a7431aba48f81b14d34f0e28f7529b96c">coral::connect</a></div><div class="ttdeci">void connect(NodeObjectPtr &amp;node, const std::vector&lt; std::pair&lt; NodeObjectPtr, unsigned int &gt; &gt; &amp;inputs={})</div><div class="ttdoc">Connect the inputs of a node.</div><div class="ttdef"><b>Definition</b> <a href="coral__implementation_8h_source.html#l00902">coral_implementation.h:902</a></div></div>
+</div><!-- fragment --> 
+<p class="definition">Definition at line <a class="el" href="coral__implementation_8h_source.html#l00902">902</a> of file <a class="el" href="coral__implementation_8h_source.html">coral_implementation.h</a>.</p>
 
 </div>
 </div>
@@ -531,25 +416,22 @@ template&lt;typename T&gt; </div>
 
 <p>Distinguish input arguments of a function from being input or input/output arguments. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00276">276</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00460">460</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00230">input</a>, and <a class="el" href="coral_8h_source.html#l00234">pass_through</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00289">input</a>, and <a class="el" href="coral_8h_source.html#l00299">pass_through</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l00626">coral::NodeObject::register_json_header()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01423">coral::NodeObject::register_json_header()</a>.</p>
 
 </div>
 </div>
-<a id="add6efbaa0aa6ba227518ce0a67978e88" name="add6efbaa0aa6ba227518ce0a67978e88"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#add6efbaa0aa6ba227518ce0a67978e88">&#9670;&#160;</a></span>from_json() <span class="overload">[1/3]</span></h2>
+<a id="a2160aa07e86a7d765fba0f7cfe62aecc" name="a2160aa07e86a7d765fba0f7cfe62aecc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2160aa07e86a7d765fba0f7cfe62aecc">&#9670;&#160;</a></span>from_json() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::from_json </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::from_json </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>j</em></span>, </td>
         </tr>
@@ -559,30 +441,22 @@ template&lt;typename T&gt; </div>
           <td class="paramtype"><a class="el" href="classcoral_1_1_connection.html">Connection</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>conn</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00958">958</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00975">975</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00060">coral::Connection::from_json()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00039">coral::Connection::from_json()</a>.</p>
 
 </div>
 </div>
-<a id="aa341cd0e2301f166dbc542fdf0e671dc" name="aa341cd0e2301f166dbc542fdf0e671dc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa341cd0e2301f166dbc542fdf0e671dc">&#9670;&#160;</a></span>from_json() <span class="overload">[2/3]</span></h2>
+<a id="a7ccbf4973b3b7ed050baecededeeebf8" name="a7ccbf4973b3b7ed050baecededeeebf8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ccbf4973b3b7ed050baecededeeebf8">&#9670;&#160;</a></span>from_json() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::from_json </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::from_json </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>j</em></span>, </td>
         </tr>
@@ -592,30 +466,22 @@ template&lt;typename T&gt; </div>
           <td class="paramtype"><a class="el" href="classcoral_1_1_network.html">Network</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>net</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00940">940</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00951">951</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00458">coral::Network::from_json()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00425">coral::Network::from_json()</a>.</p>
 
 </div>
 </div>
-<a id="a7ae1c85bdb3a645886678978978cea5e" name="a7ae1c85bdb3a645886678978978cea5e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7ae1c85bdb3a645886678978978cea5e">&#9670;&#160;</a></span>from_json() <span class="overload">[3/3]</span></h2>
+<a id="ace8dc0fb3c221977678117a59f3c27c5" name="ace8dc0fb3c221977678117a59f3c27c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ace8dc0fb3c221977678117a59f3c27c5">&#9670;&#160;</a></span>from_json() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::from_json </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::from_json </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>j</em></span>, </td>
         </tr>
@@ -625,160 +491,13 @@ template&lt;typename T&gt; </div>
           <td class="paramtype"><a class="el" href="#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>obj</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>json deserialization of a Nodeobject-&gt; </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01823">1823</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__implementation_8h_source.html#l00804">804</a> of file <a class="el" href="coral__implementation_8h_source.html">coral_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00470">coral::NodeObject::build_network_interface()</a>, <a class="el" href="coral_8h_source.html#l00461">coral::NodeObject::is_network_type()</a>, and <a class="el" href="coral_8h_source.html#l00183">make_node()</a>.</p>
-
-</div>
-</div>
-<a id="a5b5133967da138b0e8c23a1dcea2e326" name="a5b5133967da138b0e8c23a1dcea2e326"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5b5133967da138b0e8c23a1dcea2e326">&#9670;&#160;</a></span>hash() <span class="overload">[1/4]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto coral::hash </td>
-          <td>(</td>
-          <td class="paramtype">const entt::meta_any &amp;</td>          <td class="paramname"><span class="paramname"><em>obj</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>suffix</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>&#160;) -&gt; std::string
-  </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00135">135</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00069">coral::detail::type_identifier()</a>.</p>
-
-</div>
-</div>
-<a id="a5efd0be00828bbae3390806f9188974d" name="a5efd0be00828bbae3390806f9188974d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5efd0be00828bbae3390806f9188974d">&#9670;&#160;</a></span>hash() <span class="overload">[2/4]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto coral::hash </td>
-          <td>(</td>
-          <td class="paramtype">const std::shared_ptr&lt; entt::meta_any &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>obj</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>suffix</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>&#160;) -&gt; std::string
-  </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00152">152</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00095">hash()</a>.</p>
-
-</div>
-</div>
-<a id="a2d00125635720af769177d7d8a33b151" name="a2d00125635720af769177d7d8a33b151"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2d00125635720af769177d7d8a33b151">&#9670;&#160;</a></span>hash() <span class="overload">[3/4]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto coral::hash </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>suffix</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span></td><td>)</td>
-          <td> -&gt; std::string
-  </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Provide a string that can be used as a hash for a type. </p>
-
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00095">95</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00062">coral::detail::store_identifier()</a>, <a class="el" href="coral_8h_source.html#l00055">coral::detail::type_aliases()</a>, and <a class="el" href="coral_8h_source.html#l00069">coral::detail::type_identifier()</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01234">coral::NodeObject::get_shared()</a>, <a class="el" href="coral_8h_source.html#l01406">coral::NodeObject::get_shared()</a>, <a class="el" href="coral_8h_source.html#l00152">hash()</a>, <a class="el" href="coral_8h_source.html#l00163">hash()</a>, <a class="el" href="coral_8h_source.html#l01501">coral::NodeObject::hash()</a>, <a class="el" href="coral_8h_source.html#l01598">coral::NodeObject::is_registered_elementary_type()</a>, <a class="el" href="coral_8h_source.html#l00206">make_method_node()</a>, <a class="el" href="coral_8h_source.html#l00183">make_node()</a>, <a class="el" href="coral_8h_source.html#l00393">coral::NodeObject::NodeObject()</a>, <a class="el" href="coral_8h_source.html#l01457">coral::NodeObject::operator=()</a>, <a class="el" href="coral_8h_source.html#l00603">coral::NodeObject::register_json_header()</a>, and <a class="el" href="coral__network_8h_source.html#l00964">coral::Network::register_node()</a>.</p>
-
-</div>
-</div>
-<a id="a2551f390114c66cca3c5b7835c2504e6" name="a2551f390114c66cca3c5b7835c2504e6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2551f390114c66cca3c5b7835c2504e6">&#9670;&#160;</a></span>hash() <span class="overload">[4/4]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto coral::hash </td>
-          <td>(</td>
-          <td class="paramtype">const T &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>suffix</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>&#160;) -&gt; std::string
-  </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Provide a string that can be used as a hash for a type. </p>
-
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00163">163</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00095">hash()</a>.</p>
+<p class="reference">References <a class="el" href="coral__implementation_8h_source.html#l00065">coral::NodeObject::build_network_interface()</a>, <a class="el" href="coral__implementation_8h_source.html#l00057">coral::NodeObject::is_network_type()</a>, <a class="el" href="coral_8h_source.html#l00247">make_node()</a>, <a class="el" href="coral__implementation_8h_source.html#l00912">coral::detail::meta_any_ref()</a>, and <a class="el" href="coral__implementation_8h_source.html#l00684">coral::detail::validate_and_reorder_network_interface()</a>.</p>
 
 </div>
 </div>
@@ -814,9 +533,7 @@ template&lt;typename Arg&gt; </div>
 
 <p>Construct a pointer to a <a class="el" href="classcoral_1_1_node_object.html" title="A class that represents an object of any type.">NodeObject</a> for a named method. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00206">206</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00095">hash()</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00259">259</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
 </div>
 </div>
@@ -848,11 +565,9 @@ template&lt;typename T&gt; </div>
 
 <p>Construct a pointer to a <a class="el" href="classcoral_1_1_node_object.html" title="A class that represents an object of any type.">NodeObject</a> from a type T. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00183">183</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00247">247</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00095">hash()</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="coral_8h_source.html#l01823">from_json()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__implementation_8h_source.html#l00804">from_json()</a>.</p>
 
 </div>
 </div>
@@ -884,7 +599,7 @@ template&lt;typename... Args&gt; </div>
 
 <p>Construct a pointer to a <a class="el" href="classcoral_1_1_node_object.html" title="A class that represents an object of any type.">NodeObject</a> from the arguments of the constructor. </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00173">173</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00235">235</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
 
 </div>
 </div>
@@ -911,11 +626,11 @@ template&lt;typename... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="register__types_8h_source.html#l00107">107</a> of file <a class="el" href="register__types_8h_source.html">register_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="register__types_8h_source.html#l00116">116</a> of file <a class="el" href="register__types_8h_source.html">register_types.h</a>.</p>
 
-<p class="reference">References <a class="el" href="register__types_8h_source.html#l00073">register_dimensional_types()</a>, and <a class="el" href="register__types_8h_source.html#l00046">register_non_dimensional_types()</a>.</p>
+<p class="reference">References <a class="el" href="register__types_8h_source.html#l00080">register_dimensional_types()</a>, and <a class="el" href="register__types_8h_source.html#l00051">register_non_dimensional_types()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="main_8cc_source.html#l00033">main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="main_8cc_source.html#l00231">main()</a>.</p>
 
 </div>
 </div>
@@ -944,11 +659,11 @@ template&lt;int dim, int spacedim&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="register__types_8h_source.html#l00073">73</a> of file <a class="el" href="register__types_8h_source.html">register_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="register__types_8h_source.html#l00080">80</a> of file <a class="el" href="register__types_8h_source.html">register_types.h</a>.</p>
 
-<p class="reference">References <a class="elRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespaceUtilities.html#a21aa22d290ce783e37587b6c879b926c">Utilities::dim_string()</a>, <a class="elRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#a1e6c4dcc63863449f08a78a22ec73747">GridGenerator::generate_from_name_and_arguments()</a>, <a class="el" href="coral_8h_source.html#l01133">coral::NodeObject::register_function()</a>, <a class="el" href="coral_8h_source.html#l00943">coral::NodeObject::register_method()</a>, <a class="el" href="coral_8h_source.html#l00741">coral::NodeObject::register_type()</a>, and <a class="elRef" href="http://www.dealii.org/developer/doxygen/deal.II/classGridOut.html#a6b72484c35abc1f84abb8bf1bc1048dc">GridOut::write_vtk()</a>.</p>
+<p class="reference">References <a class="elRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespaceUtilities.html#a21aa22d290ce783e37587b6c879b926c">Utilities::dim_string()</a>, <a class="elRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#a1e6c4dcc63863449f08a78a22ec73747">GridGenerator::generate_from_name_and_arguments()</a>, <a class="el" href="coral_8h_source.html#l01008">coral::NodeObject::register_function()</a>, <a class="el" href="coral_8h_source.html#l00816">coral::NodeObject::register_method()</a>, <a class="el" href="coral_8h_source.html#l01532">coral::NodeObject::register_type()</a>, and <a class="elRef" href="http://www.dealii.org/developer/doxygen/deal.II/classGridOut.html#a6b72484c35abc1f84abb8bf1bc1048dc">GridOut::write_vtk()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="register__types_8h_source.html#l00107">register_all_types()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="register__types_8h_source.html#l00116">register_all_types()</a>.</p>
 
 </div>
 </div>
@@ -975,60 +690,22 @@ template&lt;int dim, int spacedim&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="register__types_8h_source.html#l00046">46</a> of file <a class="el" href="register__types_8h_source.html">register_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="register__types_8h_source.html#l00051">51</a> of file <a class="el" href="register__types_8h_source.html">register_types.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00791">coral::NodeObject::register_derived_type()</a>, <a class="el" href="coral_8h_source.html#l00667">coral::NodeObject::register_elementary_type()</a>, <a class="el" href="coral__network_8h_source.html#l00964">coral::Network::register_node()</a>, <a class="el" href="coral_8h_source.html#l00741">coral::NodeObject::register_type()</a>, and <a class="el" href="coral_8h_source.html#l00145">set_type_alias()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00740">coral::NodeObject::register_derived_type()</a>, <a class="el" href="coral_8h_source.html#l00622">coral::NodeObject::register_elementary_type()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00983">coral::Network::register_node()</a>, and <a class="el" href="coral_8h_source.html#l00696">coral::NodeObject::register_type()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="register__types_8h_source.html#l00107">register_all_types()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="register__types_8h_source.html#l00116">register_all_types()</a>.</p>
 
 </div>
 </div>
-<a id="a4b8990311e45ffb96dc2c215f7ab2793" name="a4b8990311e45ffb96dc2c215f7ab2793"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4b8990311e45ffb96dc2c215f7ab2793">&#9670;&#160;</a></span>set_type_alias()</h2>
+<a id="ab4613ef12841001f1bc4b113512d37c3" name="ab4613ef12841001f1bc4b113512d37c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab4613ef12841001f1bc4b113512d37c3">&#9670;&#160;</a></span>to_json() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;typename T&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::set_type_alias </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>alias</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Allow callers to override the canonical name used for a given type. </p>
-
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l00145">145</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00055">coral::detail::type_aliases()</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="register__types_8h_source.html#l00046">register_non_dimensional_types()</a>.</p>
-
-</div>
-</div>
-<a id="a62a918f0df1860a0ffe66808ceb79f36" name="a62a918f0df1860a0ffe66808ceb79f36"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a62a918f0df1860a0ffe66808ceb79f36">&#9670;&#160;</a></span>to_json() <span class="overload">[1/3]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void coral::to_json </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::to_json </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>j</em></span>, </td>
         </tr>
@@ -1038,30 +715,22 @@ template&lt;typename T&gt; </div>
           <td class="paramtype">const <a class="el" href="classcoral_1_1_connection.html">Connection</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>conn</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00952">952</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00967">967</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00048">coral::Connection::to_json()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00026">coral::Connection::to_json()</a>.</p>
 
 </div>
 </div>
-<a id="abb1b2aa90b4791b020ce6e2b7f7d8d9e" name="abb1b2aa90b4791b020ce6e2b7f7d8d9e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abb1b2aa90b4791b020ce6e2b7f7d8d9e">&#9670;&#160;</a></span>to_json() <span class="overload">[2/3]</span></h2>
+<a id="a1858779a708edb9f913e2b9d5a5f0a2b" name="a1858779a708edb9f913e2b9d5a5f0a2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1858779a708edb9f913e2b9d5a5f0a2b">&#9670;&#160;</a></span>to_json() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::to_json </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::to_json </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>j</em></span>, </td>
         </tr>
@@ -1071,30 +740,22 @@ template&lt;typename T&gt; </div>
           <td class="paramtype">const <a class="el" href="classcoral_1_1_network.html">Network</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>net</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00946">946</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00959">959</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00918">coral::Network::to_json()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00928">coral::Network::to_json()</a>.</p>
 
 </div>
 </div>
-<a id="aee87896ce99e23ffe24acea549eddb44" name="aee87896ce99e23ffe24acea549eddb44"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aee87896ce99e23ffe24acea549eddb44">&#9670;&#160;</a></span>to_json() <span class="overload">[3/3]</span></h2>
+<a id="af932747a207cdabd991ef26f4e5f0d85" name="af932747a207cdabd991ef26f4e5f0d85"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af932747a207cdabd991ef26f4e5f0d85">&#9670;&#160;</a></span>to_json() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::to_json </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::to_json </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>j</em></span>, </td>
         </tr>
@@ -1104,16 +765,11 @@ template&lt;typename T&gt; </div>
           <td class="paramtype">const <a class="el" href="#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>obj</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>json serialization of a Nodeobject-&gt; </p>
 
-<p class="definition">Definition at line <a class="el" href="coral_8h_source.html#l01814">1814</a> of file <a class="el" href="coral_8h_source.html">coral.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__implementation_8h_source.html#l00674">674</a> of file <a class="el" href="coral__implementation_8h_source.html">coral_implementation.h</a>.</p>
 
 </div>
 </div>
@@ -1123,7 +779,7 @@ template&lt;typename T&gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacecoral.html">coral</a></li>
-    <li class="footer">Generated on Mon Jan 26 2026 18:59:34 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
+    <li class="footer">Generated on Tue Jan 27 2026 17:28:08 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
   </ul>
 </div>
 </body>

@@ -122,10 +122,18 @@ $(function(){initNavTree('main_8cc.html',''); initResizable(true); });
 <code>#include &lt;<a class="elRef" href="http://www.dealii.org/developer/doxygen/deal.II/grid_2tria_8h.html">deal.II/grid/tria.h</a>&gt;</code><br />
 <code>#include &lt;CLI11/CLI11.hpp&gt;</code><br />
 <code>#include &lt;nlohmann/json.hpp&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;cctype&gt;</code><br />
+<code>#include &lt;cstdio&gt;</code><br />
+<code>#include &lt;cstring&gt;</code><br />
 <code>#include &lt;filesystem&gt;</code><br />
+<code>#include &lt;sstream&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
 <code>#include &quot;<a class="el" href="coral_8h_source.html">coral.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="coral__network_8h_source.html">coral_network.h</a>&quot;</code><br />
+<code>#include &quot;magic_enum/magic_enum_all.hpp&quot;</code><br />
 <code>#include &quot;<a class="el" href="register__types_8h_source.html">register_types.h</a>&quot;</code><br />
+<code>#include &quot;slog.h&quot;</code><br />
 <code>#include &quot;taskflow/taskflow.hpp&quot;</code><br />
 </div>
 <p><a href="main_8cc_source.html">Go to the source code of this file.</a></p>
@@ -180,7 +188,7 @@ Functions</h2></td></tr>
 
 <p>Refer to <a class="el" href="_r_e_a_d_m_e_8md.html">README.md</a> for a comprehensive overview of the CORAL library. </p>
 
-<p class="definition">Definition at line <a class="el" href="main_8cc_source.html#l00019">19</a> of file <a class="el" href="main_8cc_source.html">main.cc</a>.</p>
+<p class="definition">Definition at line <a class="el" href="main_8cc_source.html#l00027">27</a> of file <a class="el" href="main_8cc_source.html">main.cc</a>.</p>
 
 </div>
 </div>
@@ -200,11 +208,11 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="main_8cc_source.html#l00025">25</a> of file <a class="el" href="main_8cc_source.html">main.cc</a>.</p>
+<p class="definition">Definition at line <a class="el" href="main_8cc_source.html#l00033">33</a> of file <a class="el" href="main_8cc_source.html">main.cc</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00450">coral::NodeObject::get_registry()</a>, and <a class="el" href="coral_8h_source.html#l00232">coral::output</a>.</p>
+<p class="reference">References <a class="el" href="coral__implementation_8h_source.html#l00044">coral::NodeObject::get_registry()</a>, and <a class="el" href="coral_8h_source.html#l00294">coral::output</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="main_8cc_source.html#l00033">main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="main_8cc_source.html#l00231">main()</a>.</p>
 
 </div>
 </div>
@@ -227,9 +235,9 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="main_8cc_source.html#l00033">33</a> of file <a class="el" href="main_8cc_source.html">main.cc</a>.</p>
+<p class="definition">Definition at line <a class="el" href="main_8cc_source.html#l00231">231</a> of file <a class="el" href="main_8cc_source.html">main.cc</a>.</p>
 
-<p class="reference">References <a class="el" href="main_8cc_source.html#l00025">dump_registry()</a>, <a class="el" href="coral_8h_source.html#l00230">coral::input</a>, <a class="el" href="coral_8h_source.html#l00267">coral::network</a>, and <a class="el" href="register__types_8h_source.html#l00107">coral::register_all_types()</a>.</p>
+<p class="reference">References <a class="el" href="main_8cc_source.html#l00033">dump_registry()</a>, <a class="el" href="coral_8h_source.html#l00289">coral::input</a>, <a class="el" href="coral_8h_source.html#l00371">coral::network</a>, and <a class="el" href="register__types_8h_source.html#l00116">coral::register_all_types()</a>.</p>
 
 </div>
 </div>
@@ -239,7 +247,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_b2f33c71d4aa5e7af42a1ca61ff5af1b.html">source</a></li><li class="navelem"><a class="el" href="main_8cc.html">main.cc</a></li>
-    <li class="footer">Generated on Mon Jan 26 2026 18:59:34 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
+    <li class="footer">Generated on Tue Jan 27 2026 17:28:08 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
   </ul>
 </div>
 </body>

@@ -121,6 +121,9 @@ $(function(){initNavTree('classcoral_1_1_network.html',''); initResizable(true);
 </div><!--header-->
 <div class="contents">
 
+<p>Graph of nodes and connections with Taskflow execution.  
+ <a href="#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="coral__network_8h_source.html">coral_network.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -130,105 +133,108 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a0494b2d054c47a505deca90fbb6a86a7" id="r_a0494b2d054c47a505deca90fbb6a86a7"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0494b2d054c47a505deca90fbb6a86a7">Interface</a> = <a class="el" href="structcoral_1_1_node_interface.html">NodeInterface</a></td></tr>
-<tr class="separator:a0494b2d054c47a505deca90fbb6a86a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d2acfd4c1db531205e18056f3dd2c42" id="r_a2d2acfd4c1db531205e18056f3dd2c42"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2d2acfd4c1db531205e18056f3dd2c42">Interface</a> = detail::NodeInterface</td></tr>
+<tr class="separator:a2d2acfd4c1db531205e18056f3dd2c42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a66d4e6a391a66948b4a6511430dc6dfe" id="r_a66d4e6a391a66948b4a6511430dc6dfe"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a66d4e6a391a66948b4a6511430dc6dfe">Network</a> ()</td></tr>
-<tr class="separator:a66d4e6a391a66948b4a6511430dc6dfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a508ac05c1bb6b83f6bea9a39d6d318d9" id="r_a508ac05c1bb6b83f6bea9a39d6d318d9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a508ac05c1bb6b83f6bea9a39d6d318d9">Network</a> (const <a class="el" href="classcoral_1_1_network.html">Network</a> &amp;other)</td></tr>
-<tr class="separator:a508ac05c1bb6b83f6bea9a39d6d318d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae418af8721b8ed309563d9a0b502340" id="r_aae418af8721b8ed309563d9a0b502340"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classcoral_1_1_network.html">Network</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aae418af8721b8ed309563d9a0b502340">operator=</a> (const <a class="el" href="classcoral_1_1_network.html">Network</a> &amp;other)</td></tr>
-<tr class="separator:aae418af8721b8ed309563d9a0b502340"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7f35d5e7d7b6f00b6b3b9050fc7d5e4b" id="r_a7f35d5e7d7b6f00b6b3b9050fc7d5e4b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7f35d5e7d7b6f00b6b3b9050fc7d5e4b">Network</a> (<a class="el" href="classcoral_1_1_network.html">Network</a> &amp;&amp;) noexcept=default</td></tr>
-<tr class="separator:a7f35d5e7d7b6f00b6b3b9050fc7d5e4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a94faa68698439d0a021a2775f4b41303" id="r_a94faa68698439d0a021a2775f4b41303"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classcoral_1_1_network.html">Network</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a94faa68698439d0a021a2775f4b41303">operator=</a> (<a class="el" href="classcoral_1_1_network.html">Network</a> &amp;&amp;) noexcept=default</td></tr>
-<tr class="separator:a94faa68698439d0a021a2775f4b41303"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7460ed52f28e39b6271e67a388424d12" id="r_a7460ed52f28e39b6271e67a388424d12"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7460ed52f28e39b6271e67a388424d12">add_node</a> (unsigned int id, const std::shared_ptr&lt; <a class="el" href="classcoral_1_1_node_object.html">NodeObject</a> &gt; &amp;node, const std::string &amp;node_name=&quot;&quot;)</td></tr>
-<tr class="separator:a7460ed52f28e39b6271e67a388424d12"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a88f8001f56f87275991da83c92f0b78a" id="r_a88f8001f56f87275991da83c92f0b78a"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a88f8001f56f87275991da83c92f0b78a">add_node</a> (const std::shared_ptr&lt; <a class="el" href="classcoral_1_1_node_object.html">NodeObject</a> &gt; &amp;node, const std::string &amp;node_name=&quot;&quot;)</td></tr>
-<tr class="separator:a88f8001f56f87275991da83c92f0b78a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad1f478af7fee33cf09bcd269091324bf" id="r_ad1f478af7fee33cf09bcd269091324bf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad1f478af7fee33cf09bcd269091324bf">set_node_name</a> (unsigned int id, const std::string &amp;<a class="el" href="#a1fc5c7cc46fcc7181d45753dbb4d84e7">name</a>)</td></tr>
-<tr class="separator:ad1f478af7fee33cf09bcd269091324bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5f6eea5a67079fbb493c26960daff008" id="r_a5f6eea5a67079fbb493c26960daff008"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5f6eea5a67079fbb493c26960daff008">get_node_name</a> (unsigned int id) const</td></tr>
-<tr class="separator:a5f6eea5a67079fbb493c26960daff008"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93837c78c92b45bb8094becd3319760d" id="r_a93837c78c92b45bb8094becd3319760d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a93837c78c92b45bb8094becd3319760d">add_connection</a> (unsigned int id, const <a class="el" href="classcoral_1_1_connection.html">Connection</a> &amp;conn)</td></tr>
-<tr class="separator:a93837c78c92b45bb8094becd3319760d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa8a8519ba5b158616acc742a146c8c9b" id="r_aa8a8519ba5b158616acc742a146c8c9b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa8a8519ba5b158616acc742a146c8c9b">add_connection</a> (unsigned int id, unsigned int source_id, unsigned int target_id, unsigned int source_output, unsigned int target_input)</td></tr>
-<tr class="separator:aa8a8519ba5b158616acc742a146c8c9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab6c71ccffe8768dce7a35d22952edf59" id="r_ab6c71ccffe8768dce7a35d22952edf59"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab6c71ccffe8768dce7a35d22952edf59">add_connection</a> (unsigned int source_id, unsigned int target_id, unsigned int source_output, unsigned int target_input)</td></tr>
-<tr class="separator:ab6c71ccffe8768dce7a35d22952edf59"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aee5efacad70e805db7ab168d16aba08d" id="r_aee5efacad70e805db7ab168d16aba08d"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aee5efacad70e805db7ab168d16aba08d">add_connection</a> (const <a class="el" href="classcoral_1_1_connection.html">Connection</a> &amp;conn)</td></tr>
-<tr class="separator:aee5efacad70e805db7ab168d16aba08d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09435f92ee163caa900fd6fa56c30238" id="r_a09435f92ee163caa900fd6fa56c30238"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a09435f92ee163caa900fd6fa56c30238">remove_nodes_and_connections</a> (const std::vector&lt; unsigned int &gt; &amp;node_ids, const std::vector&lt; unsigned int &gt; &amp;connection_ids)</td></tr>
-<tr class="separator:a09435f92ee163caa900fd6fa56c30238"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac99c666b335aca05eecda6b3a75d5523" id="r_ac99c666b335aca05eecda6b3a75d5523"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac99c666b335aca05eecda6b3a75d5523">n_connections</a> () const</td></tr>
-<tr class="separator:ac99c666b335aca05eecda6b3a75d5523"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abac2571079b55107c5fd68a6751601e7" id="r_abac2571079b55107c5fd68a6751601e7"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abac2571079b55107c5fd68a6751601e7">n_nodes</a> () const</td></tr>
-<tr class="separator:abac2571079b55107c5fd68a6751601e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae76ef57b25083144a332d17806263005" id="r_ae76ef57b25083144a332d17806263005"><td class="memItemLeft" align="right" valign="top"><a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae76ef57b25083144a332d17806263005">get_registry</a> () const</td></tr>
-<tr class="memdesc:ae76ef57b25083144a332d17806263005"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a registry containing only the node types used in this network.  <br /></td></tr>
-<tr class="separator:ae76ef57b25083144a332d17806263005"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a872684604be7487b9d34d7d744e7bcbd" id="r_a872684604be7487b9d34d7d744e7bcbd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a872684604be7487b9d34d7d744e7bcbd">from_json</a> (const nlohmann::json &amp;json_data)</td></tr>
-<tr class="separator:a872684604be7487b9d34d7d744e7bcbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a33b9189deb9a72b515c4f39d1f8cfbf8" id="r_a33b9189deb9a72b515c4f39d1f8cfbf8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a33b9189deb9a72b515c4f39d1f8cfbf8">run</a> ()</td></tr>
-<tr class="separator:a33b9189deb9a72b515c4f39d1f8cfbf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b3ed21a34a4d5ae2645f20944b1d1e9" id="r_a5b3ed21a34a4d5ae2645f20944b1d1e9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5b3ed21a34a4d5ae2645f20944b1d1e9">clear_network</a> ()</td></tr>
-<tr class="separator:a5b3ed21a34a4d5ae2645f20944b1d1e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae5b3f8742e89c0791db69d7b071549f6" id="r_ae5b3f8742e89c0791db69d7b071549f6"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae5b3f8742e89c0791db69d7b071549f6">get_node</a> (unsigned int id) const -&gt; std::shared_ptr&lt; <a class="el" href="classcoral_1_1_node_object.html">NodeObject</a> &gt;</td></tr>
-<tr class="separator:ae5b3f8742e89c0791db69d7b071549f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acb900c796a5988bbbe72270cbd7d44a2" id="r_acb900c796a5988bbbe72270cbd7d44a2"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acb900c796a5988bbbe72270cbd7d44a2">get_task</a> (unsigned int id) const -&gt; tf::Task</td></tr>
-<tr class="separator:acb900c796a5988bbbe72270cbd7d44a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a75199d6b378396cf2d1a396bda9c5c87" id="r_a75199d6b378396cf2d1a396bda9c5c87"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a75199d6b378396cf2d1a396bda9c5c87">size</a> () const -&gt; size_t</td></tr>
-<tr class="separator:a75199d6b378396cf2d1a396bda9c5c87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a45ffe223c0d19a0f03d48817b9a58df8" id="r_a45ffe223c0d19a0f03d48817b9a58df8"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a45ffe223c0d19a0f03d48817b9a58df8">get_taskflow</a> () -&gt; tf::Taskflow &amp;</td></tr>
-<tr class="separator:a45ffe223c0d19a0f03d48817b9a58df8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a75d9cc18d435f3c37fdbc439f41ca59c" id="r_a75d9cc18d435f3c37fdbc439f41ca59c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a75d9cc18d435f3c37fdbc439f41ca59c">output_dot</a> (const std::filesystem::path &amp;filepath) const</td></tr>
-<tr class="separator:a75d9cc18d435f3c37fdbc439f41ca59c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a83bae0f5dfc7c16c206b101e4f1ab8a1" id="r_a83bae0f5dfc7c16c206b101e4f1ab8a1"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a83bae0f5dfc7c16c206b101e4f1ab8a1">get_connected_nodes</a> (unsigned int nodeId) const -&gt; std::vector&lt; unsigned int &gt;</td></tr>
-<tr class="separator:a83bae0f5dfc7c16c206b101e4f1ab8a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af2bda7cba3817863da651daebad9ccc0" id="r_af2bda7cba3817863da651daebad9ccc0"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af2bda7cba3817863da651daebad9ccc0">get_node_connections</a> (unsigned int nodeId) const -&gt; std::vector&lt; <a class="el" href="classcoral_1_1_connection.html">Connection</a> &gt;</td></tr>
-<tr class="separator:af2bda7cba3817863da651daebad9ccc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5cbb07dffe50775ee70f57df09cff55c" id="r_a5cbb07dffe50775ee70f57df09cff55c"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5cbb07dffe50775ee70f57df09cff55c">get_inputs</a> () const -&gt; std::vector&lt; std::pair&lt; unsigned int, unsigned int &gt; &gt;</td></tr>
-<tr class="separator:a5cbb07dffe50775ee70f57df09cff55c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ef7652f759e5618f335bd6b8d68f78d" id="r_a4ef7652f759e5618f335bd6b8d68f78d"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4ef7652f759e5618f335bd6b8d68f78d">n_inputs</a> () const -&gt; size_t</td></tr>
-<tr class="separator:a4ef7652f759e5618f335bd6b8d68f78d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2a30cb24b5e6e6bb828dbbae5e6d5499" id="r_a2a30cb24b5e6e6bb828dbbae5e6d5499"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2a30cb24b5e6e6bb828dbbae5e6d5499">get_outputs</a> () const -&gt; std::vector&lt; std::pair&lt; unsigned int, unsigned int &gt; &gt;</td></tr>
-<tr class="separator:a2a30cb24b5e6e6bb828dbbae5e6d5499"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0c463b9bfa7c58c019b9fdd2a03b6bfd" id="r_a0c463b9bfa7c58c019b9fdd2a03b6bfd"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0c463b9bfa7c58c019b9fdd2a03b6bfd">n_outputs</a> () const -&gt; size_t</td></tr>
-<tr class="separator:a0c463b9bfa7c58c019b9fdd2a03b6bfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa1a69d02affbc6a282c80ce4dff83258" id="r_aa1a69d02affbc6a282c80ce4dff83258"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa1a69d02affbc6a282c80ce4dff83258">input</a> (const unsigned int index)</td></tr>
-<tr class="separator:aa1a69d02affbc6a282c80ce4dff83258"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a26cecb634607c9391f58928886a00a24" id="r_a26cecb634607c9391f58928886a00a24"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a26cecb634607c9391f58928886a00a24">output</a> (const unsigned int index)</td></tr>
-<tr class="separator:a26cecb634607c9391f58928886a00a24"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a333746f388f5d15e4ce535eccd1d99bb" id="r_a333746f388f5d15e4ce535eccd1d99bb"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a333746f388f5d15e4ce535eccd1d99bb">get_arguments</a> () const -&gt; std::vector&lt; <a class="el" href="structcoral_1_1_network_1_1_dangling_port.html">DanglingPort</a> &gt;</td></tr>
-<tr class="separator:a333746f388f5d15e4ce535eccd1d99bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afee80e25f322e3e8ffa7deaec36fa56b" id="r_afee80e25f322e3e8ffa7deaec36fa56b"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afee80e25f322e3e8ffa7deaec36fa56b">build_interface</a> () const -&gt; <a class="el" href="#a0494b2d054c47a505deca90fbb6a86a7">Interface</a></td></tr>
-<tr class="separator:afee80e25f322e3e8ffa7deaec36fa56b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ace32f6af08a6059202ddd052a81e4b33" id="r_ace32f6af08a6059202ddd052a81e4b33"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ace32f6af08a6059202ddd052a81e4b33">is_connected</a> (unsigned int inId, unsigned int outId) const -&gt; bool</td></tr>
-<tr class="separator:ace32f6af08a6059202ddd052a81e4b33"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7501135e5c6ab234f1c2b573c353ccc7" id="r_a7501135e5c6ab234f1c2b573c353ccc7"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7501135e5c6ab234f1c2b573c353ccc7">connections_to_json</a> () const -&gt; nlohmann::json</td></tr>
-<tr class="separator:a7501135e5c6ab234f1c2b573c353ccc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7d6717e27b09894d584367ef65b15e1c" id="r_a7d6717e27b09894d584367ef65b15e1c"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7d6717e27b09894d584367ef65b15e1c">nodes_to_json</a> () const -&gt; nlohmann::json</td></tr>
-<tr class="separator:a7d6717e27b09894d584367ef65b15e1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5f5a5bbd6d32795fc18d07edc5c2c856" id="r_a5f5a5bbd6d32795fc18d07edc5c2c856"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5f5a5bbd6d32795fc18d07edc5c2c856">to_json</a> () const -&gt; nlohmann::json</td></tr>
-<tr class="separator:a5f5a5bbd6d32795fc18d07edc5c2c856"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d75742d6d5130473c374998841686d1" id="r_a9d75742d6d5130473c374998841686d1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9d75742d6d5130473c374998841686d1">Network</a> ()</td></tr>
+<tr class="separator:a9d75742d6d5130473c374998841686d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4601e163b2eaed43641dd4e9ce35f1dc" id="r_a4601e163b2eaed43641dd4e9ce35f1dc"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4601e163b2eaed43641dd4e9ce35f1dc">Network</a> (const <a class="el" href="classcoral_1_1_network.html">Network</a> &amp;other)</td></tr>
+<tr class="separator:a4601e163b2eaed43641dd4e9ce35f1dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3be1527a6443a7b209d96ce1c0743958" id="r_a3be1527a6443a7b209d96ce1c0743958"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classcoral_1_1_network.html">Network</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3be1527a6443a7b209d96ce1c0743958">operator=</a> (const <a class="el" href="classcoral_1_1_network.html">Network</a> &amp;other)</td></tr>
+<tr class="separator:a3be1527a6443a7b209d96ce1c0743958"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa73b73b3686b727bf3bd6d7731534a03" id="r_aa73b73b3686b727bf3bd6d7731534a03"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa73b73b3686b727bf3bd6d7731534a03">Network</a> (<a class="el" href="classcoral_1_1_network.html">Network</a> &amp;&amp;) noexcept</td></tr>
+<tr class="separator:aa73b73b3686b727bf3bd6d7731534a03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8bbf5fb835d8ee0cbe116a9275cbf51d" id="r_a8bbf5fb835d8ee0cbe116a9275cbf51d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classcoral_1_1_network.html">Network</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=</a> (<a class="el" href="classcoral_1_1_network.html">Network</a> &amp;&amp;) noexcept</td></tr>
+<tr class="separator:a8bbf5fb835d8ee0cbe116a9275cbf51d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95f5fc2bb7480d21ed379e5f06eddd3c" id="r_a95f5fc2bb7480d21ed379e5f06eddd3c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a95f5fc2bb7480d21ed379e5f06eddd3c">add_node</a> (unsigned int id, const <a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;node, const std::string &amp;node_name=&quot;&quot;)</td></tr>
+<tr class="separator:a95f5fc2bb7480d21ed379e5f06eddd3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ac107e81f9a779a772b0dfc1f8949eb" id="r_a9ac107e81f9a779a772b0dfc1f8949eb"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9ac107e81f9a779a772b0dfc1f8949eb">add_node</a> (const <a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;node, const std::string &amp;node_name=&quot;&quot;)</td></tr>
+<tr class="separator:a9ac107e81f9a779a772b0dfc1f8949eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5003f016615524ac31f4e3fb13a2b7ad" id="r_a5003f016615524ac31f4e3fb13a2b7ad"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5003f016615524ac31f4e3fb13a2b7ad">set_node_name</a> (unsigned int id, const std::string &amp;<a class="el" href="#a1fc5c7cc46fcc7181d45753dbb4d84e7">name</a>)</td></tr>
+<tr class="separator:a5003f016615524ac31f4e3fb13a2b7ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade4859706ec2448bd09979c3cd097bc8" id="r_ade4859706ec2448bd09979c3cd097bc8"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ade4859706ec2448bd09979c3cd097bc8">get_node_name</a> (unsigned int id) const</td></tr>
+<tr class="separator:ade4859706ec2448bd09979c3cd097bc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab40aa2ff5d5fd15b865e91268b883dbb" id="r_ab40aa2ff5d5fd15b865e91268b883dbb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab40aa2ff5d5fd15b865e91268b883dbb">add_connection</a> (unsigned int id, const <a class="el" href="classcoral_1_1_connection.html">Connection</a> &amp;conn)</td></tr>
+<tr class="separator:ab40aa2ff5d5fd15b865e91268b883dbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4318e321e68da329807f329c685bb9d0" id="r_a4318e321e68da329807f329c685bb9d0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4318e321e68da329807f329c685bb9d0">add_connection</a> (unsigned int id, unsigned int source_id, unsigned int target_id, unsigned int source_output, unsigned int target_input)</td></tr>
+<tr class="separator:a4318e321e68da329807f329c685bb9d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a955074201ec7cd844957fa1c36736d92" id="r_a955074201ec7cd844957fa1c36736d92"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a955074201ec7cd844957fa1c36736d92">add_connection</a> (unsigned int source_id, unsigned int target_id, unsigned int source_output, unsigned int target_input)</td></tr>
+<tr class="separator:a955074201ec7cd844957fa1c36736d92"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18f506f3116188eac18371972266ad50" id="r_a18f506f3116188eac18371972266ad50"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a18f506f3116188eac18371972266ad50">add_connection</a> (const <a class="el" href="classcoral_1_1_connection.html">Connection</a> &amp;conn)</td></tr>
+<tr class="separator:a18f506f3116188eac18371972266ad50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6fd79c8010c070a3fa0eb0d14afb300" id="r_ab6fd79c8010c070a3fa0eb0d14afb300"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab6fd79c8010c070a3fa0eb0d14afb300">remove_nodes_and_connections</a> (const std::vector&lt; unsigned int &gt; &amp;node_ids, const std::vector&lt; unsigned int &gt; &amp;connection_ids)</td></tr>
+<tr class="separator:ab6fd79c8010c070a3fa0eb0d14afb300"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a804ffa235f3ea366c53bda38d67ed73f" id="r_a804ffa235f3ea366c53bda38d67ed73f"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a804ffa235f3ea366c53bda38d67ed73f">n_connections</a> () const</td></tr>
+<tr class="separator:a804ffa235f3ea366c53bda38d67ed73f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8509a7a64dba128dc3b839198a43ec6f" id="r_a8509a7a64dba128dc3b839198a43ec6f"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8509a7a64dba128dc3b839198a43ec6f">n_nodes</a> () const</td></tr>
+<tr class="separator:a8509a7a64dba128dc3b839198a43ec6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b4fc9acf12aa07524690ba3c8874962" id="r_a2b4fc9acf12aa07524690ba3c8874962"><td class="memItemLeft" align="right" valign="top">nlohmann::json&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2b4fc9acf12aa07524690ba3c8874962">get_registry</a> () const</td></tr>
+<tr class="separator:a2b4fc9acf12aa07524690ba3c8874962"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6bda394922350bab9e79c8da75810a85" id="r_a6bda394922350bab9e79c8da75810a85"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6bda394922350bab9e79c8da75810a85">from_json</a> (const nlohmann::json &amp;json_data)</td></tr>
+<tr class="separator:a6bda394922350bab9e79c8da75810a85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11e5ac29bbfd84225eba39affaeb9a88" id="r_a11e5ac29bbfd84225eba39affaeb9a88"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a11e5ac29bbfd84225eba39affaeb9a88">to_json</a> () const -&gt; nlohmann::json</td></tr>
+<tr class="separator:a11e5ac29bbfd84225eba39affaeb9a88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0be0d3a1f7d845200cdd2c283c0cb44d" id="r_a0be0d3a1f7d845200cdd2c283c0cb44d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0be0d3a1f7d845200cdd2c283c0cb44d">run</a> ()</td></tr>
+<tr class="separator:a0be0d3a1f7d845200cdd2c283c0cb44d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a609fcc9deb02115a0e14d5f755d1fe8a" id="r_a609fcc9deb02115a0e14d5f755d1fe8a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a609fcc9deb02115a0e14d5f755d1fe8a">clear_network</a> ()</td></tr>
+<tr class="separator:a609fcc9deb02115a0e14d5f755d1fe8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abcd4b6d2d7474016aeba045b01e626a3" id="r_abcd4b6d2d7474016aeba045b01e626a3"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abcd4b6d2d7474016aeba045b01e626a3">get_node</a> (unsigned int id) const -&gt; <a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a></td></tr>
+<tr class="separator:abcd4b6d2d7474016aeba045b01e626a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f1b021442ddafa7c35e534a94370e10" id="r_a9f1b021442ddafa7c35e534a94370e10"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9f1b021442ddafa7c35e534a94370e10">size</a> () const -&gt; size_t</td></tr>
+<tr class="separator:a9f1b021442ddafa7c35e534a94370e10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e52a5f130d7231b8141fd8ac090a324" id="r_a1e52a5f130d7231b8141fd8ac090a324"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1e52a5f130d7231b8141fd8ac090a324">get_taskflow</a> () -&gt; tf::Taskflow &amp;</td></tr>
+<tr class="separator:a1e52a5f130d7231b8141fd8ac090a324"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a440d7955045a08f11d6becb4d7af3e00" id="r_a440d7955045a08f11d6becb4d7af3e00"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a440d7955045a08f11d6becb4d7af3e00">output_dot</a> (const std::filesystem::path &amp;filepath) const</td></tr>
+<tr class="separator:a440d7955045a08f11d6becb4d7af3e00"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adae9c768164ad0de9f69595169945d80" id="r_adae9c768164ad0de9f69595169945d80"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adae9c768164ad0de9f69595169945d80">get_connected_nodes</a> (unsigned int nodeId) const -&gt; std::vector&lt; unsigned int &gt;</td></tr>
+<tr class="separator:adae9c768164ad0de9f69595169945d80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f30b1c958706ff6c82b36f6c668b7be" id="r_a9f30b1c958706ff6c82b36f6c668b7be"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9f30b1c958706ff6c82b36f6c668b7be">get_node_connections</a> (unsigned int nodeId) const -&gt; std::vector&lt; <a class="el" href="classcoral_1_1_connection.html">Connection</a> &gt;</td></tr>
+<tr class="separator:a9f30b1c958706ff6c82b36f6c668b7be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab1256ffbbca680e8bff1ef88fcd0464" id="r_aab1256ffbbca680e8bff1ef88fcd0464"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aab1256ffbbca680e8bff1ef88fcd0464">get_inputs</a> () const -&gt; std::vector&lt; std::pair&lt; unsigned int, unsigned int &gt; &gt;</td></tr>
+<tr class="separator:aab1256ffbbca680e8bff1ef88fcd0464"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a549a4cefefca5338f8e89f995467962c" id="r_a549a4cefefca5338f8e89f995467962c"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a549a4cefefca5338f8e89f995467962c">n_inputs</a> () const -&gt; size_t</td></tr>
+<tr class="separator:a549a4cefefca5338f8e89f995467962c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1834365e850531b13347d56941f3f888" id="r_a1834365e850531b13347d56941f3f888"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1834365e850531b13347d56941f3f888">get_outputs</a> () const -&gt; std::vector&lt; std::pair&lt; unsigned int, unsigned int &gt; &gt;</td></tr>
+<tr class="separator:a1834365e850531b13347d56941f3f888"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbe453c93233e1e9e82e447a06e540ad" id="r_adbe453c93233e1e9e82e447a06e540ad"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adbe453c93233e1e9e82e447a06e540ad">n_outputs</a> () const -&gt; size_t</td></tr>
+<tr class="separator:adbe453c93233e1e9e82e447a06e540ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa92ab659a1c2b1b06b13cb3fff61277e" id="r_aa92ab659a1c2b1b06b13cb3fff61277e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa92ab659a1c2b1b06b13cb3fff61277e">get_input</a> (const unsigned int index)</td></tr>
+<tr class="separator:aa92ab659a1c2b1b06b13cb3fff61277e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2f7a6e9373f1a49ed2b199ac720bd6a" id="r_aa2f7a6e9373f1a49ed2b199ac720bd6a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa2f7a6e9373f1a49ed2b199ac720bd6a">get_output</a> (const unsigned int index)</td></tr>
+<tr class="separator:aa2f7a6e9373f1a49ed2b199ac720bd6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5da380411f44c016292d57b63f97d58d" id="r_a5da380411f44c016292d57b63f97d58d"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5da380411f44c016292d57b63f97d58d">build_interface</a> () const -&gt; <a class="el" href="#a2d2acfd4c1db531205e18056f3dd2c42">Interface</a></td></tr>
+<tr class="separator:a5da380411f44c016292d57b63f97d58d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76cc84f2c8cabef41aa412ad9b79ed8a" id="r_a76cc84f2c8cabef41aa412ad9b79ed8a"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a76cc84f2c8cabef41aa412ad9b79ed8a">get_task</a> (unsigned int id) const -&gt; tf::Task</td></tr>
+<tr class="separator:a76cc84f2c8cabef41aa412ad9b79ed8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad24de35e5aa73b1dac4c6fa1622500a8" id="r_ad24de35e5aa73b1dac4c6fa1622500a8"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad24de35e5aa73b1dac4c6fa1622500a8">is_connected</a> (unsigned int inId, unsigned int outId) const -&gt; bool</td></tr>
+<tr class="separator:ad24de35e5aa73b1dac4c6fa1622500a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a5169404d920c4d7631bf807aeccddce2" id="r_a5169404d920c4d7631bf807aeccddce2"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5169404d920c4d7631bf807aeccddce2">register_node</a> ()</td></tr>
-<tr class="separator:a5169404d920c4d7631bf807aeccddce2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a865af94d92214ea6933876b59222d580" id="r_a865af94d92214ea6933876b59222d580"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a865af94d92214ea6933876b59222d580">register_node</a> ()</td></tr>
+<tr class="separator:a865af94d92214ea6933876b59222d580"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-methods" name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
-<tr class="memitem:a3e6367ab9c878b79af2393f0a2b94a9a" id="r_a3e6367ab9c878b79af2393f0a2b94a9a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3e6367ab9c878b79af2393f0a2b94a9a">rebuild_taskflow</a> ()</td></tr>
-<tr class="separator:a3e6367ab9c878b79af2393f0a2b94a9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade034407860331dc9549b668748f9d15" id="r_ade034407860331dc9549b668748f9d15"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ade034407860331dc9549b668748f9d15">rebuild_taskflow</a> ()</td></tr>
+<tr class="separator:ade034407860331dc9549b668748f9d15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0c351fb8bc0761669f8e81a191a60ac" id="r_af0c351fb8bc0761669f8e81a191a60ac"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af0c351fb8bc0761669f8e81a191a60ac">get_arguments</a> () const -&gt; std::vector&lt; <a class="el" href="structcoral_1_1_network_1_1_dangling_port.html">DanglingPort</a> &gt;</td></tr>
+<tr class="separator:af0c351fb8bc0761669f8e81a191a60ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abecc5a28ac673efd3376b414bb1ab100" id="r_abecc5a28ac673efd3376b414bb1ab100"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abecc5a28ac673efd3376b414bb1ab100">connections_to_json</a> () const -&gt; nlohmann::json</td></tr>
+<tr class="separator:abecc5a28ac673efd3376b414bb1ab100"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19d8418139bba98229905e784bc81291" id="r_a19d8418139bba98229905e784bc81291"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a19d8418139bba98229905e784bc81291">nodes_to_json</a> () const -&gt; nlohmann::json</td></tr>
+<tr class="separator:a19d8418139bba98229905e784bc81291"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef01026cbe64998fa9b9ffb45cdcb54c" id="r_aef01026cbe64998fa9b9ffb45cdcb54c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aef01026cbe64998fa9b9ffb45cdcb54c">refresh_dynamic_inputs</a> (unsigned int target_id)</td></tr>
+<tr class="separator:aef01026cbe64998fa9b9ffb45cdcb54c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa796d3c6d8ac4300d7bc97a1d8a67126" id="r_aa796d3c6d8ac4300d7bc97a1d8a67126"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa796d3c6d8ac4300d7bc97a1d8a67126">execute_node_task</a> (unsigned int node_id, const <a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;node, const std::string &amp;node_name)</td></tr>
+<tr class="separator:aa796d3c6d8ac4300d7bc97a1d8a67126"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
-<tr class="memitem:afd404adb7457cba174303d5a13aebda8" id="r_afd404adb7457cba174303d5a13aebda8"><td class="memItemLeft" align="right" valign="top">std::map&lt; unsigned int, std::shared_ptr&lt; <a class="el" href="classcoral_1_1_node_object.html">NodeObject</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afd404adb7457cba174303d5a13aebda8">nodes</a></td></tr>
-<tr class="separator:afd404adb7457cba174303d5a13aebda8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84c7847284d9dfb2b1d6b195f2ee5c00" id="r_a84c7847284d9dfb2b1d6b195f2ee5c00"><td class="memItemLeft" align="right" valign="top">std::map&lt; unsigned int, <a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a84c7847284d9dfb2b1d6b195f2ee5c00">nodes</a></td></tr>
+<tr class="separator:a84c7847284d9dfb2b1d6b195f2ee5c00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a217f574bd2666fc92f7d408e2df083b7" id="r_a217f574bd2666fc92f7d408e2df083b7"><td class="memItemLeft" align="right" valign="top">std::map&lt; unsigned int, std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a217f574bd2666fc92f7d408e2df083b7">nodes_name</a></td></tr>
 <tr class="separator:a217f574bd2666fc92f7d408e2df083b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad365a56d840df92adf895b4510628877" id="r_ad365a56d840df92adf895b4510628877"><td class="memItemLeft" align="right" valign="top">std::map&lt; unsigned int, tf::Task &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad365a56d840df92adf895b4510628877">node_tasks</a></td></tr>
@@ -239,90 +245,77 @@ Private Attributes</h2></td></tr>
 <tr class="separator:a3cad8c162ab2a78794a81594b4131815"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1fc5c7cc46fcc7181d45753dbb4d84e7" id="r_a1fc5c7cc46fcc7181d45753dbb4d84e7"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1fc5c7cc46fcc7181d45753dbb4d84e7">name</a></td></tr>
 <tr class="separator:a1fc5c7cc46fcc7181d45753dbb4d84e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aabdea39a7a3fc3502348e989e630b2c9" id="r_aabdea39a7a3fc3502348e989e630b2c9"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aabdea39a7a3fc3502348e989e630b2c9">n_threads</a></td></tr>
+<tr class="separator:aabdea39a7a3fc3502348e989e630b2c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock">
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00109">109</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<div class="textblock"><p>Graph of nodes and connections with Taskflow execution. </p>
+
+<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00046">46</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
-<a id="a0494b2d054c47a505deca90fbb6a86a7" name="a0494b2d054c47a505deca90fbb6a86a7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0494b2d054c47a505deca90fbb6a86a7">&#9670;&#160;</a></span>Interface</h2>
+<a id="a2d2acfd4c1db531205e18056f3dd2c42" name="a2d2acfd4c1db531205e18056f3dd2c42"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d2acfd4c1db531205e18056f3dd2c42">&#9670;&#160;</a></span>Interface</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="#a0494b2d054c47a505deca90fbb6a86a7">coral::Network::Interface</a> = <a class="el" href="structcoral_1_1_node_interface.html">NodeInterface</a></td>
+          <td class="memname">using <a class="el" href="#a2d2acfd4c1db531205e18056f3dd2c42">coral::Network::Interface</a> = detail::NodeInterface</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00121">121</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00049">49</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a66d4e6a391a66948b4a6511430dc6dfe" name="a66d4e6a391a66948b4a6511430dc6dfe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a66d4e6a391a66948b4a6511430dc6dfe">&#9670;&#160;</a></span>Network() <span class="overload">[1/3]</span></h2>
+<a id="a9d75742d6d5130473c374998841686d1" name="a9d75742d6d5130473c374998841686d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d75742d6d5130473c374998841686d1">&#9670;&#160;</a></span>Network() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">coral::Network::Network </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> coral::Network::Network </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00135">135</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00066">66</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00132">name</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00067">n_threads</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00142">Network()</a>, <a class="el" href="#a7f35d5e7d7b6f00b6b3b9050fc7d5e4b">Network()</a>, <a class="el" href="coral__network_8h_source.html#l00151">operator=()</a>, <a class="el" href="#a94faa68698439d0a021a2775f4b41303">operator=()</a>, and <a class="el" href="coral__network_8h_source.html#l00964">register_node()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00074">Network()</a>, <a class="el" href="#aa73b73b3686b727bf3bd6d7731534a03">Network()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00085">operator=()</a>, <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00103">refresh_dynamic_inputs()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00983">register_node()</a>.</p>
 
 </div>
 </div>
-<a id="a508ac05c1bb6b83f6bea9a39d6d318d9" name="a508ac05c1bb6b83f6bea9a39d6d318d9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a508ac05c1bb6b83f6bea9a39d6d318d9">&#9670;&#160;</a></span>Network() <span class="overload">[2/3]</span></h2>
+<a id="a4601e163b2eaed43641dd4e9ce35f1dc" name="a4601e163b2eaed43641dd4e9ce35f1dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4601e163b2eaed43641dd4e9ce35f1dc">&#9670;&#160;</a></span>Network() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">coral::Network::Network </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> coral::Network::Network </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classcoral_1_1_network.html">Network</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>other</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00142">142</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00074">74</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>, <a class="el" href="coral__network_8h_source.html#l00135">Network()</a>, <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>, <a class="el" href="coral__network_8h_source.html#l00125">nodes_name</a>, and <a class="el" href="coral__network_8h_source.html#l00171">rebuild_taskflow()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00066">Network()</a>, <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>, <a class="el" href="coral__network_8h_source.html#l00062">nodes_name</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00147">rebuild_taskflow()</a>.</p>
 
 </div>
 </div>
-<a id="a7f35d5e7d7b6f00b6b3b9050fc7d5e4b" name="a7f35d5e7d7b6f00b6b3b9050fc7d5e4b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7f35d5e7d7b6f00b6b3b9050fc7d5e4b">&#9670;&#160;</a></span>Network() <span class="overload">[3/3]</span></h2>
+<a id="aa73b73b3686b727bf3bd6d7731534a03" name="aa73b73b3686b727bf3bd6d7731534a03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa73b73b3686b727bf3bd6d7731534a03">&#9670;&#160;</a></span>Network() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -331,7 +324,7 @@ Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">coral::Network::Network </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> coral::Network::Network </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classcoral_1_1_network.html">Network</a> &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -344,51 +337,40 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00135">Network()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00066">Network()</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="aee5efacad70e805db7ab168d16aba08d" name="aee5efacad70e805db7ab168d16aba08d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aee5efacad70e805db7ab168d16aba08d">&#9670;&#160;</a></span>add_connection() <span class="overload">[1/4]</span></h2>
+<a id="a18f506f3116188eac18371972266ad50" name="a18f506f3116188eac18371972266ad50"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18f506f3116188eac18371972266ad50">&#9670;&#160;</a></span>add_connection() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">unsigned int coral::Network::add_connection </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> unsigned int coral::Network::add_connection </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classcoral_1_1_connection.html">Connection</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>conn</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00386">386</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00345">345</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00306">add_connection()</a>, and <a class="el" href="coral__network_8h_source.html#l00129">connections</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00242">add_connection()</a>, and <a class="el" href="coral__network_8h_source.html#l00064">connections</a>.</p>
 
 </div>
 </div>
-<a id="a93837c78c92b45bb8094becd3319760d" name="a93837c78c92b45bb8094becd3319760d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a93837c78c92b45bb8094becd3319760d">&#9670;&#160;</a></span>add_connection() <span class="overload">[2/4]</span></h2>
+<a id="ab40aa2ff5d5fd15b865e91268b883dbb" name="ab40aa2ff5d5fd15b865e91268b883dbb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab40aa2ff5d5fd15b865e91268b883dbb">&#9670;&#160;</a></span>add_connection() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::Network::add_connection </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::Network::add_connection </td>
           <td>(</td>
           <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>id</em></span>, </td>
         </tr>
@@ -398,32 +380,24 @@ Private Attributes</h2></td></tr>
           <td class="paramtype">const <a class="el" href="classcoral_1_1_connection.html">Connection</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>conn</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00306">306</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00242">242</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>, <a class="el" href="coral__network_8h_source.html#l00298">get_node_name()</a>, <a class="el" href="coral__network_8h_source.html#l00126">node_tasks</a>, <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>, <a class="el" href="coral__network_8h_source.html#l00286">set_node_name()</a>, <a class="el" href="coral__network_8h_source.html#l00573">size()</a>, <a class="el" href="coral__network_8h_source.html#l00027">coral::Connection::source_id</a>, <a class="el" href="coral__network_8h_source.html#l00029">coral::Connection::source_output</a>, <a class="el" href="coral__network_8h_source.html#l00028">coral::Connection::target_id</a>, and <a class="el" href="coral__network_8h_source.html#l00030">coral::Connection::target_input</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00233">get_node_name()</a>, <a class="el" href="coral__network_8h_source.html#l00063">node_tasks</a>, <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00219">set_node_name()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00546">size()</a>, <a class="el" href="coral__network_8h_source.html#l00024">coral::Connection::source_id</a>, <a class="el" href="coral__network_8h_source.html#l00026">coral::Connection::source_output</a>, <a class="el" href="coral__network_8h_source.html#l00025">coral::Connection::target_id</a>, and <a class="el" href="coral__network_8h_source.html#l00027">coral::Connection::target_input</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00386">add_connection()</a>, <a class="el" href="coral__network_8h_source.html#l00364">add_connection()</a>, <a class="el" href="coral__network_8h_source.html#l00376">add_connection()</a>, and <a class="el" href="coral__network_8h_source.html#l00458">from_json()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00345">add_connection()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00320">add_connection()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00333">add_connection()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00425">from_json()</a>, and <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="aa8a8519ba5b158616acc742a146c8c9b" name="aa8a8519ba5b158616acc742a146c8c9b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa8a8519ba5b158616acc742a146c8c9b">&#9670;&#160;</a></span>add_connection() <span class="overload">[3/4]</span></h2>
+<a id="a4318e321e68da329807f329c685bb9d0" name="a4318e321e68da329807f329c685bb9d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4318e321e68da329807f329c685bb9d0">&#9670;&#160;</a></span>add_connection() <span class="overload">[3/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::Network::add_connection </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::Network::add_connection </td>
           <td>(</td>
           <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>id</em></span>, </td>
         </tr>
@@ -448,30 +422,22 @@ Private Attributes</h2></td></tr>
           <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>target_input</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00364">364</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00320">320</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00306">add_connection()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00242">add_connection()</a>.</p>
 
 </div>
 </div>
-<a id="ab6c71ccffe8768dce7a35d22952edf59" name="ab6c71ccffe8768dce7a35d22952edf59"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab6c71ccffe8768dce7a35d22952edf59">&#9670;&#160;</a></span>add_connection() <span class="overload">[4/4]</span></h2>
+<a id="a955074201ec7cd844957fa1c36736d92" name="a955074201ec7cd844957fa1c36736d92"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a955074201ec7cd844957fa1c36736d92">&#9670;&#160;</a></span>add_connection() <span class="overload">[4/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">unsigned int coral::Network::add_connection </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> unsigned int coral::Network::add_connection </td>
           <td>(</td>
           <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>source_id</em></span>, </td>
         </tr>
@@ -491,32 +457,24 @@ Private Attributes</h2></td></tr>
           <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>target_input</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00376">376</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00333">333</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00306">add_connection()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00242">add_connection()</a>.</p>
 
 </div>
 </div>
-<a id="a88f8001f56f87275991da83c92f0b78a" name="a88f8001f56f87275991da83c92f0b78a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a88f8001f56f87275991da83c92f0b78a">&#9670;&#160;</a></span>add_node() <span class="overload">[1/2]</span></h2>
+<a id="a9ac107e81f9a779a772b0dfc1f8949eb" name="a9ac107e81f9a779a772b0dfc1f8949eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9ac107e81f9a779a772b0dfc1f8949eb">&#9670;&#160;</a></span>add_node() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">unsigned int coral::Network::add_node </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> unsigned int coral::Network::add_node </td>
           <td>(</td>
-          <td class="paramtype">const std::shared_ptr&lt; <a class="el" href="classcoral_1_1_node_object.html">NodeObject</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>node</em></span>, </td>
+          <td class="paramtype">const <a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>node</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -524,37 +482,29 @@ Private Attributes</h2></td></tr>
           <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>node_name</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00277">277</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00209">209</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00223">add_node()</a>, and <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00181">add_node()</a>, and <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>.</p>
 
 </div>
 </div>
-<a id="a7460ed52f28e39b6271e67a388424d12" name="a7460ed52f28e39b6271e67a388424d12"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7460ed52f28e39b6271e67a388424d12">&#9670;&#160;</a></span>add_node() <span class="overload">[2/2]</span></h2>
+<a id="a95f5fc2bb7480d21ed379e5f06eddd3c" name="a95f5fc2bb7480d21ed379e5f06eddd3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95f5fc2bb7480d21ed379e5f06eddd3c">&#9670;&#160;</a></span>add_node() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::Network::add_node </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::Network::add_node </td>
           <td>(</td>
           <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>id</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::shared_ptr&lt; <a class="el" href="classcoral_1_1_node_object.html">NodeObject</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>node</em></span>, </td>
+          <td class="paramtype">const <a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>node</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -562,84 +512,64 @@ Private Attributes</h2></td></tr>
           <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>node_name</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00223">223</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00181">181</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00132">name</a>, <a class="el" href="coral__network_8h_source.html#l00126">node_tasks</a>, <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>, <a class="el" href="coral__network_8h_source.html#l00125">nodes_name</a>, and <a class="el" href="coral__network_8h_source.html#l00131">taskflow</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00120">execute_node_task()</a>, <a class="el" href="coral__network_8h_source.html#l00066">name</a>, <a class="el" href="coral__network_8h_source.html#l00063">node_tasks</a>, <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>, <a class="el" href="coral__network_8h_source.html#l00062">nodes_name</a>, and <a class="el" href="coral__network_8h_source.html#l00065">taskflow</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00277">add_node()</a>, and <a class="el" href="coral__network_8h_source.html#l00458">from_json()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00209">add_node()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00425">from_json()</a>, and <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="afee80e25f322e3e8ffa7deaec36fa56b" name="afee80e25f322e3e8ffa7deaec36fa56b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afee80e25f322e3e8ffa7deaec36fa56b">&#9670;&#160;</a></span>build_interface()</h2>
+<a id="a5da380411f44c016292d57b63f97d58d" name="a5da380411f44c016292d57b63f97d58d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5da380411f44c016292d57b63f97d58d">&#9670;&#160;</a></span>build_interface()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">auto coral::Network::build_interface </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::build_interface </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> const -&gt; <a class="el" href="#a0494b2d054c47a505deca90fbb6a86a7">Interface</a>
-    </td>
+          <td> const -&gt; <a class="el" href="#a2d2acfd4c1db531205e18056f3dd2c42">Interface</a></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00817">817</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00722">722</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00344">coral::NodeInterface::arguments</a>, <a class="el" href="coral__network_8h_source.html#l00730">get_arguments()</a>, <a class="el" href="coral_8h_source.html#l00230">coral::input</a>, <a class="el" href="coral_8h_source.html#l00345">coral::NodeInterface::inputs</a>, <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>, <a class="el" href="coral_8h_source.html#l00228">coral::none</a>, <a class="el" href="coral_8h_source.html#l00232">coral::output</a>, and <a class="el" href="coral_8h_source.html#l00346">coral::NodeInterface::outputs</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00780">get_arguments()</a>, <a class="el" href="coral_8h_source.html#l00289">coral::input</a>, <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>, <a class="el" href="coral_8h_source.html#l00284">coral::none</a>, and <a class="el" href="coral_8h_source.html#l00294">coral::output</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="a5b3ed21a34a4d5ae2645f20944b1d1e9" name="a5b3ed21a34a4d5ae2645f20944b1d1e9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5b3ed21a34a4d5ae2645f20944b1d1e9">&#9670;&#160;</a></span>clear_network()</h2>
+<a id="a609fcc9deb02115a0e14d5f755d1fe8a" name="a609fcc9deb02115a0e14d5f755d1fe8a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a609fcc9deb02115a0e14d5f755d1fe8a">&#9670;&#160;</a></span>clear_network()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::Network::clear_network </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::Network::clear_network </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00544">544</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00522">522</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>, <a class="el" href="coral__network_8h_source.html#l00126">node_tasks</a>, <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>, and <a class="el" href="coral__network_8h_source.html#l00131">taskflow</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>, <a class="el" href="coral__network_8h_source.html#l00063">node_tasks</a>, <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>, and <a class="el" href="coral__network_8h_source.html#l00065">taskflow</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00458">from_json()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00425">from_json()</a>, and <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="a7501135e5c6ab234f1c2b573c353ccc7" name="a7501135e5c6ab234f1c2b573c353ccc7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7501135e5c6ab234f1c2b573c353ccc7">&#9670;&#160;</a></span>connections_to_json()</h2>
+<a id="abecc5a28ac673efd3376b414bb1ab100" name="abecc5a28ac673efd3376b414bb1ab100"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abecc5a28ac673efd3376b414bb1ab100">&#9670;&#160;</a></span>connections_to_json()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -648,30 +578,29 @@ Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">auto coral::Network::connections_to_json </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::connections_to_json </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> const -&gt; nlohmann::json
-    </td>
+          <td> const -&gt; nlohmann::json</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00877">877</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00869">869</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00918">to_json()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00928">to_json()</a>.</p>
 
 </div>
 </div>
-<a id="a872684604be7487b9d34d7d744e7bcbd" name="a872684604be7487b9d34d7d744e7bcbd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a872684604be7487b9d34d7d744e7bcbd">&#9670;&#160;</a></span>from_json()</h2>
+<a id="aa796d3c6d8ac4300d7bc97a1d8a67126" name="aa796d3c6d8ac4300d7bc97a1d8a67126"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa796d3c6d8ac4300d7bc97a1d8a67126">&#9670;&#160;</a></span>execute_node_task()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -680,29 +609,61 @@ Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::Network::from_json </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::Network::execute_node_task </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>node_id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>node</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>node_name</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00120">120</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00103">refresh_dynamic_inputs()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00181">add_node()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00147">rebuild_taskflow()</a>.</p>
+
+</div>
+</div>
+<a id="a6bda394922350bab9e79c8da75810a85" name="a6bda394922350bab9e79c8da75810a85"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6bda394922350bab9e79c8da75810a85">&#9670;&#160;</a></span>from_json()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::Network::from_json </td>
           <td>(</td>
           <td class="paramtype">const nlohmann::json &amp;</td>          <td class="paramname"><span class="paramname"><em>json_data</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00458">458</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00425">425</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00306">add_connection()</a>, <a class="el" href="coral__network_8h_source.html#l00223">add_node()</a>, <a class="el" href="coral__network_8h_source.html#l00544">clear_network()</a>, and <a class="el" href="coral__network_8h_source.html#l00060">coral::Connection::from_json()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00242">add_connection()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00181">add_node()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00522">clear_network()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00039">coral::Connection::from_json()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00546">size()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00940">coral::from_json()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00951">coral::from_json()</a>, and <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="a333746f388f5d15e4ce535eccd1d99bb" name="a333746f388f5d15e4ce535eccd1d99bb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a333746f388f5d15e4ce535eccd1d99bb">&#9670;&#160;</a></span>get_arguments()</h2>
+<a id="af0c351fb8bc0761669f8e81a191a60ac" name="af0c351fb8bc0761669f8e81a191a60ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af0c351fb8bc0761669f8e81a191a60ac">&#9670;&#160;</a></span>get_arguments()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -711,461 +672,401 @@ Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">auto coral::Network::get_arguments </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::get_arguments </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> const -&gt; std::vector&lt;<a class="el" href="structcoral_1_1_network_1_1_dangling_port.html">DanglingPort</a>&gt;
-    </td>
+          <td> const -&gt; std::vector&lt;<a class="el" href="structcoral_1_1_network_1_1_dangling_port.html">DanglingPort</a>&gt;</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00730">730</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00780">780</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>, <a class="el" href="coral_8h_source.html#l00230">coral::input</a>, <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>, <a class="el" href="coral_8h_source.html#l00228">coral::none</a>, <a class="el" href="coral_8h_source.html#l00232">coral::output</a>, and <a class="el" href="coral_8h_source.html#l00234">coral::pass_through</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>, <a class="el" href="coral_8h_source.html#l00289">coral::input</a>, <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>, <a class="el" href="coral_8h_source.html#l00284">coral::none</a>, <a class="el" href="coral_8h_source.html#l00294">coral::output</a>, and <a class="el" href="coral_8h_source.html#l00299">coral::pass_through</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00817">build_interface()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00722">build_interface()</a>.</p>
 
 </div>
 </div>
-<a id="a83bae0f5dfc7c16c206b101e4f1ab8a1" name="a83bae0f5dfc7c16c206b101e4f1ab8a1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a83bae0f5dfc7c16c206b101e4f1ab8a1">&#9670;&#160;</a></span>get_connected_nodes()</h2>
+<a id="adae9c768164ad0de9f69595169945d80" name="adae9c768164ad0de9f69595169945d80"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adae9c768164ad0de9f69595169945d80">&#9670;&#160;</a></span>get_connected_nodes()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">auto coral::Network::get_connected_nodes </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::get_connected_nodes </td>
           <td>(</td>
           <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>nodeId</em></span></td><td>)</td>
-          <td> const -&gt; std::vector&lt;unsigned int&gt;
-    </td>
+          <td> const -&gt; std::vector&lt;unsigned int&gt;</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00597">597</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00572">572</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="a5cbb07dffe50775ee70f57df09cff55c" name="a5cbb07dffe50775ee70f57df09cff55c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5cbb07dffe50775ee70f57df09cff55c">&#9670;&#160;</a></span>get_inputs()</h2>
+<a id="aa92ab659a1c2b1b06b13cb3fff61277e" name="aa92ab659a1c2b1b06b13cb3fff61277e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa92ab659a1c2b1b06b13cb3fff61277e">&#9670;&#160;</a></span>get_input()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">auto coral::Network::get_inputs </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> const -&gt; std::vector&lt;std::pair&lt;unsigned int, unsigned int&gt;&gt;
-    </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00632">632</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>, <a class="el" href="coral__network_8h_source.html#l00661">n_inputs()</a>, and <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00702">input()</a>, and <a class="el" href="coral__network_8h_source.html#l00661">n_inputs()</a>.</p>
-
-</div>
-</div>
-<a id="ae5b3f8742e89c0791db69d7b071549f6" name="ae5b3f8742e89c0791db69d7b071549f6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae5b3f8742e89c0791db69d7b071549f6">&#9670;&#160;</a></span>get_node()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto coral::Network::get_node </td>
-          <td>(</td>
-          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
-          <td> const -&gt; std::shared_ptr&lt;<a class="el" href="classcoral_1_1_node_object.html">NodeObject</a>&gt;
-    </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00554">554</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>.</p>
-
-</div>
-</div>
-<a id="af2bda7cba3817863da651daebad9ccc0" name="af2bda7cba3817863da651daebad9ccc0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af2bda7cba3817863da651daebad9ccc0">&#9670;&#160;</a></span>get_node_connections()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto coral::Network::get_node_connections </td>
-          <td>(</td>
-          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>nodeId</em></span></td><td>)</td>
-          <td> const -&gt; std::vector&lt;<a class="el" href="classcoral_1_1_connection.html">Connection</a>&gt;
-    </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00615">615</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>.</p>
-
-</div>
-</div>
-<a id="a5f6eea5a67079fbb493c26960daff008" name="a5f6eea5a67079fbb493c26960daff008"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5f6eea5a67079fbb493c26960daff008">&#9670;&#160;</a></span>get_node_name()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::string coral::Network::get_node_name </td>
-          <td>(</td>
-          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00298">298</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00125">nodes_name</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00306">add_connection()</a>, <a class="el" href="coral__network_8h_source.html#l00889">nodes_to_json()</a>, and <a class="el" href="coral__network_8h_source.html#l00171">rebuild_taskflow()</a>.</p>
-
-</div>
-</div>
-<a id="a2a30cb24b5e6e6bb828dbbae5e6d5499" name="a2a30cb24b5e6e6bb828dbbae5e6d5499"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2a30cb24b5e6e6bb828dbbae5e6d5499">&#9670;&#160;</a></span>get_outputs()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto coral::Network::get_outputs </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> const -&gt; std::vector&lt;std::pair&lt;unsigned int, unsigned int&gt;&gt;
-    </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00667">667</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>, <a class="el" href="coral__network_8h_source.html#l00696">n_outputs()</a>, and <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00696">n_outputs()</a>, and <a class="el" href="coral__network_8h_source.html#l00716">output()</a>.</p>
-
-</div>
-</div>
-<a id="ae76ef57b25083144a332d17806263005" name="ae76ef57b25083144a332d17806263005"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae76ef57b25083144a332d17806263005">&#9670;&#160;</a></span>get_registry()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> coral::Network::get_registry </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Return a registry containing only the node types used in this network. </p>
-
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00428">428</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00450">coral::NodeObject::get_registry()</a>, and <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>.</p>
-
-</div>
-</div>
-<a id="acb900c796a5988bbbe72270cbd7d44a2" name="acb900c796a5988bbbe72270cbd7d44a2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acb900c796a5988bbbe72270cbd7d44a2">&#9670;&#160;</a></span>get_task()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto coral::Network::get_task </td>
-          <td>(</td>
-          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
-          <td> const -&gt; tf::Task
-    </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00561">561</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00126">node_tasks</a>.</p>
-
-</div>
-</div>
-<a id="a45ffe223c0d19a0f03d48817b9a58df8" name="a45ffe223c0d19a0f03d48817b9a58df8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a45ffe223c0d19a0f03d48817b9a58df8">&#9670;&#160;</a></span>get_taskflow()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto coral::Network::get_taskflow </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> -&gt; tf::Taskflow &amp;
-    </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00580">580</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00131">taskflow</a>.</p>
-
-</div>
-</div>
-<a id="aa1a69d02affbc6a282c80ce4dff83258" name="aa1a69d02affbc6a282c80ce4dff83258"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa1a69d02affbc6a282c80ce4dff83258">&#9670;&#160;</a></span>input()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> coral::Network::input </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> <a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> coral::Network::get_input </td>
           <td>(</td>
           <td class="paramtype">const unsigned int</td>          <td class="paramname"><span class="paramname"><em>index</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00702">702</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00690">690</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00632">get_inputs()</a>, and <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00610">get_inputs()</a>, and <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00964">register_node()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="ace32f6af08a6059202ddd052a81e4b33" name="ace32f6af08a6059202ddd052a81e4b33"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ace32f6af08a6059202ddd052a81e4b33">&#9670;&#160;</a></span>is_connected()</h2>
+<a id="aab1256ffbbca680e8bff1ef88fcd0464" name="aab1256ffbbca680e8bff1ef88fcd0464"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab1256ffbbca680e8bff1ef88fcd0464">&#9670;&#160;</a></span>get_inputs()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">auto coral::Network::is_connected </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::get_inputs </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const -&gt; std::vector&lt;std::pair&lt;unsigned int, unsigned int&gt;&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00610">610</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00642">n_inputs()</a>, and <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00690">get_input()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00642">n_inputs()</a>, and <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
+
+</div>
+</div>
+<a id="abcd4b6d2d7474016aeba045b01e626a3" name="abcd4b6d2d7474016aeba045b01e626a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abcd4b6d2d7474016aeba045b01e626a3">&#9670;&#160;</a></span>get_node()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::get_node </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td> const -&gt; <a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00537">537</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
+
+</div>
+</div>
+<a id="a9f30b1c958706ff6c82b36f6c668b7be" name="a9f30b1c958706ff6c82b36f6c668b7be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f30b1c958706ff6c82b36f6c668b7be">&#9670;&#160;</a></span>get_node_connections()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::get_node_connections </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>nodeId</em></span></td><td>)</td>
+          <td> const -&gt; std::vector&lt;<a class="el" href="classcoral_1_1_connection.html">Connection</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00591">591</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
+
+</div>
+</div>
+<a id="ade4859706ec2448bd09979c3cd097bc8" name="ade4859706ec2448bd09979c3cd097bc8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade4859706ec2448bd09979c3cd097bc8">&#9670;&#160;</a></span>get_node_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> std::string coral::Network::get_node_name </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00233">233</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00062">nodes_name</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00242">add_connection()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00882">nodes_to_json()</a>, <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00147">rebuild_taskflow()</a>.</p>
+
+</div>
+</div>
+<a id="aa2f7a6e9373f1a49ed2b199ac720bd6a" name="aa2f7a6e9373f1a49ed2b199ac720bd6a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2f7a6e9373f1a49ed2b199ac720bd6a">&#9670;&#160;</a></span>get_output()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> <a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> coral::Network::get_output </td>
+          <td>(</td>
+          <td class="paramtype">const unsigned int</td>          <td class="paramname"><span class="paramname"><em>index</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00706">706</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00650">get_outputs()</a>, and <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
+
+</div>
+</div>
+<a id="a1834365e850531b13347d56941f3f888" name="a1834365e850531b13347d56941f3f888"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1834365e850531b13347d56941f3f888">&#9670;&#160;</a></span>get_outputs()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::get_outputs </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const -&gt; std::vector&lt;std::pair&lt;unsigned int, unsigned int&gt;&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00650">650</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00682">n_outputs()</a>, and <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00706">get_output()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00682">n_outputs()</a>, and <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
+
+</div>
+</div>
+<a id="a2b4fc9acf12aa07524690ba3c8874962" name="a2b4fc9acf12aa07524690ba3c8874962"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2b4fc9acf12aa07524690ba3c8874962">&#9670;&#160;</a></span>get_registry()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> <a class="el" href="main_8cc.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> coral::Network::get_registry </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00393">393</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral__implementation_8h_source.html#l00044">coral::NodeObject::get_registry()</a>, and <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
+
+</div>
+</div>
+<a id="a76cc84f2c8cabef41aa412ad9b79ed8a" name="a76cc84f2c8cabef41aa412ad9b79ed8a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a76cc84f2c8cabef41aa412ad9b79ed8a">&#9670;&#160;</a></span>get_task()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::get_task </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>id</em></span></td><td>)</td>
+          <td> const -&gt; tf::Task</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00766">766</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00063">node_tasks</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
+
+</div>
+</div>
+<a id="a1e52a5f130d7231b8141fd8ac090a324" name="a1e52a5f130d7231b8141fd8ac090a324"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1e52a5f130d7231b8141fd8ac090a324">&#9670;&#160;</a></span>get_taskflow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::get_taskflow </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> -&gt; tf::Taskflow &amp;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00554">554</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00065">taskflow</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
+
+</div>
+</div>
+<a id="ad24de35e5aa73b1dac4c6fa1622500a8" name="ad24de35e5aa73b1dac4c6fa1622500a8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad24de35e5aa73b1dac4c6fa1622500a8">&#9670;&#160;</a></span>is_connected()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::is_connected </td>
           <td>(</td>
           <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>inId</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>outId</em></span>&#160;) const -&gt; bool
-    </td>
+          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>outId</em></span>&#160;) const -&gt; bool</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00861">861</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00911">911</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="ac99c666b335aca05eecda6b3a75d5523" name="ac99c666b335aca05eecda6b3a75d5523"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac99c666b335aca05eecda6b3a75d5523">&#9670;&#160;</a></span>n_connections()</h2>
+<a id="a804ffa235f3ea366c53bda38d67ed73f" name="a804ffa235f3ea366c53bda38d67ed73f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a804ffa235f3ea366c53bda38d67ed73f">&#9670;&#160;</a></span>n_connections()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">unsigned int coral::Network::n_connections </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> unsigned int coral::Network::n_connections </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00412">412</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00377">377</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="a4ef7652f759e5618f335bd6b8d68f78d" name="a4ef7652f759e5618f335bd6b8d68f78d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4ef7652f759e5618f335bd6b8d68f78d">&#9670;&#160;</a></span>n_inputs()</h2>
+<a id="a549a4cefefca5338f8e89f995467962c" name="a549a4cefefca5338f8e89f995467962c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a549a4cefefca5338f8e89f995467962c">&#9670;&#160;</a></span>n_inputs()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">auto coral::Network::n_inputs </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::n_inputs </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> const -&gt; size_t
-    </td>
+          <td> const -&gt; size_t</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00661">661</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00642">642</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00632">get_inputs()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00610">get_inputs()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00632">get_inputs()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00610">get_inputs()</a>, and <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="abac2571079b55107c5fd68a6751601e7" name="abac2571079b55107c5fd68a6751601e7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abac2571079b55107c5fd68a6751601e7">&#9670;&#160;</a></span>n_nodes()</h2>
+<a id="a8509a7a64dba128dc3b839198a43ec6f" name="a8509a7a64dba128dc3b839198a43ec6f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8509a7a64dba128dc3b839198a43ec6f">&#9670;&#160;</a></span>n_nodes()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">unsigned int coral::Network::n_nodes </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> unsigned int coral::Network::n_nodes </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00419">419</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00385">385</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="a0c463b9bfa7c58c019b9fdd2a03b6bfd" name="a0c463b9bfa7c58c019b9fdd2a03b6bfd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0c463b9bfa7c58c019b9fdd2a03b6bfd">&#9670;&#160;</a></span>n_outputs()</h2>
+<a id="adbe453c93233e1e9e82e447a06e540ad" name="adbe453c93233e1e9e82e447a06e540ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adbe453c93233e1e9e82e447a06e540ad">&#9670;&#160;</a></span>n_outputs()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::n_outputs </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const -&gt; size_t</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00682">682</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00650">get_outputs()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00650">get_outputs()</a>, and <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
+
+</div>
+</div>
+<a id="a19d8418139bba98229905e784bc81291" name="a19d8418139bba98229905e784bc81291"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19d8418139bba98229905e784bc81291">&#9670;&#160;</a></span>nodes_to_json()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1174,91 +1075,50 @@ Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">auto coral::Network::n_outputs </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::nodes_to_json </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> const -&gt; size_t
-    </td>
+          <td> const -&gt; nlohmann::json</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00696">696</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00882">882</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00667">get_outputs()</a>.</p>
+<p class="reference">References <a class="el" href="coral_8h_source.html#l00326">coral::elementary_constructor</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00233">get_node_name()</a>, <a class="el" href="coral__network_8h_source.html#l00066">name</a>, and <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00667">get_outputs()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00928">to_json()</a>.</p>
 
 </div>
 </div>
-<a id="a7d6717e27b09894d584367ef65b15e1c" name="a7d6717e27b09894d584367ef65b15e1c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7d6717e27b09894d584367ef65b15e1c">&#9670;&#160;</a></span>nodes_to_json()</h2>
+<a id="a3be1527a6443a7b209d96ce1c0743958" name="a3be1527a6443a7b209d96ce1c0743958"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3be1527a6443a7b209d96ce1c0743958">&#9670;&#160;</a></span>operator=() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">auto coral::Network::nodes_to_json </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> const -&gt; nlohmann::json
-    </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00889">889</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral_8h_source.html#l00249">coral::elementary_constructor</a>, <a class="el" href="coral__network_8h_source.html#l00298">get_node_name()</a>, <a class="el" href="coral__network_8h_source.html#l00132">name</a>, and <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00918">to_json()</a>.</p>
-
-</div>
-</div>
-<a id="aae418af8721b8ed309563d9a0b502340" name="aae418af8721b8ed309563d9a0b502340"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aae418af8721b8ed309563d9a0b502340">&#9670;&#160;</a></span>operator=() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classcoral_1_1_network.html">Network</a> &amp; coral::Network::operator= </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> <a class="el" href="classcoral_1_1_network.html">Network</a> &amp; coral::Network::operator= </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classcoral_1_1_network.html">Network</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>other</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00151">151</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00085">85</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>, <a class="el" href="coral__network_8h_source.html#l00135">Network()</a>, <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>, <a class="el" href="coral__network_8h_source.html#l00125">nodes_name</a>, and <a class="el" href="coral__network_8h_source.html#l00171">rebuild_taskflow()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00066">Network()</a>, <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>, <a class="el" href="coral__network_8h_source.html#l00062">nodes_name</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00147">rebuild_taskflow()</a>.</p>
 
 </div>
 </div>
-<a id="a94faa68698439d0a021a2775f4b41303" name="a94faa68698439d0a021a2775f4b41303"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a94faa68698439d0a021a2775f4b41303">&#9670;&#160;</a></span>operator=() <span class="overload">[2/2]</span></h2>
+<a id="a8bbf5fb835d8ee0cbe116a9275cbf51d" name="a8bbf5fb835d8ee0cbe116a9275cbf51d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">&#9670;&#160;</a></span>operator=() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1267,7 +1127,7 @@ Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classcoral_1_1_network.html">Network</a> &amp; coral::Network::operator= </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> <a class="el" href="classcoral_1_1_network.html">Network</a> &amp; coral::Network::operator= </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classcoral_1_1_network.html">Network</a> &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -1280,70 +1140,35 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00135">Network()</a>, and <a class="el" href="coral__network_8h_source.html#l00964">register_node()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00242">add_connection()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00181">add_node()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00722">build_interface()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l01235">coral::build_network_interface()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00522">clear_network()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00425">from_json()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00572">get_connected_nodes()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00690">get_input()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00610">get_inputs()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00537">get_node()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00591">get_node_connections()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00233">get_node_name()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00706">get_output()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00650">get_outputs()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00393">get_registry()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00766">get_task()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00554">get_taskflow()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00911">is_connected()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00377">n_connections()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00642">n_inputs()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00385">n_nodes()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00682">n_outputs()</a>, <a class="el" href="coral__network_8h_source.html#l00066">name</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00066">Network()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00562">output_dot()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00983">register_node()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00355">remove_nodes_and_connections()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00501">run()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00219">set_node_name()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00546">size()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00928">to_json()</a>.</p>
 
 </div>
 </div>
-<a id="a26cecb634607c9391f58928886a00a24" name="a26cecb634607c9391f58928886a00a24"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a26cecb634607c9391f58928886a00a24">&#9670;&#160;</a></span>output()</h2>
+<a id="a440d7955045a08f11d6becb4d7af3e00" name="a440d7955045a08f11d6becb4d7af3e00"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a440d7955045a08f11d6becb4d7af3e00">&#9670;&#160;</a></span>output_dot()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a> coral::Network::output </td>
-          <td>(</td>
-          <td class="paramtype">const unsigned int</td>          <td class="paramname"><span class="paramname"><em>index</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00716">716</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00667">get_outputs()</a>, and <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>.</p>
-
-</div>
-</div>
-<a id="a75d9cc18d435f3c37fdbc439f41ca59c" name="a75d9cc18d435f3c37fdbc439f41ca59c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a75d9cc18d435f3c37fdbc439f41ca59c">&#9670;&#160;</a></span>output_dot()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void coral::Network::output_dot </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::Network::output_dot </td>
           <td>(</td>
           <td class="paramtype">const std::filesystem::path &amp;</td>          <td class="paramname"><span class="paramname"><em>filepath</em></span></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00587">587</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00562">562</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00131">taskflow</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00065">taskflow</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="a3e6367ab9c878b79af2393f0a2b94a9a" name="a3e6367ab9c878b79af2393f0a2b94a9a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3e6367ab9c878b79af2393f0a2b94a9a">&#9670;&#160;</a></span>rebuild_taskflow()</h2>
+<a id="ade034407860331dc9549b668748f9d15" name="ade034407860331dc9549b668748f9d15"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade034407860331dc9549b668748f9d15">&#9670;&#160;</a></span>rebuild_taskflow()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1352,7 +1177,7 @@ Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::Network::rebuild_taskflow </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::Network::rebuild_taskflow </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -1360,21 +1185,21 @@ Private Attributes</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel private">private</span></span>  </td>
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00171">171</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00147">147</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>, <a class="el" href="coral__network_8h_source.html#l00298">get_node_name()</a>, <a class="el" href="coral__network_8h_source.html#l00132">name</a>, <a class="el" href="coral__network_8h_source.html#l00126">node_tasks</a>, <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>, <a class="el" href="coral__network_8h_source.html#l00171">rebuild_taskflow()</a>, and <a class="el" href="coral__network_8h_source.html#l00131">taskflow</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00120">execute_node_task()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00233">get_node_name()</a>, <a class="el" href="coral__network_8h_source.html#l00066">name</a>, <a class="el" href="coral__network_8h_source.html#l00063">node_tasks</a>, <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>, and <a class="el" href="coral__network_8h_source.html#l00065">taskflow</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00142">Network()</a>, <a class="el" href="coral__network_8h_source.html#l00151">operator=()</a>, <a class="el" href="coral__network_8h_source.html#l00171">rebuild_taskflow()</a>, and <a class="el" href="coral__network_8h_source.html#l00395">remove_nodes_and_connections()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00074">Network()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00085">operator=()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00355">remove_nodes_and_connections()</a>.</p>
 
 </div>
 </div>
-<a id="a5169404d920c4d7631bf807aeccddce2" name="a5169404d920c4d7631bf807aeccddce2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5169404d920c4d7631bf807aeccddce2">&#9670;&#160;</a></span>register_node()</h2>
+<a id="aef01026cbe64998fa9b9ffb45cdcb54c" name="aef01026cbe64998fa9b9ffb45cdcb54c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef01026cbe64998fa9b9ffb45cdcb54c">&#9670;&#160;</a></span>refresh_dynamic_inputs()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1383,7 +1208,38 @@ Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::Network::register_node </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::Network::refresh_dynamic_inputs </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>target_id</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00103">103</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00066">Network()</a>, <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00103">refresh_dynamic_inputs()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00120">execute_node_task()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00103">refresh_dynamic_inputs()</a>.</p>
+
+</div>
+</div>
+<a id="a865af94d92214ea6933876b59222d580" name="a865af94d92214ea6933876b59222d580"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a865af94d92214ea6933876b59222d580">&#9670;&#160;</a></span>register_node()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::Network::register_node </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -1391,30 +1247,27 @@ Private Attributes</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00964">964</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00983">983</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l01188">coral::build_network_interface()</a>, <a class="el" href="coral_8h_source.html#l01489">coral::NodeObject::get_info()</a>, <a class="el" href="coral_8h_source.html#l00095">coral::hash()</a>, <a class="el" href="coral_8h_source.html#l00230">coral::input</a>, <a class="el" href="coral__network_8h_source.html#l00702">input()</a>, <a class="el" href="coral__network_8h_source.html#l00135">Network()</a>, <a class="el" href="coral_8h_source.html#l00267">coral::network</a>, <a class="el" href="coral_8h_source.html#l01593">coral::NodeObject::network_interface_builder</a>, <a class="el" href="coral_8h_source.html#l01590">coral::NodeObject::network_type_hash</a>, <a class="el" href="coral_8h_source.html#l00228">coral::none</a>, <a class="el" href="coral_8h_source.html#l00234">coral::pass_through</a>, <a class="el" href="coral_8h_source.html#l00603">coral::NodeObject::register_json_header()</a>, <a class="el" href="coral_8h_source.html#l00479">coral::NodeObject::set_network_executor()</a>, and <a class="el" href="coral_8h_source.html#l01337">coral::NodeObject::set_output()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l01235">coral::build_network_interface()</a>, <a class="el" href="coral__implementation_8h_source.html#l00065">coral::NodeObject::build_network_interface()</a>, <a class="el" href="coral_8h_source.html#l00289">coral::input</a>, <a class="el" href="coral__implementation_8h_source.html#l00912">coral::detail::meta_any_ref()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00066">Network()</a>, <a class="el" href="coral_8h_source.html#l00371">coral::network</a>, <a class="el" href="coral_8h_source.html#l01308">coral::NodeObject::network_interface_builder</a>, <a class="el" href="coral_8h_source.html#l01301">coral::NodeObject::network_type_hash</a>, <a class="el" href="coral_8h_source.html#l00284">coral::none</a>, <a class="el" href="coral_8h_source.html#l00299">coral::pass_through</a>, and <a class="el" href="coral_8h_source.html#l01402">coral::NodeObject::register_json_header()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="#a94faa68698439d0a021a2775f4b41303">operator=()</a>, and <a class="el" href="register__types_8h_source.html#l00046">coral::register_non_dimensional_types()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>, and <a class="el" href="register__types_8h_source.html#l00051">coral::register_non_dimensional_types()</a>.</p>
 
 </div>
 </div>
-<a id="a09435f92ee163caa900fd6fa56c30238" name="a09435f92ee163caa900fd6fa56c30238"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a09435f92ee163caa900fd6fa56c30238">&#9670;&#160;</a></span>remove_nodes_and_connections()</h2>
+<a id="ab6fd79c8010c070a3fa0eb0d14afb300" name="ab6fd79c8010c070a3fa0eb0d14afb300"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6fd79c8010c070a3fa0eb0d14afb300">&#9670;&#160;</a></span>remove_nodes_and_connections()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::Network::remove_nodes_and_connections </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::Network::remove_nodes_and_connections </td>
           <td>(</td>
           <td class="paramtype">const std::vector&lt; unsigned int &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>node_ids</em></span>, </td>
         </tr>
@@ -1424,59 +1277,47 @@ Private Attributes</h2></td></tr>
           <td class="paramtype">const std::vector&lt; unsigned int &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>connection_ids</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00395">395</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00355">355</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00129">connections</a>, <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>, <a class="el" href="coral__network_8h_source.html#l00125">nodes_name</a>, and <a class="el" href="coral__network_8h_source.html#l00171">rebuild_taskflow()</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>, <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>, <a class="el" href="coral__network_8h_source.html#l00062">nodes_name</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00147">rebuild_taskflow()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="a33b9189deb9a72b515c4f39d1f8cfbf8" name="a33b9189deb9a72b515c4f39d1f8cfbf8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a33b9189deb9a72b515c4f39d1f8cfbf8">&#9670;&#160;</a></span>run()</h2>
+<a id="a0be0d3a1f7d845200cdd2c283c0cb44d" name="a0be0d3a1f7d845200cdd2c283c0cb44d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0be0d3a1f7d845200cdd2c283c0cb44d">&#9670;&#160;</a></span>run()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::Network::run </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::Network::run </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00524">524</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00501">501</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00132">name</a>, and <a class="el" href="coral__network_8h_source.html#l00131">taskflow</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00064">connections</a>, <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>, and <a class="el" href="coral__network_8h_source.html#l00065">taskflow</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="ad1f478af7fee33cf09bcd269091324bf" name="ad1f478af7fee33cf09bcd269091324bf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad1f478af7fee33cf09bcd269091324bf">&#9670;&#160;</a></span>set_node_name()</h2>
+<a id="a5003f016615524ac31f4e3fb13a2b7ad" name="a5003f016615524ac31f4e3fb13a2b7ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5003f016615524ac31f4e3fb13a2b7ad">&#9670;&#160;</a></span>set_node_name()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void coral::Network::set_node_name </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> void coral::Network::set_node_name </td>
           <td>(</td>
           <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>id</em></span>, </td>
         </tr>
@@ -1486,23 +1327,41 @@ Private Attributes</h2></td></tr>
           <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00286">286</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00219">219</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00132">name</a>, <a class="el" href="coral__network_8h_source.html#l00126">node_tasks</a>, <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>, and <a class="el" href="coral__network_8h_source.html#l00125">nodes_name</a>.</p>
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00066">name</a>, <a class="el" href="coral__network_8h_source.html#l00063">node_tasks</a>, <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>, and <a class="el" href="coral__network_8h_source.html#l00062">nodes_name</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00306">add_connection()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00242">add_connection()</a>, and <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
 
 </div>
 </div>
-<a id="a75199d6b378396cf2d1a396bda9c5c87" name="a75199d6b378396cf2d1a396bda9c5c87"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a75199d6b378396cf2d1a396bda9c5c87">&#9670;&#160;</a></span>size()</h2>
+<a id="a9f1b021442ddafa7c35e534a94370e10" name="a9f1b021442ddafa7c35e534a94370e10"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f1b021442ddafa7c35e534a94370e10">&#9670;&#160;</a></span>size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::size </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const -&gt; size_t</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00546">546</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
+
+<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00061">nodes</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00242">add_connection()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00425">from_json()</a>, and <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>.</p>
+
+</div>
+</div>
+<a id="a11e5ac29bbfd84225eba39affaeb9a88" name="a11e5ac29bbfd84225eba39affaeb9a88"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a11e5ac29bbfd84225eba39affaeb9a88">&#9670;&#160;</a></span>to_json()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1511,57 +1370,24 @@ Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">auto coral::Network::size </td>
+          <td class="memname"><a class="el" href="coral__implementation_8h.html#af38c8d160bf7ee9a5c55ec385d92b567">CORAL_IMPL_INLINE</a> auto coral::Network::to_json </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> const -&gt; size_t
-    </td>
+          <td> const -&gt; nlohmann::json</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
+<span class="mlabels"><span class="mlabel nodiscard">nodiscard</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00573">573</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network__implementation_8h_source.html#l00928">928</a> of file <a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a>.</p>
 
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00124">nodes</a>.</p>
+<p class="reference">References <a class="el" href="coral__network__implementation_8h_source.html#l00869">connections_to_json()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00882">nodes_to_json()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00306">add_connection()</a>.</p>
-
-</div>
-</div>
-<a id="a5f5a5bbd6d32795fc18d07edc5c2c856" name="a5f5a5bbd6d32795fc18d07edc5c2c856"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5f5a5bbd6d32795fc18d07edc5c2c856">&#9670;&#160;</a></span>to_json()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">auto coral::Network::to_json </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td> const -&gt; nlohmann::json
-    </td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel nodiscard">nodiscard</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00918">918</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
-
-<p class="reference">References <a class="el" href="coral__network_8h_source.html#l00877">connections_to_json()</a>, and <a class="el" href="coral__network_8h_source.html#l00889">nodes_to_json()</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00946">coral::to_json()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00959">coral::to_json()</a>.</p>
 
 </div>
 </div>
@@ -1586,9 +1412,35 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00129">129</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00064">64</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00386">add_connection()</a>, <a class="el" href="coral__network_8h_source.html#l00306">add_connection()</a>, <a class="el" href="coral__network_8h_source.html#l00544">clear_network()</a>, <a class="el" href="coral__network_8h_source.html#l00877">connections_to_json()</a>, <a class="el" href="coral__network_8h_source.html#l00730">get_arguments()</a>, <a class="el" href="coral__network_8h_source.html#l00597">get_connected_nodes()</a>, <a class="el" href="coral__network_8h_source.html#l00632">get_inputs()</a>, <a class="el" href="coral__network_8h_source.html#l00615">get_node_connections()</a>, <a class="el" href="coral__network_8h_source.html#l00667">get_outputs()</a>, <a class="el" href="coral__network_8h_source.html#l00861">is_connected()</a>, <a class="el" href="coral__network_8h_source.html#l00412">n_connections()</a>, <a class="el" href="coral__network_8h_source.html#l00142">Network()</a>, <a class="el" href="coral__network_8h_source.html#l00151">operator=()</a>, <a class="el" href="coral__network_8h_source.html#l00171">rebuild_taskflow()</a>, and <a class="el" href="coral__network_8h_source.html#l00395">remove_nodes_and_connections()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00345">add_connection()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00242">add_connection()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00522">clear_network()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00869">connections_to_json()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00780">get_arguments()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00572">get_connected_nodes()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00610">get_inputs()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00591">get_node_connections()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00650">get_outputs()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00911">is_connected()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00377">n_connections()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00074">Network()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00085">operator=()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00147">rebuild_taskflow()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00103">refresh_dynamic_inputs()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00355">remove_nodes_and_connections()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00501">run()</a>.</p>
+
+</div>
+</div>
+<a id="aabdea39a7a3fc3502348e989e630b2c9" name="aabdea39a7a3fc3502348e989e630b2c9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aabdea39a7a3fc3502348e989e630b2c9">&#9670;&#160;</a></span>n_threads</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t coral::Network::n_threads</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel private">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00067">67</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00066">Network()</a>.</p>
 
 </div>
 </div>
@@ -1612,9 +1464,9 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00132">132</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00066">66</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00223">add_node()</a>, <a class="el" href="coral__network_8h_source.html#l00135">Network()</a>, <a class="el" href="coral__network_8h_source.html#l00889">nodes_to_json()</a>, <a class="el" href="coral__network_8h_source.html#l00171">rebuild_taskflow()</a>, <a class="el" href="coral__network_8h_source.html#l00524">run()</a>, and <a class="el" href="coral__network_8h_source.html#l00286">set_node_name()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00181">add_node()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00882">nodes_to_json()</a>, <a class="el" href="#a8bbf5fb835d8ee0cbe116a9275cbf51d">operator=()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00147">rebuild_taskflow()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00219">set_node_name()</a>.</p>
 
 </div>
 </div>
@@ -1638,14 +1490,14 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00126">126</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00063">63</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00306">add_connection()</a>, <a class="el" href="coral__network_8h_source.html#l00223">add_node()</a>, <a class="el" href="coral__network_8h_source.html#l00544">clear_network()</a>, <a class="el" href="coral__network_8h_source.html#l00561">get_task()</a>, <a class="el" href="coral__network_8h_source.html#l00171">rebuild_taskflow()</a>, and <a class="el" href="coral__network_8h_source.html#l00286">set_node_name()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00242">add_connection()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00181">add_node()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00522">clear_network()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00766">get_task()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00147">rebuild_taskflow()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00219">set_node_name()</a>.</p>
 
 </div>
 </div>
-<a id="afd404adb7457cba174303d5a13aebda8" name="afd404adb7457cba174303d5a13aebda8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afd404adb7457cba174303d5a13aebda8">&#9670;&#160;</a></span>nodes</h2>
+<a id="a84c7847284d9dfb2b1d6b195f2ee5c00" name="a84c7847284d9dfb2b1d6b195f2ee5c00"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84c7847284d9dfb2b1d6b195f2ee5c00">&#9670;&#160;</a></span>nodes</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1654,7 +1506,7 @@ Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::map&lt;unsigned int, std::shared_ptr&lt;<a class="el" href="classcoral_1_1_node_object.html">NodeObject</a>&gt; &gt; coral::Network::nodes</td>
+          <td class="memname">std::map&lt;unsigned int, <a class="el" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">NodeObjectPtr</a>&gt; coral::Network::nodes</td>
         </tr>
       </table>
   </td>
@@ -1664,9 +1516,9 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00124">124</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00061">61</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00306">add_connection()</a>, <a class="el" href="coral__network_8h_source.html#l00277">add_node()</a>, <a class="el" href="coral__network_8h_source.html#l00223">add_node()</a>, <a class="el" href="coral__network_8h_source.html#l00817">build_interface()</a>, <a class="el" href="coral__network_8h_source.html#l00544">clear_network()</a>, <a class="el" href="coral__network_8h_source.html#l00730">get_arguments()</a>, <a class="el" href="coral__network_8h_source.html#l00632">get_inputs()</a>, <a class="el" href="coral__network_8h_source.html#l00554">get_node()</a>, <a class="el" href="coral__network_8h_source.html#l00667">get_outputs()</a>, <a class="el" href="coral__network_8h_source.html#l00428">get_registry()</a>, <a class="el" href="coral__network_8h_source.html#l00702">input()</a>, <a class="el" href="coral__network_8h_source.html#l00419">n_nodes()</a>, <a class="el" href="coral__network_8h_source.html#l00142">Network()</a>, <a class="el" href="coral__network_8h_source.html#l00889">nodes_to_json()</a>, <a class="el" href="coral__network_8h_source.html#l00151">operator=()</a>, <a class="el" href="coral__network_8h_source.html#l00716">output()</a>, <a class="el" href="coral__network_8h_source.html#l00171">rebuild_taskflow()</a>, <a class="el" href="coral__network_8h_source.html#l00395">remove_nodes_and_connections()</a>, <a class="el" href="coral__network_8h_source.html#l00286">set_node_name()</a>, and <a class="el" href="coral__network_8h_source.html#l00573">size()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00242">add_connection()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00209">add_node()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00181">add_node()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00722">build_interface()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00522">clear_network()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00780">get_arguments()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00690">get_input()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00610">get_inputs()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00537">get_node()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00706">get_output()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00650">get_outputs()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00393">get_registry()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00385">n_nodes()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00074">Network()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00882">nodes_to_json()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00085">operator=()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00147">rebuild_taskflow()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00103">refresh_dynamic_inputs()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00355">remove_nodes_and_connections()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00501">run()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00219">set_node_name()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00546">size()</a>.</p>
 
 </div>
 </div>
@@ -1690,9 +1542,9 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00125">125</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00062">62</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00223">add_node()</a>, <a class="el" href="coral__network_8h_source.html#l00298">get_node_name()</a>, <a class="el" href="coral__network_8h_source.html#l00142">Network()</a>, <a class="el" href="coral__network_8h_source.html#l00151">operator=()</a>, <a class="el" href="coral__network_8h_source.html#l00395">remove_nodes_and_connections()</a>, and <a class="el" href="coral__network_8h_source.html#l00286">set_node_name()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00181">add_node()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00233">get_node_name()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00074">Network()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00085">operator=()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00355">remove_nodes_and_connections()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00219">set_node_name()</a>.</p>
 
 </div>
 </div>
@@ -1716,14 +1568,15 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00131">131</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="coral__network_8h_source.html#l00065">65</a> of file <a class="el" href="coral__network_8h_source.html">coral_network.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="coral__network_8h_source.html#l00223">add_node()</a>, <a class="el" href="coral__network_8h_source.html#l00544">clear_network()</a>, <a class="el" href="coral__network_8h_source.html#l00580">get_taskflow()</a>, <a class="el" href="coral__network_8h_source.html#l00587">output_dot()</a>, <a class="el" href="coral__network_8h_source.html#l00171">rebuild_taskflow()</a>, and <a class="el" href="coral__network_8h_source.html#l00524">run()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="coral__network__implementation_8h_source.html#l00181">add_node()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00522">clear_network()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00554">get_taskflow()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00562">output_dot()</a>, <a class="el" href="coral__network__implementation_8h_source.html#l00147">rebuild_taskflow()</a>, and <a class="el" href="coral__network__implementation_8h_source.html#l00501">run()</a>.</p>
 
 </div>
 </div>
-<hr/>The documentation for this class was generated from the following file:<ul>
+<hr/>The documentation for this class was generated from the following files:<ul>
 <li><a class="el" href="coral__network_8h_source.html">coral_network.h</a></li>
+<li><a class="el" href="coral__network__implementation_8h_source.html">coral_network_implementation.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -1731,7 +1584,7 @@ Private Attributes</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacecoral.html">coral</a></li><li class="navelem"><a class="el" href="classcoral_1_1_network.html">Network</a></li>
-    <li class="footer">Generated on Mon Jan 26 2026 18:59:34 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
+    <li class="footer">Generated on Tue Jan 27 2026 17:28:08 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
   </ul>
 </div>
 </body>

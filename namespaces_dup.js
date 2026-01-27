@@ -1769,7 +1769,6 @@ var namespaces_dup =
     [ "MGTwoLevelTransfer", "http://www.dealii.org/developer/doxygen/deal.II/structMGTwoLevelTransfer_1_1MatrixFreeRelatedData.html", null ],
     [ "MGTwoLevelTransferNonNested", "http://www.dealii.org/developer/doxygen/deal.II/structMGTwoLevelTransferNonNested_1_1AdditionalData.html", null ],
     [ "MultipleParameterLoop", "http://www.dealii.org/developer/doxygen/deal.II/classMultipleParameterLoop_1_1Entry.html", null ],
-    [ "nlohmann", "namespacenlohmann.html", "namespacenlohmann" ],
     [ "NonlinearSolverSelector", "http://www.dealii.org/developer/doxygen/deal.II/classNonlinearSolverSelector_1_1AdditionalData.html", null ],
     [ "NonMatching", "http://www.dealii.org/developer/doxygen/deal.II/namespaceNonMatching.html", [
       [ "ClosestSurfacePoint", "http://www.dealii.org/developer/doxygen/deal.II/structNonMatching_1_1ClosestSurfacePoint_1_1AdditionalData.html", null ],
