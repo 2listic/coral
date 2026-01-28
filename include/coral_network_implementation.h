@@ -1,6 +1,8 @@
 #ifndef CORAL_NETWORK_IMPLEMENTATION_H
 #define CORAL_NETWORK_IMPLEMENTATION_H
 
+#include <fstream>
+#include <string>
 #include "coral_network.h"
 
 #if defined(CORAL_HEADER_ONLY) && CORAL_HEADER_ONLY
@@ -11,6 +13,33 @@
 
 namespace coral
 {
+  enum class TouchMode {
+    Running,
+    Succeeded,
+    Failed
+  };
+
+  CORAL_IMPL_INLINE void
+  touch_file(std::filesystem::path base_path,
+             const std::string& name,
+            TouchMode mode)
+  {
+    std::string full_name = name;
+    switch (mode) {
+    case TouchMode::Running:
+      full_name += ".running";
+      break;
+    case TouchMode::Succeeded:
+      full_name += ".succeeded";
+      break;
+    case TouchMode::Failed:
+      full_name += ".failed";
+      break;
+    }
+
+    std::ofstream{base_path / full_name, std::iostream::app};
+  }
+  
   CORAL_IMPL_INLINE
   Connection::Connection(unsigned int _source_id,
                          unsigned int _target_id,
@@ -125,6 +154,7 @@ namespace coral
               node_id,
               node_name.c_str(),
               node->type_name().c_str());
+    touch_file("./", node_name, TouchMode::Running);
     try
       {
         refresh_dynamic_inputs(node_id);
@@ -134,11 +164,13 @@ namespace coral
       {
         throw std::runtime_error("Node " + std::to_string(node_id) +
                                  " failed: " + e.what());
+        touch_file("./", node_name, TouchMode::Failed);
       }
     slog_info("Node %u: %s (type = %s) run",
               node_id,
               node_name.c_str(),
               node->type_name().c_str());
+    touch_file("./", node_name, TouchMode::Succeeded);
   }
 
 
