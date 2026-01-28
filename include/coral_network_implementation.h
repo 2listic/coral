@@ -162,9 +162,9 @@ namespace coral
       }
     catch (const std::exception &e)
       {
+        touch_file("./", node_name, TouchMode::Failed);
         throw std::runtime_error("Node " + std::to_string(node_id) +
                                  " failed: " + e.what());
-        touch_file("./", node_name, TouchMode::Failed);
       }
     slog_info("Node %u: %s (type = %s) run",
               node_id,
@@ -266,6 +266,14 @@ namespace coral
   {
     auto it = nodes_name.find(id);
     return it == nodes_name.end() ? std::string() : it->second;
+  }
+
+
+
+  CORAL_IMPL_INLINE const std::map<unsigned int, std::string>&
+  Network::get_nodes_name() const
+  {
+    return nodes_name;
   }
 
 
