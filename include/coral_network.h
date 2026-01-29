@@ -65,6 +65,7 @@ namespace coral
     tf::Taskflow                          taskflow;
     std::string                           name;
     size_t                                n_threads;
+    static std::filesystem::path touch_file_base_path;
 
     void
     rebuild_taskflow();
@@ -109,8 +110,14 @@ namespace coral
     void
     set_node_name(unsigned int id, const std::string &name);
 
+    void
+    set_touch_file_base_path(const std::filesystem::path &path);
+
     std::string
     get_node_name(unsigned int id) const;
+
+    const std::map<unsigned int, std::string>&
+    get_nodes_name() const;
 
     void
     add_connection(unsigned int id, const Connection &conn);

@@ -337,6 +337,7 @@ main(int argc, char *argv[])
   CLI::App *run_sub = app.add_subcommand("run", "Run a certain graph");
   fs::path  input_json;
   fs::path  graph_path{"network.dot"};
+  fs::path  touch_file_path{"./"};
 
   run_sub
     ->add_option("input_json", input_json, "Input json of the graph to run")
@@ -354,6 +355,15 @@ main(int argc, char *argv[])
     ->multi_option_policy(CLI::MultiOptionPolicy::Throw);
 
   run_sub->add_option("--graph", graph_path, "Output path of graph dot file")
+    ->capture_default_str()
+    ->type_name("PATH")
+    ->expected(0, 1)
+    ->multi_option_policy(CLI::MultiOptionPolicy::Throw);
+
+  run_sub
+    ->add_option("--touch-dir",
+                 touch_file_path,
+                 "Output directory for touch files (node status markers)")
     ->capture_default_str()
     ->type_name("PATH")
     ->expected(0, 1)
@@ -405,6 +415,9 @@ main(int argc, char *argv[])
   coral::Network network;
   network.from_json(data);
   slog_info("Built network from data.");
+
+  network.set_touch_file_base_path(touch_file_path);
+  slog_info("Touch file base path: %s", touch_file_path.c_str());
 
   if (dump_graph)
     {

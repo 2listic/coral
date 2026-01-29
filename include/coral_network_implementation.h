@@ -13,6 +13,9 @@
 
 namespace coral
 {
+  // Static member definition with default value for backward compatibility
+  CORAL_IMPL_INLINE std::filesystem::path Network::touch_file_base_path{"./"};
+
   enum class TouchMode {
     Running,
     Succeeded,
@@ -143,6 +146,41 @@ namespace coral
       }
   }
 
+  CORAL_IMPL_INLINE void
+  Network::set_touch_file_base_path(const std::filesystem::path &path)
+  {
+    touch_file_base_path = path;
+    slog_debug("Set touch file base path to: %s", path.c_str());
+
+    // Create directory if it doesn't exist
+    if (!std::filesystem::exists(touch_file_base_path))
+      {
+        std::filesystem::create_directories(touch_file_base_path);
+        slog_info("Created touch file directory: %s", path.c_str());
+      }
+    else
+      {
+        // Directory exists: clean up existing touch files
+        slog_debug("Cleaning up existing touch files in: %s", path.c_str());
+
+        for (const auto &entry : std::filesystem::directory_iterator(touch_file_base_path))
+          {
+            if (entry.is_regular_file())
+              {
+                const auto filename = entry.path().filename().string();
+                if (filename.ends_with(".running") ||
+                    filename.ends_with(".succeeded") ||
+                    filename.ends_with(".failed"))
+                  {
+                    std::filesystem::remove(entry.path());
+                    slog_debug("Removed touch file: %s", filename.c_str());
+                  }
+              }
+          }
+
+        slog_info("Cleaned touch file directory: %s", path.c_str());
+      }
+  }
 
 
   CORAL_IMPL_INLINE void
@@ -154,7 +192,7 @@ namespace coral
               node_id,
               node_name.c_str(),
               node->type_name().c_str());
-    touch_file("./", node_name, TouchMode::Running);
+    touch_file(touch_file_base_path, node_name, TouchMode::Running);
     try
       {
         refresh_dynamic_inputs(node_id);
@@ -162,7 +200,7 @@ namespace coral
       }
     catch (const std::exception &e)
       {
-        touch_file("./", node_name, TouchMode::Failed);
+        touch_file(touch_file_base_path, node_name, TouchMode::Failed);
         throw std::runtime_error("Node " + std::to_string(node_id) +
                                  " failed: " + e.what());
       }
@@ -170,7 +208,7 @@ namespace coral
               node_id,
               node_name.c_str(),
               node->type_name().c_str());
-    touch_file("./", node_name, TouchMode::Succeeded);
+    touch_file(touch_file_base_path, node_name, TouchMode::Succeeded);
   }
 
 

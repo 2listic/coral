@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 
 #include <fstream>
+#include <filesystem>
+#include <vector>
+#include <string>
 
 #include "coral_network.h"
 #include "register_types.h"
@@ -39,6 +42,71 @@ namespace
     network.add_connection(grid_id, ref_id, 0, 0);
 
     return network;
+  }
+
+  void
+  verify_and_cleanup_status_files(const coral::Network &network,
+                                  const std::filesystem::path &touch_dir)
+  {
+    // Get all node names from the network
+    const auto &nodes_name = network.get_nodes_name();
+
+    // Verify status files for each node
+    for (const auto &[node_id, name] : nodes_name)
+      {
+        // Use node name if available, otherwise skip empty names
+        // (empty names would create files like ".running" which is problematic)
+        if (name.empty())
+          continue;
+
+        std::filesystem::path running_file   = touch_dir / (name + ".running");
+        std::filesystem::path succeeded_file = touch_dir / (name + ".succeeded");
+        std::filesystem::path failed_file    = touch_dir / (name + ".failed");
+
+        // Check that .running file exists
+        EXPECT_TRUE(std::filesystem::exists(running_file))
+          << "Missing .running file for node " << node_id << " (name: '" << name
+          << "')";
+
+        // Check that .succeeded file exists
+        EXPECT_TRUE(std::filesystem::exists(succeeded_file))
+          << "Missing .succeeded file for node " << node_id << " (name: '"
+          << name << "')";
+
+        // Check that .failed file does NOT exist
+        EXPECT_FALSE(std::filesystem::exists(failed_file))
+          << "Unexpected .failed file for node " << node_id << " (name: '"
+          << name << "')";
+
+        // Clean up the status files
+        if (std::filesystem::exists(running_file))
+          std::filesystem::remove(running_file);
+        if (std::filesystem::exists(succeeded_file))
+          std::filesystem::remove(succeeded_file);
+        if (std::filesystem::exists(failed_file))
+          std::filesystem::remove(failed_file);
+      }
+  }
+
+  std::filesystem::path
+  setup_touch_dir(const std::string &test_name)
+  {
+    std::filesystem::path touch_dir =
+      std::filesystem::path("./test_touch_files") / test_name;
+
+    // Remove directory if it exists from previous failed run
+    if (std::filesystem::exists(touch_dir))
+      std::filesystem::remove_all(touch_dir);
+
+    // Directory will be created by set_touch_file_base_path()
+    return touch_dir;
+  }
+
+  void
+  cleanup_touch_dir(const std::filesystem::path &touch_dir)
+  {
+    if (std::filesystem::exists(touch_dir))
+      std::filesystem::remove_all(touch_dir);
   }
 } // namespace
 
@@ -141,6 +209,8 @@ TEST(Modules, HyperCubeNetworkRoundTrip)
 
 TEST(Modules, HyperCubeNetworkConnectedRun)
 {
+  auto touch_dir = setup_touch_dir("Modules_HyperCubeNetworkConnectedRun");
+
   coral::register_all_types();
 
   auto network_node = coral::make_node(build_hypercube_network());
@@ -153,6 +223,7 @@ TEST(Modules, HyperCubeNetworkConnectedRun)
   ASSERT_EQ(refinements->get<unsigned int>(), 4u);
 
   coral::Network network;
+  network.set_touch_file_base_path(touch_dir);
   auto           net_id = network.add_node(network_node);
   ASSERT_EQ(refinements->get<unsigned int>(), 4u);
   auto ref_id = network.add_node(refinements);
@@ -168,10 +239,14 @@ TEST(Modules, HyperCubeNetworkConnectedRun)
   ASSERT_EQ(network_node->get_input(0)->get<unsigned int>(), 4u);
 
   ASSERT_EQ(tri_node->get<dealii::Triangulation<2>>().n_active_cells(), 256);
+
+  cleanup_touch_dir(touch_dir);
 }
 
 TEST(Modules, NetworkNodeArgumentsOrder1)
 {
+  auto touch_dir = setup_touch_dir("Modules_NetworkNodeArgumentsOrder1");
+
   const std::string path = SOURCE_DIR "/test_files/networknode-order1.json";
 
   coral::register_all_types();
@@ -183,14 +258,21 @@ TEST(Modules, NetworkNodeArgumentsOrder1)
   input >> data;
 
   coral::Network network;
+  network.set_touch_file_base_path(touch_dir);
   ASSERT_NO_THROW(network.from_json(data))
     << "Failed to parse network from JSON";
 
   ASSERT_NO_THROW(network.run()) << "Failed to run network";
+
+  verify_and_cleanup_status_files(network, touch_dir);
+
+  cleanup_touch_dir(touch_dir);
 }
 
 TEST(Modules, NetworkNodeArgumentsOrder2)
 {
+  auto touch_dir = setup_touch_dir("Modules_NetworkNodeArgumentsOrder2");
+
   const std::string path = SOURCE_DIR "/test_files/networknode-order2.json";
 
   coral::register_all_types();
@@ -202,15 +284,22 @@ TEST(Modules, NetworkNodeArgumentsOrder2)
   input >> data;
 
   coral::Network network;
+  network.set_touch_file_base_path(touch_dir);
   ASSERT_NO_THROW(network.from_json(data))
     << "Failed to parse network from JSON with different argument order";
 
   ASSERT_NO_THROW(network.run())
     << "Failed to run network with different argument order";
+
+  verify_and_cleanup_status_files(network, touch_dir);
+
+  cleanup_touch_dir(touch_dir);
 }
 
 TEST(Modules, NetworkNodeNoArguments)
 {
+  auto touch_dir = setup_touch_dir("Modules_NetworkNodeNoArguments");
+
   const std::string path =
     SOURCE_DIR "/test_files/networknode-noarguments.json";
 
@@ -223,15 +312,22 @@ TEST(Modules, NetworkNodeNoArguments)
   input >> data;
 
   coral::Network network;
+  network.set_touch_file_base_path(touch_dir);
   ASSERT_NO_THROW(network.from_json(data))
     << "Failed to parse network from JSON with different argument order";
 
   ASSERT_NO_THROW(network.run())
     << "Failed to run network with different argument order";
+
+  verify_and_cleanup_status_files(network, touch_dir);
+
+  cleanup_touch_dir(touch_dir);
 }
 
 TEST(Modules, VtkGen1)
 {
+  auto touch_dir = setup_touch_dir("Modules_VtkGen1");
+
   const std::string path        = SOURCE_DIR "/test_files/vtk-gen1.json";
   const std::string output_file = "grid-1.vtk";
 
@@ -244,6 +340,7 @@ TEST(Modules, VtkGen1)
   input >> data;
 
   coral::Network network;
+  network.set_touch_file_base_path(touch_dir);
   ASSERT_NO_THROW(network.from_json(data))
     << "Failed to parse network from JSON";
 
@@ -259,12 +356,19 @@ TEST(Modules, VtkGen1)
   ASSERT_GT(file_size, 0) << "Output file " << output_file << " is empty";
   output.close();
 
+  // Verify and cleanup status files
+  verify_and_cleanup_status_files(network, touch_dir);
+
   // Remove the output file
   std::remove(output_file.c_str());
+
+  cleanup_touch_dir(touch_dir);
 }
 
 TEST(Modules, VtkGen2)
 {
+  auto touch_dir = setup_touch_dir("Modules_VtkGen2");
+
   const std::string path        = SOURCE_DIR "/test_files/vtk-gen2.json";
   const std::string output_file = "grid-1.vtk";
 
@@ -277,6 +381,7 @@ TEST(Modules, VtkGen2)
   input >> data;
 
   coral::Network network;
+  network.set_touch_file_base_path(touch_dir);
   ASSERT_NO_THROW(network.from_json(data))
     << "Failed to parse network from JSON";
 
@@ -292,12 +397,19 @@ TEST(Modules, VtkGen2)
   ASSERT_GT(file_size, 0) << "Output file " << output_file << " is empty";
   output.close();
 
+  // Verify and cleanup status files
+  verify_and_cleanup_status_files(network, touch_dir);
+
   // Remove the output file
   std::remove(output_file.c_str());
+
+  cleanup_touch_dir(touch_dir);
 }
 
 TEST(Modules, VtkGen3)
 {
+  auto touch_dir = setup_touch_dir("Modules_VtkGen3");
+
   const std::string path        = SOURCE_DIR "/test_files/vtk-gen3.json";
   const std::string output_file = "grid-1.vtk";
 
@@ -310,6 +422,7 @@ TEST(Modules, VtkGen3)
   input >> data;
 
   coral::Network network;
+  network.set_touch_file_base_path(touch_dir);
   ASSERT_NO_THROW(network.from_json(data))
     << "Failed to parse network from JSON";
 
@@ -325,12 +438,19 @@ TEST(Modules, VtkGen3)
   ASSERT_GT(file_size, 0) << "Output file " << output_file << " is empty";
   output.close();
 
+  // Verify and cleanup status files
+  verify_and_cleanup_status_files(network, touch_dir);
+
   // Remove the output file
   std::remove(output_file.c_str());
+
+  cleanup_touch_dir(touch_dir);
 }
 
 TEST(Modules, VtkSingle)
 {
+  auto touch_dir = setup_touch_dir("Modules_VtkSingle");
+
   const std::string path        = SOURCE_DIR "/test_files/vtk-single.json";
   const std::string output_file = "grid-1.vtk";
 
@@ -343,6 +463,7 @@ TEST(Modules, VtkSingle)
   input >> data;
 
   coral::Network network;
+  network.set_touch_file_base_path(touch_dir);
   ASSERT_NO_THROW(network.from_json(data))
     << "Failed to parse network from JSON";
 
@@ -358,6 +479,11 @@ TEST(Modules, VtkSingle)
   ASSERT_GT(file_size, 0) << "Output file " << output_file << " is empty";
   output.close();
 
+  // Verify and cleanup status files
+  verify_and_cleanup_status_files(network, touch_dir);
+
   // Remove the output file
   std::remove(output_file.c_str());
+
+  cleanup_touch_dir(touch_dir);
 }
