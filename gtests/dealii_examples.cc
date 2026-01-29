@@ -7,33 +7,11 @@
 #include "coral.h"
 #include "coral_network.h" // Added include for Network class
 #include "register_types.h"
+#include "test_utils.h"
 
 using namespace dealii;
 using namespace coral;
-
-namespace
-{
-  std::filesystem::path
-  setup_touch_dir(const std::string &test_name)
-  {
-    std::filesystem::path touch_dir =
-      std::filesystem::path("./test_touch_files") / test_name;
-
-    // Remove directory if it exists from previous failed run
-    if (std::filesystem::exists(touch_dir))
-      std::filesystem::remove_all(touch_dir);
-
-    // Directory will be created by set_touch_file_base_path()
-    return touch_dir;
-  }
-
-  void
-  cleanup_touch_dir(const std::filesystem::path &touch_dir)
-  {
-    if (std::filesystem::exists(touch_dir))
-      std::filesystem::remove_all(touch_dir);
-  }
-} // namespace
+using coral_test::ScopedTestOutputDir;
 
 // Void function test
 TEST(dealiiExamples, step01)
@@ -99,13 +77,13 @@ TEST(dealiiExamples, step01)
 // Void function test
 TEST(dealiiExamples, NetworkStep00)
 {
-  auto touch_dir = setup_touch_dir("dealiiExamples_NetworkStep00");
+  ScopedTestOutputDir output_dir("dealiiExamples_NetworkStep00");
 
   register_non_dimensional_types();
   register_dimensional_types<2, 2>();
 
   Network network;
-  network.set_touch_file_base_path(touch_dir);
+  network.set_touch_file_base_path(output_dir);
   network.clear_network();
 
   auto make_grid =
@@ -156,21 +134,19 @@ TEST(dealiiExamples, NetworkStep00)
 
   // Verify results
   ASSERT_EQ(16, tria->get<Triangulation<2>>().n_active_cells());
-
-  cleanup_touch_dir(touch_dir);
 }
 
 
 // Void function test
 TEST(dealiiExamples, NetworkStep01)
 {
-  auto touch_dir = setup_touch_dir("dealiiExamples_NetworkStep01");
+  ScopedTestOutputDir output_dir("dealiiExamples_NetworkStep01");
 
   register_non_dimensional_types();
   register_dimensional_types<2, 2>();
 
   Network network;
-  network.set_touch_file_base_path(touch_dir);
+  network.set_touch_file_base_path(output_dir);
   network.clear_network();
 
   auto make_grid =
@@ -246,19 +222,17 @@ TEST(dealiiExamples, NetworkStep01)
   // Remove the file
   file.close();
   std::remove("grid-1.vtk");
-
-  cleanup_touch_dir(touch_dir);
 }
 
 TEST(dealiiExamples, NetworkFromJsonStep00)
 {
-  auto touch_dir = setup_touch_dir("dealiiExamples_NetworkFromJsonStep00");
+  ScopedTestOutputDir output_dir("dealiiExamples_NetworkFromJsonStep00");
 
   register_non_dimensional_types();
   register_dimensional_types<2, 2>();
 
   Network network;
-  network.set_touch_file_base_path(touch_dir);
+  network.set_touch_file_base_path(output_dir);
   network.clear_network();
 
   std::ifstream file("step-0_network.json");
@@ -306,6 +280,4 @@ TEST(dealiiExamples, NetworkFromJsonStep00)
   // Verify results
   auto &tria = tria_node->get<Triangulation<2>>();
   ASSERT_EQ(16, tria.n_active_cells());
-
-  cleanup_touch_dir(touch_dir);
 }

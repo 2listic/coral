@@ -5,40 +5,18 @@
 #include "coral_network.h"
 #include "gtest/gtest.h"
 #include "register_types.h"
+#include "test_utils.h"
 
 using namespace dealii;
 using namespace coral;
 using json = nlohmann::json;
-
-namespace
-{
-  std::filesystem::path
-  setup_touch_dir(const std::string &test_name)
-  {
-    std::filesystem::path touch_dir =
-      std::filesystem::path("./test_touch_files") / test_name;
-
-    // Remove directory if it exists from previous failed run
-    if (std::filesystem::exists(touch_dir))
-      std::filesystem::remove_all(touch_dir);
-
-    // Directory will be created by set_touch_file_base_path()
-    return touch_dir;
-  }
-
-  void
-  cleanup_touch_dir(const std::filesystem::path &touch_dir)
-  {
-    if (std::filesystem::exists(touch_dir))
-      std::filesystem::remove_all(touch_dir);
-  }
-} // namespace
+using coral_test::ScopedTestOutputDir;
 
 
 // Failing test from network.cc
 TEST(Network, BareMinimal)
 {
-  auto touch_dir = setup_touch_dir("Network_BareMinimal");
+  ScopedTestOutputDir output_dir("Network_BareMinimal");
 
   coral::NodeObject::register_elementary_type<double>();
 
@@ -57,7 +35,7 @@ TEST(Network, BareMinimal)
 
   // Now create a network and add nodes and connections
   coral::Network network;
-  network.set_touch_file_base_path(touch_dir);
+  network.set_touch_file_base_path(output_dir);
 
   auto id1 = network.add_node(coral::make_node(1.0));
   auto id2 = network.add_node(coral::make_node(2.0));
@@ -128,8 +106,6 @@ TEST(Network, BareMinimal)
 
   ASSERT_EQ(n4->get_output(0)->get<double>(), 3.0)
     << "The output node should have the value 3.0";
-
-  cleanup_touch_dir(touch_dir);
 }
 
 TEST(Network, ExplicitNodeNaming)
@@ -568,7 +544,7 @@ TEST(Network, RegistrySubset)
 
 TEST(Network, ParseAndExecuteNetwork)
 {
-  auto touch_dir = setup_touch_dir("Network_ParseAndExecuteNetwork");
+  ScopedTestOutputDir output_dir("Network_ParseAndExecuteNetwork");
 
   // Load the JSON file
   std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
@@ -582,7 +558,7 @@ TEST(Network, ParseAndExecuteNetwork)
 
   // Create and populate the network
   coral::Network network = json_data;
-  network.set_touch_file_base_path(touch_dir);
+  network.set_touch_file_base_path(output_dir);
 
   // Output some debug information
   slog_debug("Network has %zu nodes and %u connections",
@@ -594,6 +570,4 @@ TEST(Network, ParseAndExecuteNetwork)
 
   // Verify results
   ASSERT_EQ(16, network.get_node(0)->get<Triangulation<2>>().n_active_cells());
-
-  cleanup_touch_dir(touch_dir);
 }
