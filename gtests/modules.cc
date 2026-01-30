@@ -60,9 +60,9 @@ namespace
         if (name.empty())
           continue;
 
-        std::filesystem::path running_file   = touch_dir / (name + ".running");
-        std::filesystem::path succeeded_file = touch_dir / (name + ".succeeded");
-        std::filesystem::path failed_file    = touch_dir / (name + ".failed");
+        std::filesystem::path running_file   = touch_dir / (std::to_string(node_id) + ".running");
+        std::filesystem::path succeeded_file = touch_dir / (std::to_string(node_id) + ".succeeded");
+        std::filesystem::path failed_file    = touch_dir / (std::to_string(node_id) + ".failed");
 
         // Check that .running file exists
         EXPECT_TRUE(std::filesystem::exists(running_file))
