@@ -412,7 +412,13 @@ main(int argc, char *argv[])
   input >> data;
   slog_info("File %s read.", input_json.c_str());
 
+
+  const char *env_th = std::getenv("THREADS");
+  const size_t n_threads = env_th ? static_cast<size_t>(std::stoull(env_th)) : std::thread::hardware_concurrency();
+  slog_info("Thread pool size of %zu.", n_threads);
+
   coral::Network network;
+  Network::set_threads_number(n_threads);
   network.from_json(data);
   slog_info("Built network from data.");
 

@@ -16,6 +16,8 @@ namespace coral
   // Static member definition with default value for backward compatibility
   CORAL_IMPL_INLINE std::filesystem::path Network::touch_file_base_path{"./"};
 
+  CORAL_IMPL_INLINE size_t Network::n_threads = std::thread::hardware_concurrency();
+
   enum class TouchMode {
     Running,
     Succeeded,
@@ -95,12 +97,7 @@ namespace coral
   }
 
   CORAL_IMPL_INLINE
-  Network::Network()
-  {
-      const char *env_th = std::getenv("THREADS");
-      n_threads = env_th ? static_cast<size_t>(std::stoull(env_th)) : std::thread::hardware_concurrency();
-      slog_info("Created network with executor pool size of %zu.", n_threads);
-  }
+  Network::Network() = default;
 
   CORAL_IMPL_INLINE
   Network::Network(const Network &other)
@@ -182,6 +179,11 @@ namespace coral
       }
   }
 
+  CORAL_IMPL_INLINE void
+  Network::set_threads_number(size_t nth)
+  {
+    n_threads = nth;
+  }
 
   CORAL_IMPL_INLINE void
   Network::execute_node_task(unsigned int         node_id,
@@ -581,10 +583,11 @@ namespace coral
   CORAL_IMPL_INLINE void
   Network::run()
   {
-    tf::Executor executor;
-    slog_info("Running network (%zu nodes, %zu connections)",
+    tf::Executor executor{n_threads};
+    slog_info("Running network (%zu nodes, %zu connections) with %zu worker(s).",
               nodes.size(),
-              connections.size());
+              connections.size(),
+              n_threads);
     try
       {
         executor.run(taskflow).get();

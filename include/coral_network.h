@@ -64,7 +64,7 @@ namespace coral
     std::map<unsigned int, Connection>    connections;
     tf::Taskflow                          taskflow;
     std::string                           name;
-    size_t                                n_threads;
+    static size_t                         n_threads;
     static std::filesystem::path touch_file_base_path;
 
     void
@@ -112,6 +112,9 @@ namespace coral
 
     static void
     set_touch_file_base_path(const std::filesystem::path &path);
+
+    static void
+    set_threads_number(size_t nth);
 
     std::string
     get_node_name(unsigned int id) const;
