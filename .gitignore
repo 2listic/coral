@@ -9,7 +9,7 @@ compile_commands.json
 CMakeCache.txt
 CMakeFiles/
 
-
+test_output/
 build*/
 build*/*.json
 .cache/

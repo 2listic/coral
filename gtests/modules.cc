@@ -127,6 +127,8 @@ TEST(Modules, CompleteNetworkNoIO)
 
 TEST(Modules, HyperCubeNetworkInterface)
 {
+  ScopedTestOutputDir output_dir("Modules_HyperCubeNetworkInterface");
+
   coral::register_all_types();
 
   auto network = build_hypercube_network();
@@ -139,7 +141,7 @@ TEST(Modules, HyperCubeNetworkInterface)
 
   // Dump the network to the file hyper_cube_network.json
   nlohmann::json network_json = network;
-  std::ofstream  ofs("hyper_cube_network.json");
+  std::ofstream  ofs(output_dir.path() / "hyper_cube_network.json");
   ofs << network_json.dump(2);
   ofs.close();
 
@@ -147,7 +149,7 @@ TEST(Modules, HyperCubeNetworkInterface)
   auto           node      = coral::make_node(network);
   nlohmann::json node_json = node;
 
-  std::ofstream ofs_node("hyper_cube_node.json");
+  std::ofstream ofs_node(output_dir.path() / "hyper_cube_node.json");
   ofs_node << node_json.dump(2);
   ofs_node.close();
 }

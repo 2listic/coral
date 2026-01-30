@@ -29,7 +29,7 @@ TEST(Network, BareMinimal)
 
   // Output the registry for these node types
   auto          registry = coral::NodeObject::get_registry();
-  std::ofstream registry_file("bare_minimal_registry.json");
+  std::ofstream registry_file(output_dir.path() / "bare_minimal_registry.json");
   registry_file << std::setw(2) << registry << std::endl;
   registry_file.close();
 
@@ -92,10 +92,10 @@ TEST(Network, BareMinimal)
   // Verify the output node is not a pass-through input
   ASSERT_NE(n4->get_output(0), n4->get_input(0));
 
-  network.output_dot("bare_minimal.dot");
+  network.output_dot(output_dir.path() / "bare_minimal.dot");
   // dump the json of the network
   json          serialized_json = network;
-  std::ofstream json_file("bare_minimal.json");
+  std::ofstream json_file(output_dir.path() / "bare_minimal.json");
   json_file << serialized_json.dump(2);
   json_file.close();
 
@@ -247,6 +247,8 @@ TEST(Network, JsonBasedWorkflow)
 // Test for validating edge connections
 TEST(Network, ValidateEdgeConnections)
 {
+  ScopedTestOutputDir output_dir("Network_ValidateEdgeConnections");
+
   // Load the JSON file
   std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
   ASSERT_TRUE(file.is_open()) << "Failed to open JSON file.";
@@ -265,7 +267,7 @@ TEST(Network, ValidateEdgeConnections)
   ASSERT_EQ(network.size(), 6);
 
   // Output the taskflow as DOT format for debugging
-  network.output_dot("validate_edges_taskflow.dot");
+  network.output_dot(output_dir.path() / "validate_edges_taskflow.dot");
 
   // Get the taskflow
   auto &tf = network.get_taskflow();

@@ -9,6 +9,7 @@
 #include <fstream>
 
 #include "coral.h"
+#include "test_utils.h"
 
 using namespace dealii;
 using namespace coral;
@@ -43,6 +44,8 @@ TEST(NodeObject, TriviallyConstructibleType)
 
 TEST(NodeObject, NonTriviallyConstructibleType)
 {
+  coral_test::ScopedTestOutputDir output_dir("NodeObject_NonTriviallyConstructibleType");
+
   using type = FE_Q<2>;
   NodeObject::register_elementary_type<int>();
   NodeObject::register_type<type, int>("degree");
@@ -53,7 +56,7 @@ TEST(NodeObject, NonTriviallyConstructibleType)
   ASSERT_TRUE(fe->ready());
 
   // Dump the json to a file
-  std::ofstream ofs("fe_q.json");
+  std::ofstream ofs(output_dir.path() / "fe_q.json");
   json          j = fe;
   ofs << j.dump(2);
   ofs.close();

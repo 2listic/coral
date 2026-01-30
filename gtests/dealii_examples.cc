@@ -16,6 +16,8 @@ using coral_test::ScopedTestOutputDir;
 // Void function test
 TEST(dealiiExamples, step01)
 {
+  ScopedTestOutputDir output_dir("dealiiExamples_step01");
+  
   register_non_dimensional_types();
   register_dimensional_types<2, 2>();
 
@@ -25,12 +27,13 @@ TEST(dealiiExamples, step01)
   auto make_grid =
     make_node("GridGenerator::generate_from_name_and_arguments<2>");
 
+  std::string vtk_path = output_dir.path() / "grid-1.vtk";
   auto tria           = make_node<Triangulation<2>>();
   auto grid_name      = make_node("hyper_cube");
   auto grid_arguments = make_node("0: 1: false");
   auto ref            = make_node("Triangulation<2>::refine_global");
   auto n_ref          = make_node(2u);
-  auto filename       = make_node("grid-1.vtk");
+  auto filename       = make_node(vtk_path);
   auto out_file       = make_node<std::ofstream>();
   auto grid_out       = make_node<GridOut>();
   auto write_vtk      = make_node("GridOut::write_vtk<2>");
@@ -48,7 +51,7 @@ TEST(dealiiExamples, step01)
   write_vtk->set_arguments({grid_out, tria, out_file});
   // connect(write_vtk, {{grid_out, 0}, {tria, 0}, {out_file, 0}});
 
-  network.output_dot("taskflow.dot");
+  network.output_dot(output_dir.path() / "taskflow.dot");
 
   // NodeObject::run_network(); // This is what we should have run
 
@@ -65,12 +68,10 @@ TEST(dealiiExamples, step01)
   (*write_vtk)(); // Write the grid to a file
 
   // Check if the file exists
-  std::ifstream file("grid-1.vtk");
+  std::ifstream file(output_dir.path() / "grid-1.vtk");
   ASSERT_TRUE(file.good());
 
-  // Remove the file
   file.close();
-  std::remove("grid-1.vtk");
 }
 
 
@@ -116,15 +117,15 @@ TEST(dealiiExamples, NetworkStep00)
   network.add_connection(make_grid_id, ref_id, 0, 0); // tria
   network.add_connection(n_ref_id, ref_id, 0, 1);     // n_ref
 
-  network.output_dot("step-0_taskflow.dot");
+  network.output_dot(output_dir.path() / "step-0_taskflow.dot");
   {
-    std::ofstream ofile("step-0_network.json");
+    std::ofstream ofile(output_dir.path() / "step-0_network.json");
     ofile << network.to_json().dump(2) << std::endl;
     ofile.close();
   }
 
   {
-    std::ofstream ofile("step-0_registry.json");
+    std::ofstream ofile(output_dir.path() / "step-0_registry.json");
     ofile << NodeObject::get_registry().dump(2) << std::endl;
     ofile.close();
   }
@@ -152,12 +153,13 @@ TEST(dealiiExamples, NetworkStep01)
   auto make_grid =
     make_node("GridGenerator::generate_from_name_and_arguments<2>");
 
+  std::string vtk_path = output_dir.path() / "grid-1.vtk";
   auto tria           = make_node<Triangulation<2>>();
   auto grid_name      = make_node("hyper_cube");
   auto grid_arguments = make_node("0: 1: false");
   auto ref            = make_node("Triangulation<2>::refine_global");
   auto n_ref          = make_node(2u);
-  auto filename       = make_node("grid-1.vtk");
+  auto filename       = make_node(vtk_path);
   auto out_file       = make_node<std::ofstream>();
   auto grid_out       = make_node<GridOut>();
   auto write_vtk      = make_node("GridOut::write_vtk<2>");
@@ -195,15 +197,15 @@ TEST(dealiiExamples, NetworkStep01)
   network.add_connection(ref_id, write_vtk_id, 0, 1);      // tria
   network.add_connection(out_file_id, write_vtk_id, 0, 2); // out_file
 
-  network.output_dot("step-1_taskflow.dot");
+  network.output_dot(output_dir.path() / "step-1_taskflow.dot");
   {
-    std::ofstream ofile("step-1_network.json");
+    std::ofstream ofile(output_dir.path() / "step-1_network.json");
     ofile << network.to_json().dump(2) << std::endl;
     ofile.close();
   }
 
   {
-    std::ofstream ofile("step-1_registry.json");
+    std::ofstream ofile(output_dir.path() / "step-1_registry.json");
     ofile << NodeObject::get_registry().dump(2) << std::endl;
     ofile.close();
   }
@@ -216,12 +218,10 @@ TEST(dealiiExamples, NetworkStep01)
   ASSERT_EQ(16, tria->get<Triangulation<2>>().n_active_cells());
 
   // Check if the file exists
-  std::ifstream file("grid-1.vtk");
+  std::ifstream file(output_dir.path() / "grid-1.vtk");
   ASSERT_TRUE(file.good());
 
-  // Remove the file
   file.close();
-  std::remove("grid-1.vtk");
 }
 
 TEST(dealiiExamples, NetworkFromJsonStep00)
@@ -235,7 +235,7 @@ TEST(dealiiExamples, NetworkFromJsonStep00)
   network.set_touch_file_base_path(output_dir);
   network.clear_network();
 
-  std::ifstream file("step-0_network.json");
+  std::ifstream file(SOURCE_DIR "/test_files/step-0_network.json");
   ASSERT_TRUE(file.is_open()) << "Failed to open JSON file.";
 
   nlohmann::json json_data;

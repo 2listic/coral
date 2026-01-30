@@ -1,0 +1,66 @@
+{
+  "author": "coral-editor",
+  "date_time_utc": "2026-01-30T19:20:31.000Z",
+  "version": 1,
+  "workflow": {
+    "edges": {
+      "0": {
+        "source": 0,
+        "source_output": 0,
+        "target": 3,
+        "target_input": 0
+      },
+      "1": {
+        "source": 1,
+        "source_output": 0,
+        "target": 3,
+        "target_input": 1
+      },
+      "2": {
+        "source": 2,
+        "source_output": 0,
+        "target": 3,
+        "target_input": 2
+      },
+      "3": {
+        "source": 3,
+        "source_output": 0,
+        "target": 5,
+        "target_input": 0
+      },
+      "4": {
+        "source": 4,
+        "source_output": 0,
+        "target": 5,
+        "target_input": 1
+      }
+    },
+    "nodes": {
+      "0": {
+        "name": "triangulation",
+        "type": "dealii::Triangulation<2, 2>"
+      },
+      "1": {
+        "name": "grid_generator_function_name",
+        "type": "std::string",
+        "value": "hyper_cube"
+      },
+      "2": {
+        "name": "grid_generator_function_arguments",
+        "type": "std::string",
+        "value": "0: 1: false"
+      },
+      "3": {
+        "type": "GridGenerator::generate_from_name_and_arguments<2>"
+      },
+      "4": {
+        "name": "n_refinements",
+        "type": "unsigned int",
+        "value": "2"
+      },
+      "5": {
+        "type": "Triangulation<2>::refine_global"
+      }
+    }
+  }
+}
