@@ -8,6 +8,7 @@
         "outputs": [
           -1
         ],
+        "name": "t1",
         "type": "dealii::Triangulation<2, 2>",
         "is_valid": true,
         "position": {
@@ -22,6 +23,7 @@
         "outputs": [
           -1
         ],
+        "name": "s1",
         "type": "std::string",
         "value": "hyper_cube",
         "is_valid": true,
@@ -37,6 +39,7 @@
         "outputs": [
           -1
         ],
+        "name": "s2",
         "type": "std::string",
         "value": "0: 1: false",
         "is_valid": true,
@@ -52,6 +55,7 @@
         "outputs": [
           -1
         ],
+        "name": "ui1",
         "type": "unsigned int",
         "value": "2",
         "is_valid": true,
