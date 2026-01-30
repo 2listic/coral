@@ -416,7 +416,7 @@ main(int argc, char *argv[])
   network.from_json(data);
   slog_info("Built network from data.");
 
-  network.set_touch_file_base_path(touch_file_path);
+  Network::set_touch_file_base_path(touch_file_path);
   slog_info("Touch file base path: %s", touch_file_path.c_str());
 
   if (dump_graph)

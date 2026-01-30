@@ -110,7 +110,7 @@ namespace coral
     void
     set_node_name(unsigned int id, const std::string &name);
 
-    void
+    static void
     set_touch_file_base_path(const std::filesystem::path &path);
 
     std::string
