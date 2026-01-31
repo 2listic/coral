@@ -23,6 +23,7 @@ var classcoral_1_1_network =
     [ "get_node", "classcoral_1_1_network.html#abcd4b6d2d7474016aeba045b01e626a3", null ],
     [ "get_node_connections", "classcoral_1_1_network.html#a9f30b1c958706ff6c82b36f6c668b7be", null ],
     [ "get_node_name", "classcoral_1_1_network.html#ade4859706ec2448bd09979c3cd097bc8", null ],
+    [ "get_nodes_name", "classcoral_1_1_network.html#a4258034f4dfa80762f15e5b1337bf26b", null ],
     [ "get_output", "classcoral_1_1_network.html#aa2f7a6e9373f1a49ed2b199ac720bd6a", null ],
     [ "get_outputs", "classcoral_1_1_network.html#a1834365e850531b13347d56941f3f888", null ],
     [ "get_registry", "classcoral_1_1_network.html#a2b4fc9acf12aa07524690ba3c8874962", null ],
@@ -43,13 +44,16 @@ var classcoral_1_1_network =
     [ "remove_nodes_and_connections", "classcoral_1_1_network.html#ab6fd79c8010c070a3fa0eb0d14afb300", null ],
     [ "run", "classcoral_1_1_network.html#a0be0d3a1f7d845200cdd2c283c0cb44d", null ],
     [ "set_node_name", "classcoral_1_1_network.html#a5003f016615524ac31f4e3fb13a2b7ad", null ],
+    [ "set_threads_number", "classcoral_1_1_network.html#a2dfe12a14154f8a2a97df61eab7b5fec", null ],
+    [ "set_touch_file_base_path", "classcoral_1_1_network.html#ad8a0c9d65c466297e7d0974cb0d11ec0", null ],
     [ "size", "classcoral_1_1_network.html#a9f1b021442ddafa7c35e534a94370e10", null ],
     [ "to_json", "classcoral_1_1_network.html#a11e5ac29bbfd84225eba39affaeb9a88", null ],
     [ "connections", "classcoral_1_1_network.html#a81778cfbfcc6b381e4673cef847f9f84", null ],
-    [ "n_threads", "classcoral_1_1_network.html#aabdea39a7a3fc3502348e989e630b2c9", null ],
+    [ "n_threads", "classcoral_1_1_network.html#a29cb4012497f109e86296caaf66ff94f", null ],
     [ "name", "classcoral_1_1_network.html#a1fc5c7cc46fcc7181d45753dbb4d84e7", null ],
     [ "node_tasks", "classcoral_1_1_network.html#ad365a56d840df92adf895b4510628877", null ],
     [ "nodes", "classcoral_1_1_network.html#a84c7847284d9dfb2b1d6b195f2ee5c00", null ],
     [ "nodes_name", "classcoral_1_1_network.html#a217f574bd2666fc92f7d408e2df083b7", null ],
-    [ "taskflow", "classcoral_1_1_network.html#a3cad8c162ab2a78794a81594b4131815", null ]
+    [ "taskflow", "classcoral_1_1_network.html#a3cad8c162ab2a78794a81594b4131815", null ],
+    [ "touch_file_base_path", "classcoral_1_1_network.html#ac459096e23718273527de49c4fd84c16", null ]
 ];

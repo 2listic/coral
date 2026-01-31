@@ -517,5 +517,6 @@ var searchData=
   ['run_5finternal_514',['run_internal',['http://www.dealii.org/developer/doxygen/deal.II/classinternal_1_1FEEvaluationImplHangingNodesRunner_3_01FEEvaluationImplHangingNodesRunnerTypes_00966c5775d96ae2fc40b13af2d17791.html#ac9e2e094c6ba4a857534e7f915da32c4',1,'internal::FEEvaluationImplHangingNodesRunner&lt; FEEvaluationImplHangingNodesRunnerTypes::scalar, dim, fe_degree, Number &gt;::run_internal()'],['http://www.dealii.org/developer/doxygen/deal.II/classinternal_1_1FEEvaluationImplHangingNodesRunner_3_01FEEvaluationImplHangingNodesRunnerTypes_c1031c798c74e42da3548d1dbac7fe26.html#a35010215207faaa2b8bf9171147e6171',1,'internal::FEEvaluationImplHangingNodesRunner&lt; FEEvaluationImplHangingNodesRunnerTypes::vectorized, dim, fe_degree, Number &gt;::run_internal()']]],
   ['runge_5fkutta_5fmethod_515',['runge_kutta_method',['http://www.dealii.org/developer/doxygen/deal.II/namespaceTimeStepping.html#abff97b5326e452552f108a379dd6cff4',1,'TimeStepping']]],
   ['rungekutta_516',['RungeKutta',['http://www.dealii.org/developer/doxygen/deal.II/classTimeStepping_1_1RungeKutta.html',1,'TimeStepping']]],
-  ['running_517',['running',['http://www.dealii.org/developer/doxygen/deal.II/classTimer.html#a3b8bb57a0a252c88f85c0592715ea425',1,'Timer']]]
+  ['running_517',['Running',['../namespacecoral.html#ad4fc74e39885521e7f7d6a8d4d2a736aa5bda814c4aedb126839228f1a3d92f09',1,'coral']]],
+  ['running_518',['running',['http://www.dealii.org/developer/doxygen/deal.II/classTimer.html#a3b8bb57a0a252c88f85c0592715ea425',1,'Timer']]]
 ];

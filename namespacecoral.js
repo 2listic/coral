@@ -36,6 +36,11 @@ var namespacecoral =
       [ "function", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536ac1c425268e68385d1ab5074c17a94f14", null ],
       [ "network", "namespacecoral.html#a28b9a276ed3a04787d899304a5e49536a91e02cd2b8621d0c05197f645668c5c4", null ]
     ] ],
+    [ "TouchMode", "namespacecoral.html#ad4fc74e39885521e7f7d6a8d4d2a736a", [
+      [ "Running", "namespacecoral.html#ad4fc74e39885521e7f7d6a8d4d2a736aa5bda814c4aedb126839228f1a3d92f09", null ],
+      [ "Succeeded", "namespacecoral.html#ad4fc74e39885521e7f7d6a8d4d2a736aa66d02c2f8a582446f8dd8752366002b5", null ],
+      [ "Failed", "namespacecoral.html#ad4fc74e39885521e7f7d6a8d4d2a736aad7c8c85bf79bbe1b7188497c32c3b0ca", null ]
+    ] ],
     [ "build_network_interface", "namespacecoral.html#abb74a8b0ad0a55b0e8dfd7bd24b6d709", null ],
     [ "connect", "namespacecoral.html#a7431aba48f81b14d34f0e28f7529b96c", null ],
     [ "connection_type", "namespacecoral.html#a34fcc6acd1258dcc47130fc4a220d003", null ],
@@ -50,5 +55,6 @@ var namespacecoral =
     [ "register_non_dimensional_types", "namespacecoral.html#ac0a93248e4f3c01e12240a573debbd1e", null ],
     [ "to_json", "namespacecoral.html#ab4613ef12841001f1bc4b113512d37c3", null ],
     [ "to_json", "namespacecoral.html#a1858779a708edb9f913e2b9d5a5f0a2b", null ],
-    [ "to_json", "namespacecoral.html#af932747a207cdabd991ef26f4e5f0d85", null ]
+    [ "to_json", "namespacecoral.html#af932747a207cdabd991ef26f4e5f0d85", null ],
+    [ "touch_file", "namespacecoral.html#ac8c4bdc562120fe9f10746d87b1ccf02", null ]
 ];
