@@ -8,6 +8,7 @@
         "outputs": [
           -1
         ],
+        "name": "string1",
         "type": "std::string",
         "value": "hyper_cube",
         "is_valid": true,
@@ -23,6 +24,7 @@
         "outputs": [
           -1
         ],
+        "name": "string2",
         "type": "std::string",
         "value": "0: 1: false",
         "is_valid": true,
@@ -34,7 +36,7 @@
       "10": {
         "type": "coral::Network",
         "node_type": "network",
-        "name": "generate grid",
+        "name": "generate_grid",
         "value": {
           "workflow": {
             "nodes": {

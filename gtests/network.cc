@@ -5,15 +5,19 @@
 #include "coral_network.h"
 #include "gtest/gtest.h"
 #include "register_types.h"
+#include "test_utils.h"
 
 using namespace dealii;
 using namespace coral;
 using json = nlohmann::json;
+using coral_test::ScopedTestOutputDir;
 
 
 // Failing test from network.cc
 TEST(Network, BareMinimal)
 {
+  ScopedTestOutputDir output_dir("Network_BareMinimal");
+
   coral::NodeObject::register_elementary_type<double>();
 
   auto sum = [](const double &a, const double &b) {
@@ -25,12 +29,13 @@ TEST(Network, BareMinimal)
 
   // Output the registry for these node types
   auto          registry = coral::NodeObject::get_registry();
-  std::ofstream registry_file("bare_minimal_registry.json");
+  std::ofstream registry_file(output_dir.path() / "bare_minimal_registry.json");
   registry_file << std::setw(2) << registry << std::endl;
   registry_file.close();
 
   // Now create a network and add nodes and connections
   coral::Network network;
+  network.set_touch_file_base_path(output_dir);
 
   auto id1 = network.add_node(coral::make_node(1.0));
   auto id2 = network.add_node(coral::make_node(2.0));
@@ -87,10 +92,10 @@ TEST(Network, BareMinimal)
   // Verify the output node is not a pass-through input
   ASSERT_NE(n4->get_output(0), n4->get_input(0));
 
-  network.output_dot("bare_minimal.dot");
+  network.output_dot(output_dir.path() / "bare_minimal.dot");
   // dump the json of the network
   json          serialized_json = network;
-  std::ofstream json_file("bare_minimal.json");
+  std::ofstream json_file(output_dir.path() / "bare_minimal.json");
   json_file << serialized_json.dump(2);
   json_file.close();
 
@@ -242,6 +247,8 @@ TEST(Network, JsonBasedWorkflow)
 // Test for validating edge connections
 TEST(Network, ValidateEdgeConnections)
 {
+  ScopedTestOutputDir output_dir("Network_ValidateEdgeConnections");
+
   // Load the JSON file
   std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
   ASSERT_TRUE(file.is_open()) << "Failed to open JSON file.";
@@ -260,7 +267,7 @@ TEST(Network, ValidateEdgeConnections)
   ASSERT_EQ(network.size(), 6);
 
   // Output the taskflow as DOT format for debugging
-  network.output_dot("validate_edges_taskflow.dot");
+  network.output_dot(output_dir.path() / "validate_edges_taskflow.dot");
 
   // Get the taskflow
   auto &tf = network.get_taskflow();
@@ -539,6 +546,8 @@ TEST(Network, RegistrySubset)
 
 TEST(Network, ParseAndExecuteNetwork)
 {
+  ScopedTestOutputDir output_dir("Network_ParseAndExecuteNetwork");
+
   // Load the JSON file
   std::ifstream file(SOURCE_DIR "/test_files/mwe.json");
   ASSERT_TRUE(file.is_open()) << "Failed to open JSON file.";
@@ -551,6 +560,7 @@ TEST(Network, ParseAndExecuteNetwork)
 
   // Create and populate the network
   coral::Network network = json_data;
+  network.set_touch_file_base_path(output_dir);
 
   // Output some debug information
   slog_debug("Network has %zu nodes and %u connections",

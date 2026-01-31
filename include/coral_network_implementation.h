@@ -1,6 +1,8 @@
 #ifndef CORAL_NETWORK_IMPLEMENTATION_H
 #define CORAL_NETWORK_IMPLEMENTATION_H
 
+#include <fstream>
+#include <string>
 #include "coral_network.h"
 
 #if defined(CORAL_HEADER_ONLY) && CORAL_HEADER_ONLY
@@ -11,6 +13,38 @@
 
 namespace coral
 {
+  // Static member definition with default value for backward compatibility
+  CORAL_IMPL_INLINE std::filesystem::path Network::touch_file_base_path{"./"};
+
+  CORAL_IMPL_INLINE size_t Network::n_threads = std::thread::hardware_concurrency();
+
+  enum class TouchMode {
+    Running,
+    Succeeded,
+    Failed
+  };
+
+  CORAL_IMPL_INLINE void
+  touch_file(std::filesystem::path base_path,
+             const std::string& name,
+            TouchMode mode)
+  {
+    std::string full_name = name;
+    switch (mode) {
+    case TouchMode::Running:
+      full_name += ".running";
+      break;
+    case TouchMode::Succeeded:
+      full_name += ".succeeded";
+      break;
+    case TouchMode::Failed:
+      full_name += ".failed";
+      break;
+    }
+
+    std::ofstream{base_path / full_name, std::iostream::app};
+  }
+  
   CORAL_IMPL_INLINE
   Connection::Connection(unsigned int _source_id,
                          unsigned int _target_id,
@@ -63,12 +97,7 @@ namespace coral
   }
 
   CORAL_IMPL_INLINE
-  Network::Network()
-  {
-      const char *env_th = std::getenv("THREADS");
-      n_threads = env_th ? static_cast<size_t>(std::stoull(env_th)) : std::thread::hardware_concurrency();
-      slog_info("Created network with executor pool size of %zu.", n_threads);
-  }
+  Network::Network() = default;
 
   CORAL_IMPL_INLINE
   Network::Network(const Network &other)
@@ -114,7 +143,47 @@ namespace coral
       }
   }
 
+  CORAL_IMPL_INLINE void
+  Network::set_touch_file_base_path(const std::filesystem::path &path)
+  {
+    touch_file_base_path = path;
+    slog_debug("Set touch file base path to: %s", path.c_str());
 
+    // Create directory if it doesn't exist
+    if (!std::filesystem::exists(touch_file_base_path))
+      {
+        std::filesystem::create_directories(touch_file_base_path);
+        slog_info("Created touch file directory: %s", path.c_str());
+      }
+    else
+      {
+        // Directory exists: clean up existing touch files
+        slog_debug("Cleaning up existing touch files in: %s", path.c_str());
+
+        for (const auto &entry : std::filesystem::directory_iterator(touch_file_base_path))
+          {
+            if (entry.is_regular_file())
+              {
+                const auto filename = entry.path().filename().string();
+                if (filename.ends_with(".running") ||
+                    filename.ends_with(".succeeded") ||
+                    filename.ends_with(".failed"))
+                  {
+                    std::filesystem::remove(entry.path());
+                    slog_debug("Removed touch file: %s", filename.c_str());
+                  }
+              }
+          }
+
+        slog_info("Cleaned touch file directory: %s", path.c_str());
+      }
+  }
+
+  CORAL_IMPL_INLINE void
+  Network::set_threads_number(size_t nth)
+  {
+    n_threads = nth;
+  }
 
   CORAL_IMPL_INLINE void
   Network::execute_node_task(unsigned int         node_id,
@@ -125,6 +194,8 @@ namespace coral
               node_id,
               node_name.c_str(),
               node->type_name().c_str());
+    if (!node_name.empty())
+      touch_file(touch_file_base_path, std::to_string(node_id), TouchMode::Running);
     try
       {
         refresh_dynamic_inputs(node_id);
@@ -132,6 +203,8 @@ namespace coral
       }
     catch (const std::exception &e)
       {
+        if (!node_name.empty())
+          touch_file(touch_file_base_path, std::to_string(node_id), TouchMode::Failed);
         throw std::runtime_error("Node " + std::to_string(node_id) +
                                  " failed: " + e.what());
       }
@@ -139,6 +212,8 @@ namespace coral
               node_id,
               node_name.c_str(),
               node->type_name().c_str());
+    if (!node_name.empty())
+      touch_file(touch_file_base_path, std::to_string(node_id), TouchMode::Succeeded);
   }
 
 
@@ -234,6 +309,14 @@ namespace coral
   {
     auto it = nodes_name.find(id);
     return it == nodes_name.end() ? std::string() : it->second;
+  }
+
+
+
+  CORAL_IMPL_INLINE const std::map<unsigned int, std::string>&
+  Network::get_nodes_name() const
+  {
+    return nodes_name;
   }
 
 
@@ -500,10 +583,11 @@ namespace coral
   CORAL_IMPL_INLINE void
   Network::run()
   {
-    tf::Executor executor;
-    slog_info("Running network (%zu nodes, %zu connections)",
+    tf::Executor executor{n_threads};
+    slog_info("Running network (%zu nodes, %zu connections) with %zu worker(s).",
               nodes.size(),
-              connections.size());
+              connections.size(),
+              n_threads);
     try
       {
         executor.run(taskflow).get();
