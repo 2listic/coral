@@ -1,315 +1,745 @@
-# Debugging Plan: Task 26 Not Executing
+# Implementation Plan: Functions as First-Class Citizens
 
-## 🎯 ROOT CAUSE SUMMARY
+## Overview
+This plan implements higher-order functions in CORAL by enabling `std::function` values to be created from registered functions/methods/networks and passed between nodes.
 
-**Primary Issue:** Task 26 never executes despite having 0 predecessors and being correctly added to the taskflow.
+## Testing Philosophy
 
-**Root Cause:** Task 5 throws an exception "Arguments not ready", which likely causes the Taskflow executor to stop scheduling remaining tasks (including task 26).
+**Unit Tests as Documentation**: Every implementation step must have corresponding unit tests that serve triple duty:
+1. **Validation**: Verify the implementation works correctly
+2. **Use Cases**: Demonstrate how to use the feature
+3. **MWE (Minimal Working Examples)**: Serve as living documentation
 
-**Why Task 5 Fails:**
-1. During network_1 initial setup, connection 0 (node 3 → node 5) is established
-2. `add_connection()` calls `set_input(0, node3->output(0))`, storing a pointer to node 3's output
-3. At this time, node 3 hasn't executed yet, so its output(0) is **ready=false** (output.log:11)
-4. Node 5's input(0) stores this pointer to the unready output
-5. Later, node 3 executes successfully and becomes ready=true
-6. **However**, node 5's input(0) still holds the old pointer to the unready object - it never updates!
-7. When node 5 tries to execute, it checks argument readiness and finds argument 0 not ready
-8. Exception thrown, execution halts, task 26 never scheduled
+**Test-Driven Approach**:
+- Write tests alongside (or before) implementation
+- Each test should be minimal, focused, and self-explanatory
+- Test names should clearly describe what they validate
+- Tests should include comments explaining the use case
 
-**Why Dynamic Nodes Work:**
-Nodes 22-26 are created with ready=true (they represent input arguments from the outer network), so connections to them work correctly (output.log:159).
-
-**Fix Required:**
-The connection mechanism needs to resolve inputs dynamically at execution time, OR nodes need to properly update their output references when executing.
+**Test Organization**:
+- Unit tests: In `gtests/` files, one test per feature/task
+- Integration tests: Phase 8, combining multiple features
+- All tests must pass before moving to next phase
 
 ---
 
-## Step 1: Verify Connection Establishment ✓✓
-Instrument `add_connection()` to verify the 26→20 connection is being made correctly.
+## Phase 1: Foundation - std::function Type Support
 
-- [x] Add logging in `add_connection()` (coral_network.h:257) to print when connection 26→20 is created
-- [x] Log the source and target task states before calling `source_task.precede(target_task)`
-- [x] Verify that `node_tasks[26]` and `node_tasks[20]` both exist and are valid at connection time
-- [x] Check if `source_task.precede(target_task)` returns successfully
-- [x] Rebuild and run, check output
+**Goal**: Ensure `std::function` types can be registered, stored, and passed between nodes.
 
-**Changes made:**
-- Added debug logging at start of `add_connection()` showing connection_id, source, target, and I/O ports
-- Added debug logging before `precede()` showing task empty states for source and target
-- Added debug logging after `precede()` confirming connection establishment
+### Implementation Tasks
+- [ ] Investigate current `std::function` support in type registration
+- [ ] Create helper function `register_function_type<R, Args...>()` to register `std::function<R(Args...)>` as an elementary type
+- [ ] Implement storage and retrieval of `std::function` values in NodeObject
 
-**KEY FINDINGS:**
-- Connection 26→20 IS established correctly (output.log:121-123)
-- Both tasks are valid (empty=false) at connection time
-- Task 26 shows correct properties: 0 predecessors, 1 successor
-- Task 20 correctly shows 1 predecessor (task 26)
-- **BUT**: Task 26 never executes!
-- **SMOKING GUN**: Line 218 shows "#### rebuild taskflow" - Network copy is happening
-- After rebuild, only original nodes (20, 21, 3, 5, 8) remain - dynamic nodes 22-26 are lost!
+### Unit Tests (gtests/trivial_types.cc or new gtests/function_types.cc)
 
-## Step 1b: Investigate Network Copy and Rebuild ✓✓
-Added instrumentation for network copy operations and rebuild.
+#### Test 1.1: Register std::function Type
+- [ ] **TEST**: `FunctionType_Registration`
+  - Register `std::function<double(double)>` as elementary type
+  - Verify it appears in registry with correct metadata
+  - **MWE**: Shows how to register a function type
 
-- [x] Add logging to Network copy constructor to show when it's called and how many nodes are copied
-- [x] Add logging to Network copy assignment operator
-- [x] Add logging to `rebuild_taskflow()` to show which nodes are being rebuilt
-- [x] Rebuild and run
+#### Test 1.2: Create Node with std::function Value
+- [ ] **TEST**: `FunctionType_CreateNodeWithStdFunction`
+  - Create a simple lambda: `auto square = [](double x) { return x * x; }`
+  - Create `std::function<double(double)> fn = square;`
+  - Create NodeObject containing this `std::function`
+  - Verify node is ready and contains the function
+  - **MWE**: Shows how to store a function in a node
 
-**MOST CRITICAL FINDING:**
-- **The .dot file is dumped at coral_network.h:520, immediately BEFORE `executor.run(taskflow).wait()` at line 522**
-- **Task 26 EXISTS in the network_1.dot file with correct graph structure**
-- **The taskflow graph is provably correct before execution starts**
+#### Test 1.3: Retrieve and Invoke std::function
+- [ ] **TEST**: `FunctionType_RetrieveAndInvoke`
+  - Create node with `std::function<double(double)>` (square function)
+  - Retrieve using `node->get<std::function<double(double)>>()`
+  - Invoke the function with argument 5.0
+  - Verify result is 25.0
+  - **MWE**: Shows how to extract and call a function from a node
 
-**Detailed findings from output.log:**
-1. Task 26 properties before execution (lines 189-194):
-   - predecessors: 0 (should execute immediately)
-   - successors: 1 (node 20 depends on it)
-   - empty: false (valid task)
-2. Connection 26→20 established correctly (lines 121-123, both tasks valid)
-3. Task 26 never executes - no observer message during execution (lines 196-217)
-4. Other tasks with 0 predecessors DO execute: 8, 22, 23, 24, 25
+#### Test 1.4: Pass std::function Between Nodes
+- [ ] **TEST**: `FunctionType_PassBetweenNodes`
+  - Create node A containing `std::function<double(double)>` (square)
+  - Create node B that takes `std::function<double(double)>` and a value, calls function
+  - Connect A's output to B's input
+  - Execute network
+  - Verify B produces correct result
+  - **MWE**: Shows data flow of functions through graph
 
-**Secondary finding - rebuild is NOT the cause:**
-- `rebuild_taskflow()` is called AFTER execution completes (line 218)
-- Called from cleanup code (coral_network.h:1091) which removes dynamic nodes
-- At rebuild time, only 5 nodes remain: 3, 5, 8, 20, 21
-- This cleanup is unrelated to why task 26 doesn't execute
+**Success Criteria**: All 4 tests pass. Can manually create and pass `std::function` values.
 
-**CONCLUSION:**
-The graph is correct. Task 26 exists with 0 predecessors before executor.run(). Yet Taskflow executor doesn't schedule it. This points to a Taskflow executor bug or a subtle scheduling issue we don't understand yet.
+**Files to Create/Modify**:
+- `include/coral.h` - Add `register_function_type<R, Args...>()` helper
+- `gtests/function_types.cc` - New test file for function-related tests
 
-## Step 2: Add Detailed Taskflow Executor Debugging ✓✓
-Since the graph is correct but task 26 doesn't execute, add instrumentation to understand Taskflow's scheduling behavior.
+---
 
-- [x] Add pre-execution state dump showing:
-  - Total number of tasks in taskflow
-  - Number of entries in node_tasks map
-  - List of all tasks with 0 predecessors (should be ready to execute)
-  - Detailed state of task 26 (empty, predecessors, successors, dependencies, name)
-  - State of task 20 (the successor of task 26)
-- [x] Add lambda entry/exit logging to detect if task lambda is ever called
-- [x] Add post-execution marker
-- [x] Rebuild and run
-- [x] Analyze output to determine:
-  - Is task 26 in the taskflow before execution?
-  - Is task 26 recognized as having 0 predecessors?
-  - Is task 26's lambda ever entered?
-  - Is there any difference between task 26 and working tasks 22-25?
+## Phase 2: Automatic std::function Type Registration
 
-**Instrumentation location:**
-- coral_network.h:522-558: Pre-execution debugging (after .dot dump, before executor.run())
-- coral_network.h:239-250: Lambda entry/exit markers for add_node()
-- coral_network.h:203-214: Lambda entry/exit markers for rebuild_taskflow()
-- coral_network.h:327-332: Predecessor/successor count verification after precede()
+**Goal**: When registering a function, automatically register the corresponding `std::function` type (Q1).
 
-**CRITICAL FINDINGS:**
-1. **precede() works correctly** - After calling task26.precede(task20):
-   - Task 26 has 1 successor (output.log:167)
-   - Task 20 has 1 predecessor (output.log:168)
-2. **Task 26 is in the ready list** - Line 244 shows: "8 22 23 24 25 26" all have 0 predecessors
-3. **Executor selectively skips task 26** - Execution order (lines 255-289):
-   - Runs: 8, 22, 23, 24 (4 of 6 zero-predecessor tasks)
-   - Runs: 3 (waited for dependencies)
-   - Runs: 25 (5th zero-predecessor task)
-   - Runs: 5 (waited for dependencies)
-   - **SKIPS task 26** (6th zero-predecessor task) ✗
-   - Stops execution
-4. **Task 5 exits abnormally** - Line 288 shows lambda entry but NO lambda exit (line 289 shows observer finish)
-5. **Execution completes prematurely** - Three tasks never run: 26, 20, 21
+### Implementation Tasks
+- [ ] Modify `NodeObject::register_function<ReturnType, Args...>()` to detect function signature
+- [ ] After registering function, check if `std::function<ReturnType(Args...)>` is registered
+- [ ] If not registered, automatically call `register_function_type<ReturnType, Args...>()`
+- [ ] Store mapping from function type to `std::function` type for lookup
 
-**HYPOTHESIS:**
-The executor is not executing all ready tasks. It runs 5 of 6 zero-predecessor tasks, then stops. This could be:
-- A Taskflow executor bug with specific graph topologies
-- An issue with task queue size or scheduling
-- A problem with nested taskflow execution (network_1.run() is called inside network_0's task 10)
+### Unit Tests (gtests/function_types.cc)
 
-## Step 2b: Add Exception Handling to Detect Task Failures ✓✓
-User observation: Task 5's lambda shows entry but no exit marker - likely throwing an exception.
+#### Test 2.1: Auto-Register Single Function
+- [ ] **TEST**: `AutoRegistration_SingleFunction`
+  - Register `double square(double x)` using `register_function()`
+  - Verify `std::function<double(double)>` automatically appears in registry
+  - Verify registry entry has correct metadata
+  - **MWE**: Shows that registering a function auto-creates the function type
 
-- [x] Add try-catch around `(*node)()` in add_node() lambda
-- [x] Add try-catch around `(*node)()` in rebuild_taskflow() lambda
-- [x] Add try-catch around `executor.run(taskflow).wait()`
-- [x] Log exception details when caught
-- [x] Rebuild and run
-- [x] Check if task 5 (or any other task) throws an exception
+#### Test 2.2: Multiple Functions Same Signature
+- [ ] **TEST**: `AutoRegistration_SamSignatureMultipleFunctions`
+  - Register `double square(double)` and `double cube(double)` and `double times2(double)`
+  - Verify only ONE `std::function<double(double)>` type is registered
+  - Verify all three functions can use this type
+  - **MWE**: Shows signature reuse
 
-**Goal**: Determine if an exception in task 5 is causing the executor to stop before scheduling task 26.
+#### Test 2.3: Multiple Functions Different Signatures
+- [ ] **TEST**: `AutoRegistration_DifferentSignatures`
+  - Register `double square(double)`, `double add(double, double)`, `int increment(int)`
+  - Verify three separate `std::function` types registered:
+    - `std::function<double(double)>`
+    - `std::function<double(double, double)>`
+    - `std::function<int(int)>`
+  - **MWE**: Shows multiple function types coexisting
 
-**Instrumentation:**
-- coral_network.h:242-254: Try-catch in add_node() lambda
-- coral_network.h:206-220: Try-catch in rebuild_taskflow() lambda
-- coral_network.h:569-581: Try-catch around executor.run().wait()
+#### Test 2.4: Void Function Auto-Registration
+- [ ] **TEST**: `AutoRegistration_VoidFunction`
+  - Register `void print_value(double)` function
+  - Verify `std::function<void(double)>` is auto-registered
+  - **MWE**: Shows void functions work too
 
-**EXCEPTION FOUND (output.log:289):**
+**Success Criteria**: All 4 tests pass. Function registration automatically creates corresponding `std::function` types.
+
+**Files to Modify**:
+- `include/coral.h` - Modify `register_function()` template
+- `include/coral_implementation.h` - Implementation
+- `gtests/function_types.cc` - Add auto-registration tests
+
+---
+
+## Phase 3: Simple Function-to-std::function Constructor
+
+**Goal**: Create constructor that converts a registered function into a `std::function` value.
+
+### Implementation Tasks
+- [ ] Design interface: `std::function<R(Args...)> make_function(lambda/fn_ptr)`
+- [ ] Implement constructor for free functions with signature `R(Args...)`
+- [ ] Constructor takes function pointer/lambda, returns `std::function<R(Args...)>` VALUE
+- [ ] Register the constructor itself as a callable node type
+- [ ] Add helper: `make_function_node<R, Args...>()` for easy node creation
+
+### Unit Tests (gtests/function_types.cc)
+
+#### Test 3.1: Convert Lambda to std::function
+- [ ] **TEST**: `MakeFunction_LambdaToStdFunction`
+  - Define lambda: `auto sq = [](double x) { return x * x; }`
+  - Call make_function constructor: `auto fn = make_function(sq)`
+  - Verify `fn` is `std::function<double(double)>` type
+  - Call `fn(5.0)`, verify result is 25.0
+  - **MWE**: Basic function wrapping
+
+#### Test 3.2: Convert Function Pointer to std::function
+- [ ] **TEST**: `MakeFunction_FunctionPointerToStdFunction`
+  - Define free function: `double square(double x) { return x * x; }`
+  - Call make_function constructor: `auto fn = make_function(&square)`
+  - Verify and invoke
+  - **MWE**: Function pointer wrapping
+
+#### Test 3.3: Store std::function in Node
+- [ ] **TEST**: `MakeFunction_StoreInNode`
+  - Create square lambda
+  - Use `make_function_node<double(double)>()` to create a node
+  - Pass lambda to node
+  - Execute node
+  - Verify node's output contains `std::function<double(double)>`
+  - **MWE**: Function constructor as a node
+
+#### Test 3.4: Pass Constructed Function to Another Node
+- [ ] **TEST**: `MakeFunction_PassToConsumer`
+  - Create node A: uses make_function to create `std::function<double(double)>` (square)
+  - Create node B: evaluator that takes `std::function<double(double)>` and calls it with 5.0
+  - Connect A → B
+  - Execute network
+  - Verify B outputs 25.0
+  - **MWE**: End-to-end function passing workflow
+
+**Success Criteria**: All 4 tests pass. Can wrap simple functions in `std::function` and pass them between nodes.
+
+**Files to Modify**:
+- `include/coral.h` - Add `make_function` constructors
+- `source/` - Implementation (if not header-only)
+- `gtests/function_types.cc` - Add constructor tests
+
+---
+
+## Phase 4: Function Constructor for All Node Types
+
+**Goal**: Support converting different node types (functions, methods, networks) to `std::function`.
+
+### Implementation Tasks
+
+#### 4.1: Free Functions (Multiple Signatures)
+- [ ] Extend Phase 3 constructor to handle void functions
+- [ ] Extend to handle multi-argument functions
+- [ ] Add validation for signature matching
+
+#### 4.2: Methods (Non-const)
+- [ ] Implement constructor that wraps method + bound object
+- [ ] Extract method and object, create `std::function` closure
+- [ ] Handle this pointer correctly
+
+#### 4.3: Methods (Const)
+- [ ] Similar to 4.2 but for const methods
+- [ ] Ensure const-correctness
+
+#### 4.4: Networks
+- [ ] Implement constructor that wraps Network node
+- [ ] Map network inputs[i] to function args[i] (Q3)
+- [ ] Map network outputs[0] to function return value (Q3)
+- [ ] Handle network cloning/lifetime
+
+#### 4.5: Unified Constructor
+- [ ] Create `make_function` that dispatches based on source node type
+- [ ] Add error handling for unsupported types
+- [ ] Add signature validation
+
+### Unit Tests (gtests/function_types.cc)
+
+#### Test 4.1.1: Void Free Function
+- [ ] **TEST**: `MakeFunction_VoidFunction`
+  - Register `void print_message(std::string)`
+  - Create `std::function<void(std::string)>` from it
+  - Invoke and verify (check side effect, e.g., global variable or output)
+  - **MWE**: Void function wrapping
+
+#### Test 4.1.2: Multi-Argument Free Function
+- [ ] **TEST**: `MakeFunction_MultiArgumentFunction`
+  - Register `double add(double a, double b, double c) { return a + b + c; }`
+  - Create `std::function<double(double, double, double)>`
+  - Invoke with (1.0, 2.0, 3.0), verify result 6.0
+  - **MWE**: Multi-argument function
+
+#### Test 4.2.1: Non-Const Method
+- [ ] **TEST**: `MakeFunction_NonConstMethod`
+  - Create class with method: `class Counter { int count; void increment() { count++; } }`
+  - Register class and method
+  - Create instance, bind it to method node
+  - Convert to `std::function<void()>`
+  - Invoke multiple times, verify state changes
+  - **MWE**: Method wrapping with object binding
+
+#### Test 4.3.1: Const Method
+- [ ] **TEST**: `MakeFunction_ConstMethod`
+  - Create class: `class Calculator { int value; int get_value() const { return value; } }`
+  - Register and bind instance
+  - Convert to `std::function<int()>`
+  - Invoke and verify
+  - **MWE**: Const method wrapping
+
+#### Test 4.4.1: Network as Function - Simple
+- [ ] **TEST**: `MakeFunction_SimpleNetwork`
+  - Create network with 2 inputs (double, double) and 1 output (double)
+  - Network computes: `output = input0 + input1`
+  - Convert network to `std::function<double(double, double)>`
+  - Invoke with (3.0, 4.0), verify result 7.0
+  - **MWE**: Basic network-to-function
+
+#### Test 4.4.2: Network as Function - Complex
+- [ ] **TEST**: `MakeFunction_ComplexNetwork`
+  - Create network: `result = (input0 * 2) + input1`
+  - Uses intermediate nodes
+  - Convert to `std::function<double(double, double)>`
+  - Test with multiple inputs
+  - **MWE**: Multi-node network as function
+
+#### Test 4.5.1: Type Detection and Dispatch
+- [ ] **TEST**: `MakeFunction_AutomaticDispatch`
+  - Try converting free function, method, and network using same `make_function` interface
+  - Verify all work correctly
+  - **MWE**: Unified interface for all node types
+
+**Success Criteria**: All 7 tests pass. Can convert any function/method/network to `std::function`.
+
+**Files to Modify**:
+- `include/coral.h` - Add method/network function constructors
+- `include/coral_network.h` - Network-to-function helpers
+- `gtests/function_types.cc` - Tests for each node type
+
+---
+
+## Phase 5: Partial Application Support
+
+**Goal**: Support creating `std::function` with fewer parameters by pre-binding arguments (Q2).
+
+### Implementation Tasks
+- [ ] Design API for specifying which parameters to bind
+- [ ] Implement parameter binding in function constructor
+- [ ] Verify unbound parameters map correctly to `std::function` signature
+- [ ] Ensure bound values are captured (not referenced)
+
+### Unit Tests (gtests/function_types.cc)
+
+#### Test 5.1: Bind One Parameter
+- [ ] **TEST**: `PartialApplication_BindOneParam`
+  - Register `double multiply(double a, double b) { return a * b; }`
+  - Bind b=5.0, create `std::function<double(double)>`
+  - Result function is `times_5(x) = x * 5`
+  - Invoke with 3.0, verify 15.0
+  - **MWE**: Basic partial application
+
+#### Test 5.2: Bind Multiple Parameters
+- [ ] **TEST**: `PartialApplication_BindMultipleParams`
+  - Register `double sum3(double a, double b, double c) { return a + b + c; }`
+  - Bind b=2.0, c=3.0, create `std::function<double(double)>`
+  - Result: `f(x) = x + 2 + 3`
+  - Invoke with 5.0, verify 10.0
+  - **MWE**: Multiple parameter binding
+
+#### Test 5.3: Bind First vs Last Parameter
+- [ ] **TEST**: `PartialApplication_BindOrder`
+  - Register `double divide(double a, double b) { return a / b; }`
+  - Test 1: Bind a=10.0 → `f(b) = 10 / b` → f(2) = 5
+  - Test 2: Bind b=2.0 → `f(a) = a / 2` → f(10) = 5
+  - Verify both work correctly
+  - **MWE**: Parameter order matters
+
+#### Test 5.4: Value Capture Not Reference
+- [ ] **TEST**: `PartialApplication_ValueCapture`
+  - Create local variable `double factor = 5.0`
+  - Bind factor to multiplication function
+  - Modify factor to 10.0
+  - Invoke bound function, verify it still uses 5.0 (not 10.0)
+  - **MWE**: Ensures safe capture semantics
+
+**Success Criteria**: All 4 tests pass. Can bind arbitrary parameters to create partially applied functions.
+
+**Files to Modify**:
+- `include/coral.h` - Extend `make_function` with binding support
+- `gtests/function_types.cc` - Partial application tests
+
+---
+
+## Phase 6: Higher-Order Functions Registration
+
+**Goal**: Register useful higher-order functions that consume `std::function` arguments.
+
+### Implementation Tasks
+
+#### 6.1: Map
+- [ ] Implement `std::vector<T> map(const std::vector<T>&, std::function<T(T)>)`
+- [ ] Register using `register_function()`
+
+#### 6.2: Reduce
+- [ ] Implement `T reduce(const std::vector<T>&, std::function<T(T,T)>, T initial)`
+- [ ] Register using `register_function()`
+
+#### 6.3: Filter
+- [ ] Implement `std::vector<T> filter(const std::vector<T>&, std::function<bool(T)>)`
+- [ ] Register using `register_function()`
+
+#### 6.4: Apply
+- [ ] Implement `R apply(std::function<R(Args...)>, Args...)`
+- [ ] Register using `register_function()`
+
+#### 6.5: Register All
+- [ ] Add all higher-order functions to `register_all_types()`
+- [ ] Verify they appear in node registry JSON
+
+### Unit Tests (gtests/higher_order_functions.cc - new file)
+
+#### Test 6.1.1: Map with Square Function
+- [ ] **TEST**: `Map_SquareFunction`
+  - Create vector [1.0, 2.0, 3.0, 4.0]
+  - Create `std::function<double(double)>` for square
+  - Call map(vec, square_fn)
+  - Verify result: [1.0, 4.0, 9.0, 16.0]
+  - **MWE**: Basic map usage
+
+#### Test 6.1.2: Map in Network
+- [ ] **TEST**: `Map_InNetwork`
+  - Create network with:
+    - Node A: vector [1, 2, 3, 4]
+    - Node B: square function
+    - Node C: make_function (converts B to std::function)
+    - Node D: map(A, C)
+  - Execute network
+  - Verify D outputs [1, 4, 9, 16]
+  - **MWE**: Map in graph workflow
+
+#### Test 6.2.1: Reduce with Sum
+- [ ] **TEST**: `Reduce_SumFunction`
+  - Create vector [1.0, 2.0, 3.0, 4.0]
+  - Create `std::function<double(double, double)>` for add
+  - Call reduce(vec, add_fn, 0.0)
+  - Verify result: 10.0
+  - **MWE**: Basic reduce usage
+
+#### Test 6.2.2: Reduce with Product
+- [ ] **TEST**: `Reduce_ProductFunction`
+  - Same vector
+  - Create multiply function
+  - Call reduce(vec, mult_fn, 1.0)
+  - Verify result: 24.0
+  - **MWE**: Reduce with different operation
+
+#### Test 6.3.1: Filter Even Numbers
+- [ ] **TEST**: `Filter_EvenNumbers`
+  - Create vector [1, 2, 3, 4, 5, 6]
+  - Create `std::function<bool(int)>` for is_even
+  - Call filter(vec, is_even_fn)
+  - Verify result: [2, 4, 6]
+  - **MWE**: Basic filter usage
+
+#### Test 6.3.2: Filter Greater Than Threshold
+- [ ] **TEST**: `Filter_GreaterThanThreshold`
+  - Create vector [1.0, 5.0, 3.0, 7.0, 2.0]
+  - Create `std::function<bool(double)>` for `x > 3.5`
+  - Filter and verify result: [5.0, 7.0]
+  - **MWE**: Filter with predicate
+
+#### Test 6.4.1: Apply Unary Function
+- [ ] **TEST**: `Apply_UnaryFunction`
+  - Create `std::function<double(double)>` for square
+  - Call apply(square_fn, 5.0)
+  - Verify result: 25.0
+  - **MWE**: Basic apply usage
+
+#### Test 6.4.2: Apply Binary Function
+- [ ] **TEST**: `Apply_BinaryFunction`
+  - Create `std::function<double(double, double)>` for add
+  - Call apply(add_fn, 3.0, 4.0)
+  - Verify result: 7.0
+  - **MWE**: Apply with multiple arguments
+
+**Success Criteria**: All 8 tests pass. Can use map, reduce, filter, apply with function values.
+
+**Files to Create/Modify**:
+- `include/register_types.h` - Declare higher-order functions
+- `source/register_types.cc` - Implement and register
+- `gtests/higher_order_functions.cc` - New test file with 8 tests
+
+---
+
+## Phase 7: JSON Serialization Support
+
+**Goal**: Define JSON representation and implement serialization/deserialization.
+
+### Implementation Tasks
+- [ ] Define JSON schema for function constructor nodes
+- [ ] Implement serialization for function constructor nodes
+- [ ] Implement deserialization from JSON
+- [ ] Handle `std::function` values in serialization
+- [ ] Support round-trip serialization
+
+### Unit Tests (gtests/serialize.cc)
+
+#### Test 7.1: Serialize Function Constructor Node
+- [ ] **TEST**: `Serialize_FunctionConstructorNode`
+  - Create network with make_function node
+  - Serialize to JSON
+  - Verify JSON structure:
+    - Node has correct type (e.g., "make_function<double(double)>")
+    - Connections are preserved
+  - **MWE**: Function constructor in JSON
+
+#### Test 7.2: Deserialize Function Constructor Node
+- [ ] **TEST**: `Deserialize_FunctionConstructorNode`
+  - Create JSON with function constructor node
+  - Deserialize to network
+  - Verify node is created with correct type
+  - Verify connections are established
+  - **MWE**: Loading function constructors from JSON
+
+#### Test 7.3: Round-Trip Serialization
+- [ ] **TEST**: `Serialize_RoundTrip`
+  - Create network: square function → make_function → map
+  - Serialize to JSON (json1)
+  - Deserialize json1 to network2
+  - Serialize network2 to JSON (json2)
+  - Verify json1 == json2 (structural equality)
+  - **MWE**: Serialization preserves structure
+
+#### Test 7.4: Serialize Map Workflow
+- [ ] **TEST**: `Serialize_MapWorkflow`
+  - Create complete map workflow in C++
+  - Serialize to JSON
+  - Save to `test_files/unit_test_map.json`
+  - Deserialize and execute
+  - Verify correct output
+  - **MWE**: Complete workflow serialization
+
+**Success Criteria**: All 4 tests pass. Can serialize/deserialize workflows with function-passing.
+
+**Files to Modify**:
+- `include/coral.h` - JSON support for function types
+- `source/coral_implementation.cc` - Implementation
+- `gtests/serialize.cc` - Add 4 serialization tests
+- `test_files/unit_test_map.json` - Generated test file
+
+---
+
+## Phase 8: End-to-End Integration Tests
+
+**Goal**: Validate complete workflows from JSON files. These are integration tests, not unit tests.
+
+### Integration Tests (gtests/integration_tests.cc - new file)
+
+#### Test 8.1: Map Square from JSON
+- [ ] **TEST**: `Integration_MapSquare`
+  - Load `test_files/map_square.json`
+  - JSON defines: vector [1,2,3,4], square function, map
+  - Execute network
+  - Verify output: [1,4,9,16]
+  - **MWE**: Complete map workflow from JSON
+
+#### Test 8.2: Reduce Sum from JSON
+- [ ] **TEST**: `Integration_ReduceSum`
+  - Load `test_files/reduce_sum.json`
+  - JSON defines: vector [1,2,3,4], sum function, reduce with initial=0
+  - Execute network
+  - Verify output: 10
+  - **MWE**: Complete reduce workflow from JSON
+
+#### Test 8.3: Network as Function from JSON
+- [ ] **TEST**: `Integration_NetworkAsFunction`
+  - Load `test_files/network_as_function.json`
+  - JSON defines: network combining times_2 and add operations
+  - Network converted to std::function
+  - Passed to evaluator
+  - Verify correct execution
+  - **MWE**: Network-to-function in JSON
+
+#### Test 8.4: Function Composition from JSON
+- [ ] **TEST**: `Integration_FunctionComposition`
+  - Load `test_files/function_composition.json`
+  - JSON defines: multiple functions composed in network
+  - Execute and verify
+  - **MWE**: Composing functions via networks
+
+#### Test 8.5: Partial Application from JSON
+- [ ] **TEST**: `Integration_PartialApplication`
+  - Load `test_files/partial_application.json`
+  - JSON defines: multiply function with bound parameter
+  - Result used in map
+  - Verify output
+  - **MWE**: Partial application in JSON
+
+### JSON Files to Create
+- [ ] Create `test_files/map_square.json`
+- [ ] Create `test_files/reduce_sum.json`
+- [ ] Create `test_files/network_as_function.json`
+- [ ] Create `test_files/function_composition.json`
+- [ ] Create `test_files/partial_application.json`
+
+**Success Criteria**: All 5 integration tests pass. Complete workflows work end-to-end from JSON.
+
+**Files to Create**:
+- `gtests/integration_tests.cc` - New file with 5 integration tests
+- `test_files/*.json` - 5 example JSON workflows
+
+---
+
+## Phase 9: Documentation and Examples
+
+**Goal**: Document the feature for users.
+
+### Documentation Tasks
+- [ ] Update README.md with higher-order functions section
+- [ ] Document function type registration
+- [ ] Document function constructors (make_function)
+- [ ] Document each higher-order function (map, reduce, filter, apply)
+- [ ] Add C++ code examples (extracted from unit tests)
+- [ ] Add JSON examples (point to test_files/)
+- [ ] Document limitations and edge cases
+- [ ] Update node registry JSON schema docs
+
+### Documentation Tests (optional)
+- [ ] **TEST**: `Documentation_CodeExamplesCompile`
+  - Extract code snippets from documentation
+  - Verify they compile and run correctly
+  - **MWE**: Ensures docs stay up-to-date
+
+**Success Criteria**: Complete documentation with working examples.
+
+**Files to Modify**:
+- `README.md` - Add higher-order functions section
+- `docs/higher_order_functions.md` (new) - Detailed documentation
+
+---
+
+## Phase 10: Performance and Refinement
+
+**Goal**: Optimize and polish the implementation.
+
+### Implementation Tasks
+- [ ] Profile function wrapping overhead
+- [ ] Optimize network-to-function conversion
+- [ ] Ensure efficient captures (move semantics)
+- [ ] Review error messages for clarity
+- [ ] Code review and refactoring
+- [ ] Ensure const-correctness
+
+### Performance Tests (gtests/benchmarks.cc - new file)
+
+#### Test 10.1: Function Call Overhead
+- [ ] **TEST**: `Benchmark_FunctionCallOverhead`
+  - Compare direct function call vs wrapped std::function call
+  - Measure time for 1M iterations
+  - Verify overhead < 10%
+  - **MWE**: Performance characteristics
+
+#### Test 10.2: Map Operation Performance
+- [ ] **TEST**: `Benchmark_MapPerformance`
+  - Compare hand-written loop vs map with std::function
+  - Large vector (100K elements)
+  - Measure time difference
+  - **MWE**: Real-world performance
+
+#### Test 10.3: Network-as-Function Overhead
+- [ ] **TEST**: `Benchmark_NetworkAsFunctionOverhead`
+  - Compare direct network execution vs wrapped as std::function
+  - Measure overhead
+  - **MWE**: Network wrapping cost
+
+**Success Criteria**: All benchmarks show acceptable performance (< 10% overhead).
+
+**Files to Create**:
+- `gtests/benchmarks.cc` - Performance tests
+
+---
+
+## Dependencies Between Phases
+
 ```
-[EXCEPTION] Task 5 threw exception: Arguments are not ready. You can only call this function after all arguments are ready.
+Phase 1 (Foundation)
+    ↓ [unit tests]
+Phase 2 (Auto-registration)
+    ↓ [unit tests]
+Phase 3 (Simple Constructor)
+    ↓ [unit tests]
+Phase 4 (All Node Types) ← Phase 5 (Partial Application) [both with unit tests]
+    ↓ [unit tests]         ↓ [unit tests]
+Phase 6 (Higher-Order Functions)
+    ↓ [unit tests]
+Phase 7 (JSON Serialization)
+    ↓ [unit tests]
+Phase 8 (Integration Tests) [comprehensive tests using JSON]
+    ↓
+Phase 9 (Documentation) ← Phase 10 (Performance) [benchmarks]
+    ↓                      ↓
+DONE
 ```
 
-**Analysis:**
-1. **Task 5 throws exception** - Says "Arguments are not ready"
-   - Task 5 is `refine_global` method with 2 predecessors: task 3 and task 25
-   - Both predecessors executed successfully (lines 275-285)
-   - Yet task 5 claims arguments not ready - possible bug in argument checking
-2. **Exception is caught and logged** - Doesn't crash the executor
-3. **Executor completes "successfully"** - Line 291 shows success despite exception
-4. **Task 26 STILL never runs** - This is the key mystery!
-   - Task 26 has 0 predecessors (should run immediately)
-   - 5 of 6 zero-predecessor tasks run (8, 22, 23, 24, 25)
-   - Task 26 is the 6th task with 0 predecessors - never scheduled
-   - Post-execution shows Node 26 ready: true (line 302)
+## Testing Strategy
 
-**CRITICAL INSIGHT:**
-The exception in task 5 is a **symptom**, not the root cause. The real problem is that **Taskflow executor doesn't schedule all ready tasks**. Task 26 should have been scheduled alongside tasks 8, 22, 23, 24, 25 (all have 0 predecessors), but the executor only ran 5 of them and skipped task 26.
+### Unit Test Requirements
+Each unit test must:
+1. **Be focused**: Test one specific feature/behavior
+2. **Be minimal**: Use simplest possible setup
+3. **Be documented**: Include comment explaining use case
+4. **Be self-contained**: No dependencies on other tests
+5. **Have clear assertions**: Verify expected behavior explicitly
 
-**Two separate issues:**
-1. Why does task 5 throw "Arguments are not ready" when its predecessors executed?
-2. Why does Taskflow skip task 26 when it has 0 predecessors?
-
-## Step 2c: Identify Which Specific Arguments Are Not Ready ✓✓
-User suggestion: Instead of throwing at the first non-ready argument, collect ALL non-ready arguments and report which source nodes should provide them.
-
-- [x] Modify coral.h operator()() to collect all non-ready argument indices
-- [x] Build detailed error message listing all non-ready argument indices
-- [x] Enhance catch block in coral_network.h to analyze connections
-- [x] For each connection targeting the failing node, log source node ID, name, and ready status
-- [x] Rebuild and run
-- [x] Identify which specific source node(s) are not providing ready outputs to task 5
-
-**Goal**: Determine exactly which predecessor node(s) are failing to provide ready outputs to task 5.
-
-**Changes made:**
-- coral.h:538-564: Modified operator()() to collect all not-ready argument indices before throwing
-- coral_network.h:245-267: Enhanced exception handler to look up and log all connections targeting the failing node
-
-**KEY FINDINGS (output.log:289-292):**
-- **Argument 0** is not ready for task 5
-- Connection 0: Node 3 → Node 5 input 0, **source ready=true**
-- Connection 7: Node 25 → Node 5 input 1, **source ready=true**
-
-**CRITICAL INSIGHT:**
-Node 3 executed successfully (ready=true), but its output is NOT propagating to node 5's input 0. The problem is **data flow**, not taskflow graph structure. The connection exists and node 3 is ready, but node 5 still can't access the triangulation from node 3's output.
-
-## Step 2d: Check Output Ready Status at Connection Time ✓✓ ROOT CAUSE FOUND
-Investigate when set_input() is called and whether outputs are ready at that time.
-
-- [x] Add logging before set_input() to show source output ready status
-- [x] Add logging after set_input() to show target input ready status
-- [x] Rebuild and run
-- [x] Determine if outputs are ready when connections are made
-- [x] Check if there's a timing issue where outputs aren't initialized at connection time
-
-**Hypothesis CONFIRMED!**
-
-**Changes made:**
-- coral_network.h:370-383: Log source output ready status before set_input, and target input ready status after set_input
-
-**ROOT CAUSE IDENTIFIED (output.log:11, 159):**
-
-Connection 0 (3→5) at initial setup:
-```
-source_node[3]->output(0) ready=0 -> target_node[5]->input(0)
-After set_input: target_node[5]->input(0) ready=0
+### Test Naming Convention
+```cpp
+TEST(Category, FeatureDescription)
+// Examples:
+TEST(FunctionType, Registration)
+TEST(MakeFunction, LambdaToStdFunction)
+TEST(PartialApplication, BindOneParam)
+TEST(Map, SquareFunction)
+TEST(Integration, MapSquare)
 ```
 
-Connection 4 (22→3) during dynamic addition:
+### Running Tests
+```bash
+# In Docker container
+cd /workspace
+mkdir -p build && cd build
+cmake ..
+make -j$(nproc)
+
+# Run all tests
+ctest --output-on-failure
+
+# Run tests for specific phase
+./gtests/coral_tests --gtest_filter="FunctionType.*"
+./gtests/coral_tests --gtest_filter="MakeFunction.*"
+
+# Run specific test
+./gtests/coral_tests --gtest_filter="Map.SquareFunction"
 ```
-source_node[22]->output(0) ready=true -> target_node[3]->input(0)
-After set_input: target_node[3]->input(0) ready=true
+
+### Test-as-Documentation Example
+```cpp
+// Example of a good unit test that serves as MWE
+TEST(Map, SquareFunction) {
+  // USE CASE: Apply square function to each element of a vector
+
+  // Step 1: Register types
+  coral::NodeObject::register_elementary_type<double>();
+  coral::NodeObject::register_elementary_type<std::vector<double>>();
+
+  // Step 2: Create square function
+  auto square = [](double x) { return x * x; };
+  coral::NodeObject::register_function(square, {"square", "result", "x"});
+
+  // Step 3: Create function value
+  auto square_fn = std::function<double(double)>(square);
+
+  // Step 4: Create input vector
+  std::vector<double> input = {1.0, 2.0, 3.0, 4.0};
+
+  // Step 5: Apply map
+  auto result = coral::map(input, square_fn);
+
+  // Step 6: Verify
+  ASSERT_EQ(result.size(), 4);
+  EXPECT_EQ(result[0], 1.0);
+  EXPECT_EQ(result[1], 4.0);
+  EXPECT_EQ(result[2], 9.0);
+  EXPECT_EQ(result[3], 16.0);
+}
 ```
 
-**THE BUG:**
-1. During network setup, `add_connection()` calls `set_input(target_input, source->output(source_output))`
-2. This stores a **pointer** to the source node's output object in the target node's input
-3. If the source node hasn't executed yet, this pointer points to an **unready** object
-4. Later, when the source node executes, it updates its internal state to "ready"
-5. **BUT** the target node's input still holds the **old pointer** to the unready object
-6. The pointer never gets updated, so the target node can never access the source's output
+## Progress Tracking
 
-**Why dynamic nodes (22-26) work:**
-- They represent input arguments from the outer network
-- Created with values already set, so outputs are immediately ready=true
-- Connections made to them (e.g., 22→3) work correctly
+Mark tests as completed:
+- [ ] Phase 1: 4 unit tests
+- [ ] Phase 2: 4 unit tests
+- [ ] Phase 3: 4 unit tests
+- [ ] Phase 4: 7 unit tests
+- [ ] Phase 5: 4 unit tests
+- [ ] Phase 6: 8 unit tests
+- [ ] Phase 7: 4 unit tests
+- [ ] Phase 8: 5 integration tests
+- [ ] Phase 9: Documentation
+- [ ] Phase 10: 3 performance tests
 
-**Why original nodes fail:**
-- Node 3 hasn't executed when connection 3→5 is made (during initial setup)
-- Node 5's input stores pointer to unready output
-- Even after node 3 executes successfully, node 5's input pointer doesn't update
-- Node 5 throws "Arguments not ready" exception
-- Exception likely causes Taskflow executor to stop scheduling remaining tasks
-- **This is why task 26 never runs!**
+**Total: 43 tests (38 unit + 5 integration + 3 benchmark)**
 
-**SOLUTION NEEDED:**
-The connection mechanism needs to resolve inputs dynamically at execution time, OR nodes need to update their output pointers when they execute, OR connections need to be re-established after nodes become ready.
+## Rollback Plan
 
-## Step 3: Check Task Addition Order vs Connection Order
-Verify that nodes 22-26 are fully added before their connections are established.
+If a phase encounters issues:
+1. Document the issue in `plan.md`
+2. Mark problematic tasks/tests with `[BLOCKED: reason]`
+3. Discuss alternative approaches
+4. Consider simplifying requirements
+5. Ensure existing tests still pass
 
-- [ ] Add logging at the start of `add_node()` (coral_network.h:207) to print timestamp/sequence
-- [ ] Add logging at the start of `add_connection()` (coral_network.h:257) to print timestamp/sequence
-- [ ] Run and verify that all nodes 22-26 are added before any connections involving them
-- [ ] Check if there's any interleaving that could cause issues
+## Success Metrics
 
-## Step 3: Isolate Node 26 vs Other Dynamic Nodes
-Compare how node 26 is added/connected vs nodes 22-25.
-
-- [ ] Add detailed logging showing the node_id and target_id for each connection in network_1
-- [ ] Verify node 26's connection target (20) vs other nodes' targets (3, 5, 21)
-- [ ] Check if node 20 has any special properties (it's a constructor node: std::ofstream)
-- [ ] Run and compare the connection patterns
-
-## Step 4: Verify Taskflow Graph Topology
-After all nodes and connections are added but before execution, query Taskflow for reachable tasks.
-
-- [ ] Before `executor.run()` (coral_network.h:486), iterate through `node_tasks` and print each task's status
-- [ ] For each task, check if it's reachable from any source node in the graph
-- [ ] Verify that task 26 is in the executor's work queue
-- [ ] Check if there are any isolated subgraphs
-
-## Step 5: Test Minimal Reproduction
-Create a minimal test case to isolate the problem.
-
-- [ ] Create a simple test: add 2 nodes dynamically (A, B) to an existing taskflow with 1 node (C)
-- [ ] Connect A→C (like 22-25 do to their targets)
-- [ ] Connect B→C (like 26 does to 20)
-- [ ] Check if B executes or not
-- [ ] If B doesn't execute, we have a simpler reproduction case
-
-## Step 6: Investigate Node 20 Specifically
-Check if there's something special about node 20 that prevents dynamic nodes from connecting to it.
-
-- [ ] Add logging when node 20 is created (should be in original network creation)
-- [ ] Check node 20's task handle state when nodes 22-26 are added
-- [ ] Verify that node 20's task is not in some "finalized" state that rejects new predecessors
-- [ ] Compare node 20's state vs nodes 3, 5, 21 (which successfully receive connections from dynamic nodes)
-
-## Step 7: Check Taskflow Version and Documentation
-Verify if this is a known Taskflow limitation or bug.
-
-- [ ] Check which Taskflow version is being used
-- [ ] Search Taskflow documentation for dynamic task addition restrictions
-- [ ] Search Taskflow issues/discussions for similar problems
-- [ ] Check if `precede()` has any documented limitations when called after graph construction
-
-## Step 8: Add Explicit Error Checking
-Add error handling to catch any silent failures.
-
-- [ ] Wrap `source_task.precede(target_task)` in try-catch
-- [ ] Check return values (if any) from Taskflow operations
-- [ ] Add assertions to verify task states before critical operations
-- [ ] Look for any Taskflow error reporting mechanisms
-
-## Step 9: Compare with Working Case
-Compare network_1 behavior with network_0 to find differences.
-
-- [ ] Check if network_0 has any similar dynamic node additions
-- [ ] Compare the network construction code paths for both networks
-- [ ] Identify any differences in how connections are established
-- [ ] Check if single-threaded execution (THREADS=1) is relevant
-
-## Step 10: Nuclear Option - Rebuild Taskflow After Dynamic Additions
-If all else fails, test if rebuilding the taskflow helps.
-
-- [ ] After adding nodes 22-26 and their connections, call `rebuild_taskflow()` before execution
-- [ ] Check if this forces Taskflow to re-analyze the graph
-- [ ] Test if task 26 now executes
-- [ ] If yes, investigate why rebuild is needed
+Overall success measured by:
+1. **All 43 tests pass** ✓
+2. Can create map/reduce/filter workflows entirely in JSON ✓
+3. Can convert networks to functions and pass them ✓
+4. Round-trip JSON serialization works ✓
+5. Performance overhead < 10% compared to direct calls ✓
+6. Documentation is complete with working examples ✓
+7. **Tests serve as living documentation** ✓
