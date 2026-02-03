@@ -24,6 +24,8 @@ namespace coral_test
    * set)
    * - Test failed: keep the directory (unless CORAL_DELETE_FAILED_OUTPUT is
    * set)
+   * - If the test directory is removed and the base directory becomes empty,
+   * the base directory is also removed
    *
    * Environment variables:
    * - CORAL_KEEP_SUCCEEDED_OUTPUT: If set, keep output directories for passed
@@ -57,7 +59,7 @@ namespace coral_test
     explicit ScopedTestOutputDir(
       const std::string              &test_name,
       const std::filesystem::path    &base_dir = "./test_output")
-      : dir_path_(base_dir / test_name)
+      : base_dir_(base_dir), dir_path_(base_dir / test_name)
     {
       // Creation policy: if exists, clear contents; if not, create
       if (std::filesystem::exists(dir_path_))
@@ -108,6 +110,13 @@ namespace coral_test
           if (should_delete && std::filesystem::exists(dir_path_))
             {
               std::filesystem::remove_all(dir_path_);
+
+              // Check if base_dir is now empty and remove it if so
+              if (std::filesystem::exists(base_dir_) &&
+                  std::filesystem::is_empty(base_dir_))
+                {
+                  std::filesystem::remove(base_dir_);
+                }
             }
         }
     }
@@ -140,6 +149,7 @@ namespace coral_test
     }
 
   private:
+    std::filesystem::path base_dir_;
     std::filesystem::path dir_path_;
   };
 
