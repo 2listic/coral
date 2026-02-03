@@ -1239,7 +1239,7 @@ var namespaces_dup =
         [ "build_face_entities", "http://www.dealii.org/developer/doxygen/deal.II/namespaceinternal_1_1TriangulationImplementation.html#a03913dfc73c45ebfef75a5e61f0957c5", null ],
         [ "build_face_entities_templated", "http://www.dealii.org/developer/doxygen/deal.II/namespaceinternal_1_1TriangulationImplementation.html#af28ed6f38c4d2f5a4388ee9a4f2c8d46", null ],
         [ "build_intersection", "http://www.dealii.org/developer/doxygen/deal.II/namespaceinternal_1_1TriangulationImplementation.html#a0ed6bd7b43fd7c548ecd927a7268a366", null ],
-        [ "determine_neighbors", "http://www.dealii.org/developer/doxygen/deal.II/namespaceinternal_1_1TriangulationImplementation.html#a19dd5fd5695f6602fe684dbecb7d1b68", null ],
+        [ "determine_neighbors", "http://www.dealii.org/developer/doxygen/deal.II/namespaceinternal_1_1TriangulationImplementation.html#a0642eee91e73e2a2ee4fb365b9f326a5", null ],
         [ "ExcCellHasNegativeMeasure", "http://www.dealii.org/developer/doxygen/deal.II/group__Exceptions.html#ga678d6f7da4c6ba3dd3beb01f2c63d69a", null ],
         [ "ExcCellHasNegativeMeasure", "http://www.dealii.org/developer/doxygen/deal.II/group__Exceptions.html#ga678d6f7da4c6ba3dd3beb01f2c63d69a", null ],
         [ "ExcInconsistentLineInfoOfLine", "http://www.dealii.org/developer/doxygen/deal.II/group__Exceptions.html#ga57165450e8a38324b84e06737174adb5", null ],
