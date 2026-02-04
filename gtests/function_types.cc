@@ -353,3 +353,125 @@ TEST(AutoRegistration, VoidFunction)
 
   ASSERT_TRUE(found) << "std::function<void(double)> not auto-registered";
 }
+
+
+// ============================================================================
+// Phase 3: Simple Function-to-std::function Constructor
+// ============================================================================
+
+// Test 3.1: Convert Lambda to std::function
+TEST(MakeFunction, LambdaToStdFunction)
+{
+  // USE CASE: Basic function wrapping (C++ level)
+
+  // Define lambda
+  auto sq = [](double x) { return x * x; };
+
+  // Wrap in std::function - this should work with std::function's constructor
+  std::function<double(double)> fn = sq;
+
+  // Verify we can call it
+  double result = fn(5.0);
+  ASSERT_DOUBLE_EQ(result, 25.0);
+}
+
+
+// Test 3.2: Convert Function Pointer to std::function
+TEST(MakeFunction, FunctionPointerToStdFunction)
+{
+  // USE CASE: Function pointer wrapping
+
+  // Define free function
+  auto square_func = [](double x) { return x * x; };
+  auto square_ptr = +square_func;  // Convert lambda to function pointer
+
+  // Wrap in std::function
+  std::function<double(double)> fn = square_ptr;
+
+  // Verify we can call it
+  double result = fn(5.0);
+  ASSERT_DOUBLE_EQ(result, 25.0);
+}
+
+
+// Test 3.3: Store std::function in Node
+TEST(MakeFunction, StoreInNode)
+{
+  // USE CASE: Function constructor as a node
+
+  // Register basic types
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_function_type<double, double>();  // Register std::function<double(double)>
+
+  // Create square lambda
+  auto square = [](double x) { return x * x; };
+
+  // Register a constructor function that wraps callables in std::function
+  // For now, we'll create the std::function directly and store it
+  using FunctionType = std::function<double(double)>;
+
+  // Create node containing the std::function
+  FunctionType fn = square;
+  NodeObjectPtr node = make_node(fn);
+
+  // Execute node (should already be ready since we passed a value)
+  // Verify node's output contains std::function<double(double)>
+  ASSERT_TRUE(node->ready());
+
+  FunctionType &retrieved = node->get<FunctionType>();
+  double result = retrieved(5.0);
+  ASSERT_DOUBLE_EQ(result, 25.0);
+}
+
+
+// Test 3.4: Pass Constructed Function to Another Node
+TEST(MakeFunction, PassToConsumer)
+{
+  // USE CASE: End-to-end function passing workflow
+
+  // Register basic types
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_function_type<double, double>();  // Register std::function<double(double)>
+
+  using FunctionType = std::function<double(double)>;
+
+  // Create node A: contains std::function (square)
+  auto square = [](double x) { return x * x; };
+  FunctionType fn = square;
+  NodeObjectPtr node_a = make_node(fn);
+
+  // Create an evaluator that takes std::function and a value
+  auto evaluator = [](const FunctionType &func, const double &value, double &result) {
+    result = func(value);
+  };
+
+  // Register the evaluator
+  NodeObject::register_function(
+    std::function<void(const FunctionType &, const double &, double &)>(evaluator),
+    {"evaluator_fn", "function", "value", "result"});
+
+  // Create node B (evaluator)
+  NodeObjectPtr node_b = make_node("evaluator_fn");
+
+  // Create input value node
+  NodeObjectPtr value_node = make_node(5.0);
+
+  // Create output node
+  NodeObjectPtr output_node = make_node(0.0);
+
+  // Connect A → B (function input)
+  node_b->bind_input(0, node_a->get_output(0));
+
+  // Connect value → B
+  node_b->bind_input(1, value_node->get_output(0));
+
+  // Connect output → B
+  node_b->bind_input(2, output_node->get_output(0));
+
+  // Execute the network
+  (*node_b)();
+
+  // Verify output is 25.0
+  double result = output_node->get<double>();
+  ASSERT_DOUBLE_EQ(result, 25.0);
+}

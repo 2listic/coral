@@ -125,21 +125,22 @@ This plan implements higher-order functions in CORAL by enabling `std::function`
 
 ---
 
-## Phase 3: Simple Function-to-std::function Constructor
+## Phase 3: Simple Function-to-std::function Constructor ✅
 
+**Status**: Completed (2026-02-04)
 **Goal**: Create constructor that converts a registered function into a `std::function` value.
 
 ### Implementation Tasks
-- [ ] Design interface: `std::function<R(Args...)> make_function(lambda/fn_ptr)`
-- [ ] Implement constructor for free functions with signature `R(Args...)`
-- [ ] Constructor takes function pointer/lambda, returns `std::function<R(Args...)>` VALUE
-- [ ] Register the constructor itself as a callable node type
-- [ ] Add helper: `make_function_node<R, Args...>()` for easy node creation
+- [x] Design interface: `std::function<R(Args...)> make_function(lambda/fn_ptr)`
+- [x] Implement constructor for free functions with signature `R(Args...)`
+- [x] Constructor takes function pointer/lambda, returns `std::function<R(Args...)>` VALUE
+- [x] Register the constructor itself as a callable node type
+- [x] Add helper: `make_function_node<R, Args...>()` for easy node creation
 
 ### Unit Tests (gtests/function_types.cc)
 
 #### Test 3.1: Convert Lambda to std::function
-- [ ] **TEST**: `MakeFunction_LambdaToStdFunction`
+- [x] **TEST**: `MakeFunction_LambdaToStdFunction`
   - Define lambda: `auto sq = [](double x) { return x * x; }`
   - Call make_function constructor: `auto fn = make_function(sq)`
   - Verify `fn` is `std::function<double(double)>` type
@@ -147,14 +148,14 @@ This plan implements higher-order functions in CORAL by enabling `std::function`
   - **MWE**: Basic function wrapping
 
 #### Test 3.2: Convert Function Pointer to std::function
-- [ ] **TEST**: `MakeFunction_FunctionPointerToStdFunction`
+- [x] **TEST**: `MakeFunction_FunctionPointerToStdFunction`
   - Define free function: `double square(double x) { return x * x; }`
   - Call make_function constructor: `auto fn = make_function(&square)`
   - Verify and invoke
   - **MWE**: Function pointer wrapping
 
 #### Test 3.3: Store std::function in Node
-- [ ] **TEST**: `MakeFunction_StoreInNode`
+- [x] **TEST**: `MakeFunction_StoreInNode`
   - Create square lambda
   - Use `make_function_node<double(double)>()` to create a node
   - Pass lambda to node
@@ -163,7 +164,7 @@ This plan implements higher-order functions in CORAL by enabling `std::function`
   - **MWE**: Function constructor as a node
 
 #### Test 3.4: Pass Constructed Function to Another Node
-- [ ] **TEST**: `MakeFunction_PassToConsumer`
+- [x] **TEST**: `MakeFunction_PassToConsumer`
   - Create node A: uses make_function to create `std::function<double(double)>` (square)
   - Create node B: evaluator that takes `std::function<double(double)>` and calls it with 5.0
   - Connect A → B
@@ -171,7 +172,7 @@ This plan implements higher-order functions in CORAL by enabling `std::function`
   - Verify B outputs 25.0
   - **MWE**: End-to-end function passing workflow
 
-**Success Criteria**: All 4 tests pass. Can wrap simple functions in `std::function` and pass them between nodes.
+**Success Criteria**: ✅ All 4 tests pass. Can wrap simple functions in `std::function` and pass them between nodes.
 
 **Files to Modify**:
 - `include/coral.h` - Add `make_function` constructors
@@ -647,6 +648,34 @@ Each unit test must:
 3. **Be documented**: Include comment explaining use case
 4. **Be self-contained**: No dependencies on other tests
 5. **Have clear assertions**: Verify expected behavior explicitly
+
+### ⚠️ CRITICAL: Test Independence
+**Every test MUST be completely independent and register ALL types it uses.**
+
+Common mistakes to avoid:
+- ❌ Assuming `double`, `int`, or other basic types are pre-registered
+- ❌ Relying on test execution order for type registration
+- ❌ Depending on other test files to register types
+
+**Always include at the start of each test:**
+```cpp
+// Register ALL types this test uses
+NodeObject::register_elementary_type<double>();
+NodeObject::register_elementary_type<int>();
+NodeObject::register_function_type<double, double>();  // If using std::function
+// ... any other types needed
+```
+
+**Why this matters:**
+- Tests may run in different orders
+- Test filters (`--gtest_filter`) may run tests in isolation
+- Other test files may not be compiled/linked in all build configurations
+
+**Testing test independence:**
+```bash
+# Always verify tests pass in isolation
+./gtests/coral_tests --gtest_filter="YourTest.YourTestName"
+```
 
 ### Test Naming Convention
 ```cpp

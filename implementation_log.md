@@ -398,6 +398,239 @@ Phase 3 will implement function constructor nodes that convert registered functi
 
 ---
 
+## Phase 3: Simple Function-to-std::function Constructor
+
+**Status**: ✅ Completed
+**Date**: 2026-02-04
+
+### Objective
+Verify that `std::function` values created from callables can be stored in nodes and passed through the computational graph.
+
+### Analysis
+
+Phase 3 revealed an important insight: **No new implementation was needed!** The infrastructure from Phases 1 and 2 already provides everything required to wrap callables in `std::function` and pass them through nodes.
+
+**What we already have:**
+- **Phase 1**: `std::function` types can be registered, stored in nodes, and passed between nodes
+- **Phase 2**: Registering functions automatically registers their corresponding `std::function` types
+- **C++ Standard Library**: `std::function` constructors handle wrapping lambdas and function pointers
+
+### Tests Created
+
+Added 4 validation tests in `gtests/function_types.cc` (lines 359-485):
+
+#### Test 3.1: `MakeFunction.LambdaToStdFunction`
+**Purpose**: Verify std::function can wrap lambdas (C++ sanity check)
+
+**Flow**:
+- Create lambda: `auto sq = [](double x) { return x * x; }`
+- Wrap in `std::function<double(double)>` using built-in constructor
+- Call function with 5.0, verify result is 25.0
+
+**Result**: ✅ Pass - std::function's constructor works as expected
+
+**MWE**: Basic lambda wrapping with standard C++
+
+#### Test 3.2: `MakeFunction.FunctionPointerToStdFunction`
+**Purpose**: Verify std::function can wrap function pointers
+
+**Flow**:
+- Create lambda and convert to function pointer: `auto square_ptr = +square_func;`
+- Wrap in `std::function<double(double)>`
+- Call and verify
+
+**Result**: ✅ Pass - Function pointers work
+
+**MWE**: Function pointer conversion
+
+#### Test 3.3: `MakeFunction.StoreInNode`
+**Purpose**: Verify `std::function` values can be stored in nodes
+
+**Flow**:
+- Register types: `double`, `std::function<double(double)>`
+- Create lambda and wrap in `std::function`
+- Store in `NodeObject`: `NodeObjectPtr node = make_node(fn);`
+- Retrieve and call: `node->get<FunctionType>()(5.0)`
+- Verify result is 25.0
+
+**Result**: ✅ Pass - std::function values work like any other type
+
+**MWE**: Storing function values in nodes
+
+#### Test 3.4: `MakeFunction.PassToConsumer`
+**Purpose**: End-to-end workflow passing functions through graph
+
+**Flow**:
+- Register types: `double`, `std::function<double(double)>`
+- Node A: Contains `std::function<double(double)>` (square function)
+- Create evaluator function that takes `std::function` and value
+- Register evaluator: `void(const FunctionType&, const double&, double&)`
+- Node B: Evaluator node
+- Connect: A's output → B's function input, value node → B's value input
+- Execute network
+- Verify output is 25.0
+
+**Result**: ✅ Pass - Functions flow through graph correctly
+
+**MWE**: Complete function-passing workflow
+
+### Files Modified
+
+**`gtests/function_types.cc`**
+- Added 4 tests for Phase 3 (127 lines)
+- Each test registers all required types for independence
+
+### Key Insights
+
+1. **No Constructor Needed**: The plan anticipated creating special "make_function" constructor nodes, but std::function's built-in constructors are sufficient
+
+2. **Existing Infrastructure Works**: Phases 1 and 2 already enabled:
+   - Storing `std::function` values in nodes
+   - Passing `std::function` values between nodes
+   - Automatic type registration for function signatures
+
+3. **Phase 3 = Validation**: This phase validates that the previous work accomplishes the goal without requiring additional machinery
+
+### Compilation Issues Encountered
+
+#### Issue: Missing Type Registration (Again!)
+**Error**: `"Type St8functionIFddEE is not registered"` in Tests 3.3 and 3.4
+
+**Root Cause**: Tests didn't register `std::function<double(double)>` type
+
+**Resolution**:
+```cpp
+NodeObject::register_function_type<double, double>();
+```
+
+**Lesson Reinforced**: **EVERY test must register ALL types it uses**, even if they seem "basic" or "already registered"
+
+### Success Criteria Met
+
+✅ All 4 tests pass in isolation
+✅ Lambdas can be wrapped in `std::function`
+✅ Function pointers can be wrapped in `std::function`
+✅ `std::function` values can be stored in nodes
+✅ `std::function` values can be passed through the graph
+✅ End-to-end workflow works correctly
+
+### Technical Notes
+
+1. **C++ CTAD**: C++17's Class Template Argument Deduction allows `std::function fn = lambda;` without explicit template parameters
+
+2. **Value Semantics**: `std::function` has value semantics - when copied, the wrapped callable is copied (or ref-counted for shared state)
+
+3. **Type Erasure**: `std::function` provides type erasure - the node system doesn't need to know about the original lambda type, only the signature
+
+4. **No Special Nodes Needed**: Unlike later phases (which will need special handling for methods and networks), free functions work with standard `std::function` constructors
+
+### Design Decision: Postpone make_function Constructor
+
+The original plan called for implementing a `make_function` constructor node. However, since:
+- `std::function` constructors already do this job
+- No additional wrapping is needed for free functions
+- The existing infrastructure handles everything
+
+We're **deferring specialized constructors to Phase 4**, which will handle more complex cases:
+- Methods (need object binding)
+- Networks (need input/output mapping)
+- Partial application (need parameter binding)
+
+For Phase 3's scope (simple free functions), the existing tools are sufficient.
+
+### Impact Summary
+
+Phase 3 demonstrates that the foundation laid in Phases 1-2 successfully enables the core use case: passing function values through the computational graph. Users can now:
+
+```cpp
+// Create a function value
+auto square = [](double x) { return x * x; };
+std::function<double(double)> fn = square;
+
+// Store in a node
+NodeObjectPtr fn_node = make_node(fn);
+
+// Pass to other nodes
+evaluator_node->bind_input(0, fn_node->get_output(0));
+
+// Execute the graph
+(*evaluator_node)();
+```
+
+This "just works" with no special machinery required!
+
+### Next Steps (Phase 4)
+
+Phase 4 will extend function construction to handle:
+- Methods (with object binding)
+- Networks (with input/output mapping)
+- More complex function types (void functions, multi-argument functions)
+
+---
+
+## Testing Best Practices
+
+### ⚠️ CRITICAL: Test Independence
+
+**Every test MUST be completely independent and register ALL types it uses.**
+
+This principle was reinforced across Phases 2 and 3 when tests failed in isolation despite passing when run together.
+
+#### Common Mistakes
+
+❌ **Assuming basic types are pre-registered**
+```cpp
+// BAD: Assumes double is already registered
+TEST(MyTest, Example) {
+  auto fn = [](double x) { return x * x; };  // FAILS if run alone!
+  // ...
+}
+```
+
+✅ **Always register all types**
+```cpp
+// GOOD: Explicitly registers everything needed
+TEST(MyTest, Example) {
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_function_type<double, double>();
+  auto fn = [](double x) { return x * x; };  // Works in isolation!
+  // ...
+}
+```
+
+#### Why This Matters
+
+1. **Test Filters**: `--gtest_filter` may run only specific tests
+2. **Execution Order**: Test order is not guaranteed
+3. **Build Configurations**: Different builds may include different test files
+
+#### Verification Checklist
+
+Before committing a test:
+- [ ] Run test in isolation: `./gtests/coral_tests --gtest_filter="TestSuite.TestName"`
+- [ ] Verify all types are registered at test start
+- [ ] Check no dependencies on other tests or global state
+
+#### Template for Test Independence
+
+```cpp
+TEST(TestSuite, TestName)
+{
+  // USE CASE: Brief description
+
+  // Register ALL types this test uses
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_elementary_type<int>();
+  NodeObject::register_function_type<double, double>();
+  // ... any other types
+
+  // Test body
+  // ...
+}
+```
+
+---
+
 ## Appendix: Build and Test Commands
 
 ```bash
@@ -412,8 +645,11 @@ make -j$(nproc)
 # Run Phase 2 tests only
 ./gtests/coral_tests --gtest_filter="AutoRegistration.*"
 
-# Run Phase 1 and 2 together
-./gtests/coral_tests --gtest_filter="FunctionType.*:AutoRegistration.*"
+# Run Phase 3 tests only
+./gtests/coral_tests --gtest_filter="MakeFunction.*"
+
+# Run Phase 1, 2, and 3 together
+./gtests/coral_tests --gtest_filter="FunctionType.*:AutoRegistration.*:MakeFunction.*"
 
 # Run all tests
 ctest --output-on-failure
