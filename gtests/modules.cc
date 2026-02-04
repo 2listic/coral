@@ -217,11 +217,19 @@ TEST(Modules, HyperCubeNetworkConnectedRun)
   ASSERT_EQ(tri_node->get<dealii::Triangulation<2>>().n_active_cells(), 256);
 }
 
-TEST(Modules, NetworkNodeArgumentsOrder1)
-{
-  ScopedTestOutputDir output_dir("Modules_NetworkNodeArgumentsOrder1");
+// Parametrized test for NetworkNode tests
+class NetworkNodeTest : public ::testing::TestWithParam<std::string>
+{};
 
-  const std::string path = SOURCE_DIR "/test_files/networknode-order1.json";
+TEST_P(NetworkNodeTest, ParseAndRun)
+{
+  const std::string filename = GetParam();
+  const std::string test_name =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  ScopedTestOutputDir output_dir("Modules_NetworkNode_" + filename);
+
+  const std::string path = SOURCE_DIR "/test_files/" + filename + ".json";
 
   coral::register_all_types();
 
@@ -241,62 +249,26 @@ TEST(Modules, NetworkNodeArgumentsOrder1)
   verify_status_files(network, output_dir);
 }
 
-TEST(Modules, NetworkNodeArgumentsOrder2)
+INSTANTIATE_TEST_SUITE_P(
+  NetworkNodeVariants,
+  NetworkNodeTest,
+  ::testing::Values("networknode-order1",
+                    "networknode-order2",
+                    "networknode-noarguments",
+                    "graph-named",
+                    "graph-no-name"));
+
+// Parametrized test for VTK generation tests
+class VtkGenerationTest : public ::testing::TestWithParam<std::string>
+{};
+
+TEST_P(VtkGenerationTest, GenerateAndVerify)
 {
-  ScopedTestOutputDir output_dir("Modules_NetworkNodeArgumentsOrder2");
+  const std::string filename = GetParam();
 
-  const std::string path = SOURCE_DIR "/test_files/networknode-order2.json";
+  ScopedTestOutputDir output_dir("Modules_Vtk_" + filename);
 
-  coral::register_all_types();
-
-  std::ifstream input{path};
-  ASSERT_TRUE(input.good()) << "Failed to open " << path;
-
-  nlohmann::json data;
-  input >> data;
-
-  coral::Network network;
-  network.set_touch_file_base_path(output_dir);
-  ASSERT_NO_THROW(network.from_json(data))
-    << "Failed to parse network from JSON with different argument order";
-
-  ASSERT_NO_THROW(network.run())
-    << "Failed to run network with different argument order";
-
-  verify_status_files(network, output_dir);
-}
-
-TEST(Modules, NetworkNodeNoArguments)
-{
-  ScopedTestOutputDir output_dir("Modules_NetworkNodeNoArguments");
-
-  const std::string path =
-    SOURCE_DIR "/test_files/networknode-noarguments.json";
-
-  coral::register_all_types();
-
-  std::ifstream input{path};
-  ASSERT_TRUE(input.good()) << "Failed to open " << path;
-
-  nlohmann::json data;
-  input >> data;
-
-  coral::Network network;
-  network.set_touch_file_base_path(output_dir);
-  ASSERT_NO_THROW(network.from_json(data))
-    << "Failed to parse network from JSON with different argument order";
-
-  ASSERT_NO_THROW(network.run())
-    << "Failed to run network with different argument order";
-
-  verify_status_files(network, output_dir);
-}
-
-TEST(Modules, VtkGen1)
-{
-  ScopedTestOutputDir output_dir("Modules_VtkGen1");
-
-  const std::string path        = SOURCE_DIR "/test_files/vtk-gen1.json";
+  const std::string path        = SOURCE_DIR "/test_files/" + filename + ".json";
   const std::string output_file = "grid-1.vtk";
 
   coral::register_all_types();
@@ -331,119 +303,9 @@ TEST(Modules, VtkGen1)
   std::remove(output_file.c_str());
 }
 
-TEST(Modules, VtkGen2)
-{
-  ScopedTestOutputDir output_dir("Modules_VtkGen2");
-
-  const std::string path        = SOURCE_DIR "/test_files/vtk-gen2.json";
-  const std::string output_file = "grid-1.vtk";
-
-  coral::register_all_types();
-
-  std::ifstream input{path};
-  ASSERT_TRUE(input.good()) << "Failed to open " << path;
-
-  nlohmann::json data;
-  input >> data;
-
-  coral::Network network;
-  network.set_touch_file_base_path(output_dir);
-  ASSERT_NO_THROW(network.from_json(data))
-    << "Failed to parse network from JSON";
-
-  ASSERT_NO_THROW(network.run()) << "Failed to run network";
-
-  // Check that the output file was created and is not empty
-  std::ifstream output{output_file};
-  ASSERT_TRUE(output.good())
-    << "Output file " << output_file << " was not created";
-
-  output.seekg(0, std::ios::end);
-  std::streampos file_size = output.tellg();
-  ASSERT_GT(file_size, 0) << "Output file " << output_file << " is empty";
-  output.close();
-
-  // Verify status files
-  verify_status_files(network, output_dir);
-
-  // Remove the output file
-  std::remove(output_file.c_str());
-}
-
-TEST(Modules, VtkGen3)
-{
-  ScopedTestOutputDir output_dir("Modules_VtkGen3");
-
-  const std::string path        = SOURCE_DIR "/test_files/vtk-gen3.json";
-  const std::string output_file = "grid-1.vtk";
-
-  coral::register_all_types();
-
-  std::ifstream input{path};
-  ASSERT_TRUE(input.good()) << "Failed to open " << path;
-
-  nlohmann::json data;
-  input >> data;
-
-  coral::Network network;
-  network.set_touch_file_base_path(output_dir);
-  ASSERT_NO_THROW(network.from_json(data))
-    << "Failed to parse network from JSON";
-
-  ASSERT_NO_THROW(network.run()) << "Failed to run network";
-
-  // Check that the output file was created and is not empty
-  std::ifstream output{output_file};
-  ASSERT_TRUE(output.good())
-    << "Output file " << output_file << " was not created";
-
-  output.seekg(0, std::ios::end);
-  std::streampos file_size = output.tellg();
-  ASSERT_GT(file_size, 0) << "Output file " << output_file << " is empty";
-  output.close();
-
-  // Verify status files
-  verify_status_files(network, output_dir);
-
-  // Remove the output file
-  std::remove(output_file.c_str());
-}
-
-TEST(Modules, VtkSingle)
-{
-  ScopedTestOutputDir output_dir("Modules_VtkSingle");
-
-  const std::string path        = SOURCE_DIR "/test_files/vtk-single.json";
-  const std::string output_file = "grid-1.vtk";
-
-  coral::register_all_types();
-
-  std::ifstream input{path};
-  ASSERT_TRUE(input.good()) << "Failed to open " << path;
-
-  nlohmann::json data;
-  input >> data;
-
-  coral::Network network;
-  network.set_touch_file_base_path(output_dir);
-  ASSERT_NO_THROW(network.from_json(data))
-    << "Failed to parse network from JSON";
-
-  ASSERT_NO_THROW(network.run()) << "Failed to run network";
-
-  // Check that the output file was created and is not empty
-  std::ifstream output{output_file};
-  ASSERT_TRUE(output.good())
-    << "Output file " << output_file << " was not created";
-
-  output.seekg(0, std::ios::end);
-  std::streampos file_size = output.tellg();
-  ASSERT_GT(file_size, 0) << "Output file " << output_file << " is empty";
-  output.close();
-
-  // Verify status files
-  verify_status_files(network, output_dir);
-
-  // Remove the output file
-  std::remove(output_file.c_str());
-}
+INSTANTIATE_TEST_SUITE_P(VtkVariants,
+                         VtkGenerationTest,
+                         ::testing::Values("vtk-gen1",
+                                           "vtk-gen2",
+                                           "vtk-gen3",
+                                           "vtk-single"));
