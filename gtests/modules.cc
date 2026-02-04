@@ -254,9 +254,7 @@ INSTANTIATE_TEST_SUITE_P(
   NetworkNodeTest,
   ::testing::Values("networknode-order1",
                     "networknode-order2",
-                    "networknode-noarguments",
-                    "graph-named",
-                    "graph-no-name"));
+                    "networknode-noarguments"));
 
 // Parametrized test for VTK generation tests
 class VtkGenerationTest : public ::testing::TestWithParam<std::string>
@@ -308,4 +306,6 @@ INSTANTIATE_TEST_SUITE_P(VtkVariants,
                          ::testing::Values("vtk-gen1",
                                            "vtk-gen2",
                                            "vtk-gen3",
-                                           "vtk-single"));
+                                           "vtk-single",
+                                           "graph-named",
+                                           "graph-no-name"));
