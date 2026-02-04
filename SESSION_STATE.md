@@ -1,7 +1,7 @@
 # Session State: Functions as First-Class Citizens Implementation
 
-**Last Updated**: 2026-02-04 (After Phase 4 Completion)
-**Status**: Phase 4 Complete, Ready for Phase 5
+**Last Updated**: 2026-02-04 (After Phase 5 Completion)
+**Status**: Phase 5 Complete, Ready for Phase 6
 
 ---
 
@@ -48,7 +48,22 @@ When resuming, provide me with:
 - 17/17 tests passing in `gtests/function_types.cc`
 - **Key Files**: `gtests/function_types.cc` (~lines 488-1150)
 
-**Total Tests Passing**: 29 (4+4+4+17)
+#### **Phase 5: Partial Application Support**
+- **Implementation approach**: Lambda value captures for parameter binding
+- **Conceptual tests**: Pure C++ partial application (6 tests)
+  - Bind one/multiple parameters
+  - First vs last parameter binding
+  - Value capture semantics (not reference)
+  - Storage in nodes
+  - Chained partial application
+- **Integration tests**: Registered CORAL functions (3 tests)
+  - Partial application of registered functions
+  - Multiple parameter binding
+  - Use in larger networks
+- 9/9 tests passing in `gtests/function_types.cc`
+- **Key Files**: `gtests/function_types.cc` (~lines 1238-1540)
+
+**Total Tests Passing**: 38 (4+4+4+17+9)
 
 ---
 
@@ -77,26 +92,27 @@ TEST(MyTest, Example) {
 
 ---
 
-## Next Phase: Phase 5
+## Next Phase: Phase 6
 
-### **Phase 5: Partial Application Support**
+### **Phase 6: Higher-Order Functions Registration**
 
-**Goal**: Support creating `std::function` with fewer parameters by pre-binding arguments.
+**Goal**: Register useful higher-order functions that consume `std::function` arguments (map, reduce, filter, apply).
 
 **Subtasks**:
-1. Design API for specifying which parameters to bind
-2. Implement parameter binding in function constructor
-3. Verify unbound parameters map correctly to `std::function` signature
-4. Ensure bound values are captured (not referenced)
+1. Implement `map(vector, function)` - apply function to each element
+2. Implement `reduce(vector, function, initial)` - accumulate using function
+3. Implement `filter(vector, predicate)` - select elements matching predicate
+4. Implement `apply(function, args...)` - invoke function with arguments
+5. Register all higher-order functions in CORAL system
 
-**Tests Required**: 4 unit tests
+**Tests Required**: 8 unit tests
 
 **Expected Complexity**: Medium
-- Need to bind specific parameters while leaving others unbound
-- Value capture semantics crucial for safety
-- Order of parameters matters (bind first vs bind last)
+- Need to implement generic higher-order functions
+- Template instantiation for different types
+- Integration with std::function values from previous phases
 
-**Key Challenge**: Creating closures that capture specific argument values while allowing others to be passed at call time
+**Key Opportunity**: This phase demonstrates the practical value of Phases 1-5 by enabling functional programming patterns in CORAL
 
 ---
 
@@ -116,8 +132,10 @@ TEST(MyTest, Example) {
    - Lines 653-750: Phase 4.2 tests (NonConstMethod.*)
    - Lines 754-881: Phase 4.3 tests (ConstMethod.*)
    - Lines 885-1046: Phase 4.4 tests (NetworkAsFunction.*)
-   - Lines 1050-1150+: Phase 4.5 tests (UnifiedFunction.*)
-   - **Ready for Phase 5 tests**
+   - Lines 1050-1235: Phase 4.5 tests (UnifiedFunction.*)
+   - Lines 1238-1406: Phase 5 conceptual tests (PartialApplication.*)
+   - Lines 1410-1540+: Phase 5 integration tests (RegisteredFunctionPartialApplication.*)
+   - **Ready for Phase 6 tests**
 
 3. **`plan.md`**
    - Tracks all 10 phases with checkboxes
@@ -213,53 +231,66 @@ make -j$(nproc)
 
 ---
 
-## Phase 5 Preview
+## Phase 6 Preview
 
 ### What Needs to be Implemented
 
-**Partial Application**: Creating functions with pre-bound arguments
+**Higher-Order Functions**: Functions that take other functions as arguments
 
-**Approach**: Use lambda captures to bind specific parameter values:
-```cpp
-// Original function: double multiply(double a, double b)
-// Bind b=5.0, create: double times_5(double a)
-auto times_5 = [](double a) { return multiply(a, 5.0); };
-std::function<double(double)> fn = times_5;
-```
+**Functions to Implement**:
 
-**Key Features**:
-1. **Bind any parameter**: First, last, or middle parameters
-2. **Value capture**: Bound values must be captured by value (not reference)
-3. **Multiple bindings**: Support binding multiple parameters simultaneously
-4. **Order preservation**: Unbound parameters maintain their relative order
+1. **`map<T>(vector<T>, function<T(T)>) → vector<T>`**
+   - Apply function to each element
+   - Return new vector with results
+   - Example: `map([1,2,3], square) → [1,4,9]`
+
+2. **`reduce<T>(vector<T>, function<T(T,T)>, T) → T`**
+   - Accumulate values using binary function
+   - Example: `reduce([1,2,3], add, 0) → 6`
+
+3. **`filter<T>(vector<T>, function<bool(T)>) → vector<T>`**
+   - Select elements matching predicate
+   - Example: `filter([1,2,3,4], is_even) → [2,4]`
+
+4. **`apply<R,Args...>(function<R(Args...)>, Args...) → R`**
+   - Invoke function with arguments
+   - Example: `apply(square, 5) → 25`
 
 ### Expected Challenges
 
-1. **API Design**: How to specify which parameters to bind?
-   - Option 1: Template-based approach with placeholder arguments
-   - Option 2: Builder pattern with named parameter binding
-   - Option 3: Simple lambda approach (most flexible, already used in Phase 4)
+1. **Template Instantiation**: Need to register specific type instantiations
+   - Can't register generic templates in CORAL
+   - Must register `map<double>`, `map<int>`, etc. separately
 
-2. **Value Capture Safety**: Ensure bound values are copied, not referenced
-   - Reference captures can lead to dangling references
-   - Need clear semantics about when values are captured
+2. **Vector Type Registration**: Need `std::vector<T>` support
+   - May already exist in codebase
+   - If not, need to register as elementary type
 
-3. **Type Deduction**: Resulting function signature changes based on bindings
-   - Bind 1 param from 3-param function → 2-param function
-   - Type system must correctly deduce new signature
+3. **Integration**: Higher-order functions consume `std::function` values
+   - Should work seamlessly with functions from Phases 1-5
+   - Tests should demonstrate using partial applications with map/reduce
 
-4. **Parameter Ordering**: Which unbound parameters come first?
-   - Natural ordering: maintain original parameter positions
-   - May need tests for different binding combinations
+4. **Performance**: Creating vectors and calling functions has overhead
+   - Phase 10 will benchmark performance
+   - For now, focus on correctness
 
 ### Implementation Strategy
 
-Based on Phase 4 experience, the simplest approach is **manual lambda creation**:
-- Users write explicit lambdas with captured values
-- Tests demonstrate the pattern
-- No special infrastructure needed (consistent with Phase 4 philosophy)
+1. Implement each higher-order function as a C++ function
+2. Register using `NodeObject::register_function()`
+3. Auto-registration from Phase 2 should handle `std::function` types
+4. Write comprehensive tests showing realistic use cases
+5. Demonstrate composition: partial application + map, etc.
 
-Alternative: Could provide helper templates, but adds complexity for minimal benefit.
+### Value Proposition
+
+Phase 6 is where everything comes together - it demonstrates **why** we built Phases 1-5:
+- Create functions (Phase 1-2)
+- Pass them as values (Phase 3-4)
+- Partially apply them (Phase 5)
+- **Use them with map/reduce/filter (Phase 6)** ← We are here
+
+This enables functional programming patterns in the CORAL computational graph system!
 
 ---
 

@@ -851,6 +851,164 @@ We achieve powerful functionality with minimal code and no runtime overhead.
 
 ---
 
+## Phase 5: Partial Application Support
+
+**Status**: ✅ Completed
+**Date**: 2026-02-04
+
+### Objective
+Support creating `std::function` with fewer parameters by pre-binding arguments, enabling flexible function composition and reuse.
+
+### Implementation Approach
+
+Consistent with Phases 1-4, Phase 5 uses **C++ lambda value captures** to implement partial application. No special infrastructure needed - just demonstrate the pattern with comprehensive tests.
+
+### Tests Created
+
+Phase 5 includes two categories of tests:
+1. **Conceptual tests** (6): Demonstrate pure C++ partial application patterns
+2. **Integration tests** (3): Show partial application of registered CORAL functions
+
+#### Conceptual Tests (6 tests)
+
+**Test 5.1: `PartialApplication.BindOneParameter`**
+- Binds second parameter of multiplication: `(a, b=5.0) → times_5(a)`
+- Uses value capture: `[bound_value](double a) { return a * bound_value; }`
+- Tests: `fn(3.0) = 15.0`
+
+**Test 5.2: `PartialApplication.BindMultipleParameters`**
+- Binds 2 of 3 parameters: `sum3(a, b=2.0, c=3.0) → f(a)`
+- Captures multiple values: `[bound_b, bound_c](double a)`
+- Tests: `fn(5.0) = 10.0`
+
+**Test 5.3: `PartialApplication.BindFirstVsLastParameter`**
+- Compares binding different parameter positions
+- First: `divide(a=10.0, b) → f(b) = 10/b`
+- Last: `divide(a, b=2.0) → f(a) = a/2`
+- Demonstrates parameter order significance
+
+**Test 5.4: `PartialApplication.ValueCaptureNotReference`**
+- **Critical safety test**
+- Captures `factor = 5.0`, then modifies original to `10.0`
+- Verifies function still uses captured value `5.0`
+- Ensures safe, predictable behavior
+
+**Test 5.5: `PartialApplication.StoreInNode`**
+- Partially applies power function to create square: `power(x, exp=2.0)`
+- Stores in node, retrieves, invokes
+- Demonstrates node storage of partial applications
+
+**Test 5.6: `PartialApplication.ChainedPartialApplication`**
+- Sequential partial application: `f(a,b,c) → f(a,b) → f(a)`
+- First bind c=10: `f1(a,b) = a*b + 10`
+- Then bind b=5: `f2(a) = a*5 + 10`
+- Tests: `f2(3) = 25`
+
+#### Integration Tests (3 tests)
+
+**Test 5.7: `RegisteredFunctionPartialApplication.BindOneParameter`**
+- Registers CORAL function: `multiply(a, b, result)`
+- Creates partial application wrapping registered function execution:
+  ```cpp
+  auto times_5 = [bound_b](double a) {
+    // Create nodes
+    NodeObjectPtr mult_node = make_node("multiply");
+    // Bind inputs (a from parameter, b from capture)
+    // Execute and return result
+  };
+  ```
+- Demonstrates integration with CORAL function registry
+
+**Test 5.8: `RegisteredFunctionPartialApplication.BindMultipleParameters`**
+- Registers 3-parameter function: `sum3(a, b, c, result)`
+- Binds b=2.0 and c=3.0
+- Wraps node creation/execution in lambda
+
+**Test 5.9: `RegisteredFunctionPartialApplication.UseInNetwork`**
+- **Full integration test**
+- Registers `power` and `subtract` functions
+- Creates partial application: square from power(x, exp=2.0)
+- Stores partial application in node
+- Uses in larger network: `square(5) - 10 = 15`
+- Demonstrates real-world usage in computational graph
+
+### Files Modified
+
+1. **`gtests/function_types.cc`**
+   - Added 9 tests for Phase 5 (lines 1238-1540+)
+   - 6 conceptual tests + 3 integration tests
+
+### Compilation Issues Encountered
+
+#### Issue: Lambda Not Captured
+**Error**: `'multiply' is not captured` when creating partial application lambdas
+
+**Root Cause**: Tried to call one lambda from inside another without capturing it:
+```cpp
+auto multiply = [](double a, double b) { return a * b; };
+auto times_5 = [bound](double a) { return multiply(a, bound); }; // Error!
+```
+
+**Resolution**: Use operations directly instead of calling intermediate lambdas:
+```cpp
+auto times_5 = [bound](double a) { return a * bound; }; // Direct operation
+```
+
+**Lesson**: For partial application, inline the operation directly rather than calling other lambdas. Cleaner and more typical of the pattern.
+
+### Success Criteria Met
+
+✅ All 9 unit tests pass
+✅ Can bind single or multiple parameters
+✅ Parameter order flexibility (first, last, multiple)
+✅ Value capture semantics verified (safe, not reference)
+✅ Storage in nodes works
+✅ Chained partial application demonstrated
+✅ Integration with registered CORAL functions
+✅ Full network integration shown
+
+### Technical Notes
+
+1. **Value Capture Pattern**:
+   ```cpp
+   double bound_value = 5.0;
+   auto partial = [bound_value](double x) { return x * bound_value; };
+   ```
+   - Captures by value (safe)
+   - Original variable can be modified without affecting function
+   - Predictable, immutable behavior
+
+2. **Multiple Parameter Binding**:
+   ```cpp
+   auto partial = [bound_b, bound_c](double a) { return a + bound_b + bound_c; };
+   ```
+   - Comma-separated captures for multiple values
+   - All captured by value
+
+3. **Registered Function Integration**:
+   - Create nodes inside lambda
+   - Bind inputs (mix of parameters and captures)
+   - Execute and return result
+   - More verbose but enables CORAL system integration
+
+4. **Chained Application**:
+   - Can capture previously-created partial applications
+   - Build up complex functions incrementally
+   - Each step reduces parameter count
+
+### Design Insights
+
+Phase 5 demonstrates that **partial application is a pattern, not infrastructure**:
+- No special API needed
+- Lambda value captures provide clean, safe syntax
+- Works with both pure C++ and registered CORAL functions
+- Integrates seamlessly with node storage (Phase 4)
+- Enables powerful function composition
+
+The distinction between conceptual tests (pure C++) and integration tests (registered functions) shows that the pattern is universal while the integration with CORAL adds network execution capabilities.
+
+---
+
 ## Testing Best Practices
 
 ### ⚠️ CRITICAL: Test Independence

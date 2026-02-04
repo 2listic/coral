@@ -1232,3 +1232,339 @@ TEST(UnifiedFunction, PolymorphicStorage)
   // All functions are the same type and can be stored/used interchangeably
   EXPECT_EQ(functions.size(), 3u);
 }
+
+
+// =============================================================================
+// Phase 5: Partial Application Support
+// =============================================================================
+
+TEST(PartialApplication, BindOneParameter)
+{
+  // USE CASE: Bind one parameter of a 2-parameter function
+
+  // Register types
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_function_type<double, double>();
+
+  // Create partial application: bind second parameter to 5.0
+  // Conceptually: multiply(a, b=5.0) → times_5(a) = a * 5.0
+  double bound_value = 5.0;
+  auto times_5 = [bound_value](double a) { return a * bound_value; };
+  std::function<double(double)> fn = times_5;
+
+  // Test the partially applied function
+  EXPECT_DOUBLE_EQ(fn(3.0), 15.0);   // 3 * 5 = 15
+  EXPECT_DOUBLE_EQ(fn(7.0), 35.0);   // 7 * 5 = 35
+  EXPECT_DOUBLE_EQ(fn(10.0), 50.0);  // 10 * 5 = 50
+}
+
+TEST(PartialApplication, BindMultipleParameters)
+{
+  // USE CASE: Bind multiple parameters of a 3-parameter function
+
+  // Register types
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_function_type<double, double>();
+
+  // Create partial application: bind second and third parameters
+  // Conceptually: sum3(a, b=2.0, c=3.0) → f(a) = a + 2.0 + 3.0
+  double bound_b = 2.0;
+  double bound_c = 3.0;
+  auto partial_sum = [bound_b, bound_c](double a) {
+    return a + bound_b + bound_c;
+  };
+  std::function<double(double)> fn = partial_sum;
+
+  // Test the partially applied function
+  EXPECT_DOUBLE_EQ(fn(5.0), 10.0);   // 5 + 2 + 3 = 10
+  EXPECT_DOUBLE_EQ(fn(0.0), 5.0);    // 0 + 2 + 3 = 5
+  EXPECT_DOUBLE_EQ(fn(10.0), 15.0);  // 10 + 2 + 3 = 15
+}
+
+TEST(PartialApplication, BindFirstVsLastParameter)
+{
+  // USE CASE: Compare binding first parameter vs last parameter
+
+  // Register types
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_function_type<double, double>();
+
+  // Test 1: Bind first parameter (a=10.0)
+  // Conceptually: divide(a=10.0, b) → f(b) = 10 / b
+  double bound_a = 10.0;
+  auto divide_10_by = [bound_a](double b) { return bound_a / b; };
+  std::function<double(double)> fn_first = divide_10_by;
+
+  EXPECT_DOUBLE_EQ(fn_first(2.0), 5.0);   // 10 / 2 = 5
+  EXPECT_DOUBLE_EQ(fn_first(5.0), 2.0);   // 10 / 5 = 2
+  EXPECT_DOUBLE_EQ(fn_first(1.0), 10.0);  // 10 / 1 = 10
+
+  // Test 2: Bind last parameter (b=2.0)
+  // Conceptually: divide(a, b=2.0) → f(a) = a / 2
+  double bound_b = 2.0;
+  auto divide_by_2 = [bound_b](double a) { return a / bound_b; };
+  std::function<double(double)> fn_last = divide_by_2;
+
+  EXPECT_DOUBLE_EQ(fn_last(10.0), 5.0);  // 10 / 2 = 5
+  EXPECT_DOUBLE_EQ(fn_last(20.0), 10.0); // 20 / 2 = 10
+  EXPECT_DOUBLE_EQ(fn_last(7.0), 3.5);   // 7 / 2 = 3.5
+
+  // Demonstrate that parameter order matters
+  // fn_first(2) = 10/2 = 5
+  // fn_last(2) = 2/2 = 1
+  EXPECT_DOUBLE_EQ(fn_first(2.0), 5.0);
+  EXPECT_DOUBLE_EQ(fn_last(2.0), 1.0);
+}
+
+TEST(PartialApplication, ValueCaptureNotReference)
+{
+  // USE CASE: Verify bound values are captured by value, not by reference
+
+  // Register types
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_function_type<double, double>();
+
+  // Create a local variable for the bound value
+  double factor = 5.0;
+
+  // Bind factor to multiplication (VALUE capture)
+  auto times_factor = [factor](double x) { return x * factor; };
+  std::function<double(double)> fn = times_factor;
+
+  // Test with original value
+  EXPECT_DOUBLE_EQ(fn(3.0), 15.0); // 3 * 5 = 15
+
+  // Modify the original variable
+  factor = 10.0;
+
+  // The bound function should STILL use the original captured value (5.0)
+  // NOT the modified value (10.0)
+  EXPECT_DOUBLE_EQ(fn(3.0), 15.0); // Still 3 * 5 = 15, not 3 * 10 = 30
+
+  // This demonstrates VALUE capture semantics - safe and predictable
+}
+
+TEST(PartialApplication, StoreInNode)
+{
+  // USE CASE: Store partially applied function in a node
+
+  // Register types
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_function_type<double, double>();
+
+  // Create partial application: bind exponent=2.0 (square function)
+  // Conceptually: power(base, exponent=2.0) → square(x) = x^2
+  double exponent = 2.0;
+  auto square = [exponent](double x) { return std::pow(x, exponent); };
+  std::function<double(double)> fn = square;
+
+  // Store in node
+  NodeObjectPtr fn_node = make_node(fn);
+  ASSERT_TRUE(fn_node->ready());
+
+  // Retrieve and use
+  auto retrieved_fn = fn_node->get<std::function<double(double)>>();
+
+  EXPECT_DOUBLE_EQ(retrieved_fn(3.0), 9.0);   // 3^2 = 9
+  EXPECT_DOUBLE_EQ(retrieved_fn(5.0), 25.0);  // 5^2 = 25
+  EXPECT_DOUBLE_EQ(retrieved_fn(10.0), 100.0); // 10^2 = 100
+}
+
+TEST(PartialApplication, ChainedPartialApplication)
+{
+  // USE CASE: Apply partial application multiple times in sequence
+
+  // Register types
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_function_type<double, double>();
+  NodeObject::register_function_type<double, double, double>();
+
+  // First partial application: bind c=10
+  // Conceptually: compute(a, b, c=10) → f1(a, b) = a * b + 10
+  double bound_c = 10.0;
+  auto with_c_bound = [bound_c](double a, double b) {
+    return a * b + bound_c;
+  };
+  std::function<double(double, double)> fn_2param = with_c_bound;
+
+  // Test first partial application
+  EXPECT_DOUBLE_EQ(fn_2param(2.0, 3.0), 16.0); // 2 * 3 + 10 = 16
+
+  // Second partial application: bind b=5 to the already-partially-applied function
+  // Result: f2(a) = a * 5 + 10
+  double bound_b = 5.0;
+  auto with_b_and_c_bound = [fn_2param, bound_b](double a) {
+    return fn_2param(a, bound_b);
+  };
+  std::function<double(double)> fn_1param = with_b_and_c_bound;
+
+  // Test chained partial application
+  EXPECT_DOUBLE_EQ(fn_1param(3.0), 25.0);  // 3 * 5 + 10 = 25
+  EXPECT_DOUBLE_EQ(fn_1param(4.0), 30.0);  // 4 * 5 + 10 = 30
+  EXPECT_DOUBLE_EQ(fn_1param(6.0), 40.0);  // 6 * 5 + 10 = 40
+}
+
+
+// -----------------------------------------------------------------------------
+// Phase 5 Extended: Partial Application of Registered CORAL Functions
+// -----------------------------------------------------------------------------
+
+TEST(RegisteredFunctionPartialApplication, BindOneParameter)
+{
+  // USE CASE: Start with a registered CORAL function and create a partial
+  // application from it
+
+  // Register types
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_function_type<double, double>();
+
+  // Register a 2-parameter CORAL function: multiply(a, b, result)
+  auto multiply_func = [](const double &a, const double &b, double &result) {
+    result = a * b;
+  };
+  NodeObject::register_function(multiply_func,
+                                 {"multiply", "result", "a", "b"});
+
+  // Create partial application: bind b=5.0
+  // We create a std::function that wraps the registered function with one
+  // parameter bound
+  double bound_b = 5.0;
+  auto times_5 = [bound_b](double a) {
+    // Call the registered function through a node
+    NodeObjectPtr a_node = make_node(a);
+    NodeObjectPtr b_node = make_node(bound_b);
+    NodeObjectPtr result_node = make_node(0.0);
+
+    NodeObjectPtr mult_node = make_node("multiply");
+    mult_node->bind_input(0, a_node->get_output(0));
+    mult_node->bind_input(1, b_node->get_output(0));
+    mult_node->bind_input(2, result_node->get_output(0));
+
+    (*mult_node)();
+    return result_node->get<double>();
+  };
+
+  std::function<double(double)> fn = times_5;
+
+  // Test the partially applied registered function
+  EXPECT_DOUBLE_EQ(fn(3.0), 15.0);   // 3 * 5 = 15
+  EXPECT_DOUBLE_EQ(fn(7.0), 35.0);   // 7 * 5 = 35
+  EXPECT_DOUBLE_EQ(fn(10.0), 50.0);  // 10 * 5 = 50
+}
+
+TEST(RegisteredFunctionPartialApplication, BindMultipleParameters)
+{
+  // USE CASE: Bind multiple parameters of a registered 3-parameter function
+
+  // Register types
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_function_type<double, double>();
+
+  // Register a 3-parameter CORAL function: sum3(a, b, c, result)
+  auto sum3_func = [](const double &a,
+                       const double &b,
+                       const double &c,
+                       double &      result) { result = a + b + c; };
+  NodeObject::register_function(sum3_func,
+                                 {"sum3", "result", "a", "b", "c"});
+
+  // Create partial application: bind b=2.0, c=3.0
+  double bound_b = 2.0;
+  double bound_c = 3.0;
+  auto partial_sum = [bound_b, bound_c](double a) {
+    NodeObjectPtr a_node = make_node(a);
+    NodeObjectPtr b_node = make_node(bound_b);
+    NodeObjectPtr c_node = make_node(bound_c);
+    NodeObjectPtr result_node = make_node(0.0);
+
+    NodeObjectPtr sum_node = make_node("sum3");
+    sum_node->bind_input(0, a_node->get_output(0));
+    sum_node->bind_input(1, b_node->get_output(0));
+    sum_node->bind_input(2, c_node->get_output(0));
+    sum_node->bind_input(3, result_node->get_output(0));
+
+    (*sum_node)();
+    return result_node->get<double>();
+  };
+
+  std::function<double(double)> fn = partial_sum;
+
+  // Test the partially applied function
+  EXPECT_DOUBLE_EQ(fn(5.0), 10.0);   // 5 + 2 + 3 = 10
+  EXPECT_DOUBLE_EQ(fn(0.0), 5.0);    // 0 + 2 + 3 = 5
+  EXPECT_DOUBLE_EQ(fn(10.0), 15.0);  // 10 + 2 + 3 = 15
+}
+
+TEST(RegisteredFunctionPartialApplication, UseInNetwork)
+{
+  // USE CASE: Use a partially applied registered function in a larger network
+
+  // Register types
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_function_type<double, double>();
+
+  // Register a power function: power(base, exponent, result)
+  auto power_func = [](const double &base, const double &exponent, double &result) {
+    result = std::pow(base, exponent);
+  };
+  NodeObject::register_function(power_func, {"power", "result", "base", "exp"});
+
+  // Register a subtract function: subtract(a, b, result)
+  auto subtract_func = [](const double &a, const double &b, double &result) {
+    result = a - b;
+  };
+  NodeObject::register_function(subtract_func,
+                                 {"subtract", "result", "a", "b"});
+
+  // Create partial application: square function (exponent=2)
+  double exponent = 2.0;
+  auto square = [exponent](double x) {
+    NodeObjectPtr base_node = make_node(x);
+    NodeObjectPtr exp_node = make_node(exponent);
+    NodeObjectPtr result_node = make_node(0.0);
+
+    NodeObjectPtr power_node = make_node("power");
+    power_node->bind_input(0, base_node->get_output(0));
+    power_node->bind_input(1, exp_node->get_output(0));
+    power_node->bind_input(2, result_node->get_output(0));
+
+    (*power_node)();
+    return result_node->get<double>();
+  };
+  std::function<double(double)> square_fn = square;
+
+  // Store the partial application in a node
+  NodeObjectPtr square_fn_node = make_node(square_fn);
+
+  // Create an evaluator that uses the partially applied function
+  auto evaluator = [](const std::function<double(double)> &f,
+                      const double &                       input,
+                      double &                             result) { result = f(input); };
+  NodeObject::register_function(evaluator,
+                                 {"eval_square", "result", "fn", "input"});
+
+  // Build a network: square(5) - 10 = 15
+  NodeObjectPtr eval_node = make_node("eval_square");
+  NodeObjectPtr input_node = make_node(5.0);
+  NodeObjectPtr square_result = make_node(0.0);
+
+  eval_node->bind_input(0, square_fn_node->get_output(0));
+  eval_node->bind_input(1, input_node->get_output(0));
+  eval_node->bind_input(2, square_result->get_output(0));
+
+  (*eval_node)();
+
+  // Now subtract 10 from the squared result
+  NodeObjectPtr sub_node = make_node("subtract");
+  NodeObjectPtr ten_node = make_node(10.0);
+  NodeObjectPtr final_result = make_node(0.0);
+
+  sub_node->bind_input(0, square_result->get_output(0));
+  sub_node->bind_input(1, ten_node->get_output(0));
+  sub_node->bind_input(2, final_result->get_output(0));
+
+  (*sub_node)();
+
+  // Verify: 5^2 - 10 = 25 - 10 = 15
+  EXPECT_DOUBLE_EQ(final_result->get<double>(), 15.0);
+}

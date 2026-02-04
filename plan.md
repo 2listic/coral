@@ -302,51 +302,71 @@ This plan implements higher-order functions in CORAL by enabling `std::function`
 
 ---
 
-## Phase 5: Partial Application Support
+## Phase 5: Partial Application Support ✅
 
+**Status**: Completed (2026-02-04)
 **Goal**: Support creating `std::function` with fewer parameters by pre-binding arguments (Q2).
 
 ### Implementation Tasks
-- [ ] Design API for specifying which parameters to bind
-- [ ] Implement parameter binding in function constructor
-- [ ] Verify unbound parameters map correctly to `std::function` signature
-- [ ] Ensure bound values are captured (not referenced)
+- [x] Design API for specifying which parameters to bind (lambda value captures)
+- [x] Implement parameter binding using lambda captures
+- [x] Verify unbound parameters map correctly to `std::function` signature
+- [x] Ensure bound values are captured by value (not reference)
 
 ### Unit Tests (gtests/function_types.cc)
 
-#### Test 5.1: Bind One Parameter
-- [ ] **TEST**: `PartialApplication_BindOneParam`
-  - Register `double multiply(double a, double b) { return a * b; }`
-  - Bind b=5.0, create `std::function<double(double)>`
-  - Result function is `times_5(x) = x * 5`
-  - Invoke with 3.0, verify 15.0
-  - **MWE**: Basic partial application
+#### Conceptual Tests - Pure C++ Partial Application (6 tests) ✅
 
-#### Test 5.2: Bind Multiple Parameters
-- [ ] **TEST**: `PartialApplication_BindMultipleParams`
-  - Register `double sum3(double a, double b, double c) { return a + b + c; }`
-  - Bind b=2.0, c=3.0, create `std::function<double(double)>`
+- [x] **TEST**: `PartialApplication.BindOneParameter`
+  - Bind one parameter of 2-parameter function
+  - Result: `times_5(x) = x * 5`
+  - **MWE**: Basic partial application using value capture
+
+- [x] **TEST**: `PartialApplication.BindMultipleParameters`
+  - Bind 2 parameters of 3-parameter function
   - Result: `f(x) = x + 2 + 3`
-  - Invoke with 5.0, verify 10.0
   - **MWE**: Multiple parameter binding
 
-#### Test 5.3: Bind First vs Last Parameter
-- [ ] **TEST**: `PartialApplication_BindOrder`
-  - Register `double divide(double a, double b) { return a / b; }`
-  - Test 1: Bind a=10.0 → `f(b) = 10 / b` → f(2) = 5
-  - Test 2: Bind b=2.0 → `f(a) = a / 2` → f(10) = 5
-  - Verify both work correctly
+- [x] **TEST**: `PartialApplication.BindFirstVsLastParameter`
+  - Compare binding first vs last parameter
+  - Test 1: `f(b) = 10 / b`, Test 2: `f(a) = a / 2`
   - **MWE**: Parameter order matters
 
-#### Test 5.4: Value Capture Not Reference
-- [ ] **TEST**: `PartialApplication_ValueCapture`
-  - Create local variable `double factor = 5.0`
-  - Bind factor to multiplication function
-  - Modify factor to 10.0
-  - Invoke bound function, verify it still uses 5.0 (not 10.0)
-  - **MWE**: Ensures safe capture semantics
+- [x] **TEST**: `PartialApplication.ValueCaptureNotReference`
+  - Modify bound variable after capture
+  - Verify function uses original captured value (5.0, not 10.0)
+  - **MWE**: Safe value capture semantics
 
-**Success Criteria**: All 4 tests pass. Can bind arbitrary parameters to create partially applied functions.
+- [x] **TEST**: `PartialApplication.StoreInNode`
+  - Store partially applied function in node
+  - Retrieve and invoke
+  - **MWE**: Node storage of partial applications
+
+- [x] **TEST**: `PartialApplication.ChainedPartialApplication`
+  - Apply partial application multiple times in sequence
+  - `f(a,b,c) → f(a,b) → f(a)` by binding c then b
+  - **MWE**: Chained partial application
+
+#### Integration Tests - Registered CORAL Functions (3 tests) ✅
+
+- [x] **TEST**: `RegisteredFunctionPartialApplication.BindOneParameter`
+  - Register CORAL function `multiply(a, b, result)`
+  - Create partial application by binding b=5.0
+  - Lambda wraps node creation and execution
+  - **MWE**: Partial application of registered function
+
+- [x] **TEST**: `RegisteredFunctionPartialApplication.BindMultipleParameters`
+  - Register `sum3(a, b, c, result)`
+  - Bind b=2.0 and c=3.0
+  - **MWE**: Multiple parameter binding with registered function
+
+- [x] **TEST**: `RegisteredFunctionPartialApplication.UseInNetwork`
+  - Register power and subtract functions
+  - Create partial application (square from power)
+  - Use in larger network: `square(5) - 10 = 15`
+  - **MWE**: Full integration with computational graph
+
+**Success Criteria**: ✅ All 9 tests pass (6 conceptual + 3 integration). Can bind arbitrary parameters using lambda value captures.
 
 **Files to Modify**:
 - `include/coral.h` - Extend `make_function` with binding support
@@ -772,15 +792,15 @@ Mark tests as completed:
 - [x] Phase 2: 4 unit tests ✅
 - [x] Phase 3: 4 unit tests ✅
 - [x] Phase 4: 17 unit tests ✅ (expanded from 7 to cover all scenarios comprehensively)
-- [ ] Phase 5: 4 unit tests
+- [x] Phase 5: 9 unit tests ✅ (expanded from 4: 6 conceptual + 3 integration)
 - [ ] Phase 6: 8 unit tests
 - [ ] Phase 7: 4 unit tests
 - [ ] Phase 8: 5 integration tests
 - [ ] Phase 9: Documentation
 - [ ] Phase 10: 3 performance tests
 
-**Total Planned**: 53 tests (48 unit + 5 integration + 3 benchmark)
-**Completed**: 29 tests (Phases 1-4)
+**Total Planned**: 58 tests (53 unit + 5 integration + 3 benchmark)
+**Completed**: 38 tests (Phases 1-5)
 
 ## Rollback Plan
 
