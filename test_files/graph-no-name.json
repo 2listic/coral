@@ -1,0 +1,164 @@
+{
+  "workflow": {
+    "nodes": {
+      "0": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "empty_constructor",
+        "outputs": [-1],
+        "type": "dealii::Triangulation<2, 2>",
+        "is_valid": true,
+        "position": { "x": 153.69630112491112, "y": 160.05298526270877 }
+      },
+      "1": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "elementary_constructor",
+        "outputs": [-1],
+        "type": "std::string",
+        "value": "hyper_cube",
+        "is_valid": true,
+        "position": { "x": 196.77935374072024, "y": 252.33953477647702 }
+      },
+      "2": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "elementary_constructor",
+        "outputs": [-1],
+        "type": "std::string",
+        "value": "0: 1: false",
+        "is_valid": true,
+        "position": { "x": 226.58351413548948, "y": 394.1625891347088 }
+      },
+      "3": {
+        "arguments": [
+          {
+            "connection_type": "pass_through",
+            "name": "triangulation",
+            "type": "dealii::Triangulation<2, 2>"
+          },
+          {
+            "connection_type": "input",
+            "name": "grid_generator_function_name",
+            "type": "std::string"
+          },
+          {
+            "connection_type": "input",
+            "name": "grid_generator_function_arguments",
+            "type": "std::string"
+          }
+        ],
+        "inputs": [0, 1, 2],
+        "node_type": "void_function",
+        "outputs": [0],
+        "type": "GridGenerator::generate_from_name_and_arguments<2>",
+        "is_valid": true,
+        "position": { "x": 625.9912578937875, "y": 240.8466024945473 }
+      },
+      "5": {
+        "arguments": [
+          {
+            "connection_type": "pass_through",
+            "name": "triangulation",
+            "type": "dealii::Triangulation<2, 2>"
+          },
+          {
+            "connection_type": "input",
+            "name": "n_refinements",
+            "type": "unsigned int"
+          }
+        ],
+        "inputs": [0, 1],
+        "node_type": "void_method",
+        "outputs": [0],
+        "type": "Triangulation<2>::refine_global",
+        "is_valid": true,
+        "position": { "x": 1292.6537264622873, "y": 404.74132044143096 }
+      },
+      "6": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "elementary_constructor",
+        "outputs": [-1],
+        "type": "unsigned int",
+        "value": "2",
+        "is_valid": true,
+        "position": { "x": 924.6316196908587, "y": 494.4522310208398 }
+      },
+      "8": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "empty_constructor",
+        "outputs": [-1],
+        "type": "dealii::GridOut",
+        "is_valid": true,
+        "position": { "x": 696.7456324270305, "y": 646.0977060400126 }
+      },
+      "9": {
+        "arguments": [],
+        "inputs": [],
+        "node_type": "elementary_constructor",
+        "outputs": [-1],
+        "type": "std::string",
+        "value": "grid-1.vtk",
+        "is_valid": true,
+        "position": { "x": 709.0481811728362, "y": 769.3800519906857 }
+      },
+      "10": {
+        "arguments": [
+          {
+            "connection_type": "input",
+            "name": "file_name",
+            "type": "std::string"
+          }
+        ],
+        "base": "std::ostream",
+        "inputs": [0],
+        "node_type": "constructor",
+        "outputs": [-1],
+        "type": "std::ofstream",
+        "is_valid": true,
+        "position": { "x": 759.4506318169646, "y": 900.9714692153324 }
+      },
+      "11": {
+        "arguments": [
+          {
+            "connection_type": "input",
+            "name": "grid_out",
+            "type": "dealii::GridOut"
+          },
+          {
+            "connection_type": "input",
+            "name": "triangulation",
+            "type": "dealii::Triangulation<2, 2>"
+          },
+          {
+            "connection_type": "pass_through",
+            "name": "output_file",
+            "type": "std::ostream"
+          }
+        ],
+        "inputs": [0, 1, 2],
+        "node_type": "void_const_method",
+        "outputs": [2],
+        "type": "GridOut::write_vtk<2>",
+        "is_valid": true,
+        "position": { "x": 1176.502434409381, "y": 674.7886764587851 }
+      }
+    },
+    "edges": {
+      "0": { "source": 0, "target": 3, "source_output": 0, "target_input": 0 },
+      "1": { "source": 1, "target": 3, "source_output": 0, "target_input": 1 },
+      "2": { "source": 2, "target": 3, "source_output": 0, "target_input": 2 },
+      "3": { "source": 3, "target": 5, "source_output": 0, "target_input": 0 },
+      "4": { "source": 6, "target": 5, "source_output": 0, "target_input": 1 },
+      "5": { "source": 9, "target": 10, "source_output": 0, "target_input": 0 },
+      "6": { "source": 8, "target": 11, "source_output": 0, "target_input": 0 },
+      "7": { "source": 5, "target": 11, "source_output": 0, "target_input": 1 },
+      "8": { "source": 10, "target": 11, "source_output": 0, "target_input": 2 }
+    }
+  },
+  "version": 1,
+  "author": "dealiix-platform",
+  "date_time_utc": "2026-02-04T10:04:08.359Z"
+}

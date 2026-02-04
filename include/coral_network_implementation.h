@@ -194,8 +194,7 @@ namespace coral
               node_id,
               node_name.c_str(),
               node->type_name().c_str());
-    if (!node_name.empty())
-      touch_file(touch_file_base_path, std::to_string(node_id), TouchMode::Running);
+    touch_file(touch_file_base_path, std::to_string(node_id), TouchMode::Running);
     try
       {
         refresh_dynamic_inputs(node_id);
@@ -203,8 +202,7 @@ namespace coral
       }
     catch (const std::exception &e)
       {
-        if (!node_name.empty())
-          touch_file(touch_file_base_path, std::to_string(node_id), TouchMode::Failed);
+        touch_file(touch_file_base_path, std::to_string(node_id), TouchMode::Failed);
         throw std::runtime_error("Node " + std::to_string(node_id) +
                                  " failed: " + e.what());
       }
@@ -212,8 +210,7 @@ namespace coral
               node_id,
               node_name.c_str(),
               node->type_name().c_str());
-    if (!node_name.empty())
-      touch_file(touch_file_base_path, std::to_string(node_id), TouchMode::Succeeded);
+    touch_file(touch_file_base_path, std::to_string(node_id), TouchMode::Succeeded);
   }
 
 
