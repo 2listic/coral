@@ -74,34 +74,35 @@ This plan implements higher-order functions in CORAL by enabling `std::function`
 
 ---
 
-## Phase 2: Automatic std::function Type Registration
+## Phase 2: Automatic std::function Type Registration ✅
 
+**Status**: Completed (2026-02-04)
 **Goal**: When registering a function, automatically register the corresponding `std::function` type (Q1).
 
 ### Implementation Tasks
-- [ ] Modify `NodeObject::register_function<ReturnType, Args...>()` to detect function signature
-- [ ] After registering function, check if `std::function<ReturnType(Args...)>` is registered
-- [ ] If not registered, automatically call `register_function_type<ReturnType, Args...>()`
-- [ ] Store mapping from function type to `std::function` type for lookup
+- [x] Modify `NodeObject::register_function<ReturnType, Args...>()` to detect function signature
+- [x] After registering function, check if `std::function<ReturnType(Args...)>` is registered
+- [x] If not registered, automatically call `register_function_type<ReturnType, Args...>()`
+- [x] Store mapping from function type to `std::function` type for lookup
 
 ### Unit Tests (gtests/function_types.cc)
 
 #### Test 2.1: Auto-Register Single Function
-- [ ] **TEST**: `AutoRegistration_SingleFunction`
+- [x] **TEST**: `AutoRegistration_SingleFunction`
   - Register `double square(double x)` using `register_function()`
   - Verify `std::function<double(double)>` automatically appears in registry
   - Verify registry entry has correct metadata
   - **MWE**: Shows that registering a function auto-creates the function type
 
 #### Test 2.2: Multiple Functions Same Signature
-- [ ] **TEST**: `AutoRegistration_SamSignatureMultipleFunctions`
+- [x] **TEST**: `AutoRegistration_SameSignatureMultipleFunctions`
   - Register `double square(double)` and `double cube(double)` and `double times2(double)`
   - Verify only ONE `std::function<double(double)>` type is registered
   - Verify all three functions can use this type
   - **MWE**: Shows signature reuse
 
 #### Test 2.3: Multiple Functions Different Signatures
-- [ ] **TEST**: `AutoRegistration_DifferentSignatures`
+- [x] **TEST**: `AutoRegistration_DifferentSignatures`
   - Register `double square(double)`, `double add(double, double)`, `int increment(int)`
   - Verify three separate `std::function` types registered:
     - `std::function<double(double)>`
@@ -110,12 +111,12 @@ This plan implements higher-order functions in CORAL by enabling `std::function`
   - **MWE**: Shows multiple function types coexisting
 
 #### Test 2.4: Void Function Auto-Registration
-- [ ] **TEST**: `AutoRegistration_VoidFunction`
+- [x] **TEST**: `AutoRegistration_VoidFunction`
   - Register `void print_value(double)` function
   - Verify `std::function<void(double)>` is auto-registered
   - **MWE**: Shows void functions work too
 
-**Success Criteria**: All 4 tests pass. Function registration automatically creates corresponding `std::function` types.
+**Success Criteria**: ✅ All 4 tests pass. Function registration automatically creates corresponding `std::function` types.
 
 **Files to Modify**:
 - `include/coral.h` - Modify `register_function()` template

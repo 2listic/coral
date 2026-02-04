@@ -1108,6 +1108,35 @@ namespace coral
               std::make_shared<ThisMethod>(ptr));
           };
         }
+
+      // Phase 2: Automatically register the corresponding std::function type
+      // if not already registered
+      using FunctionType = std::function<ReturnType(Args...)>;
+      const std::string function_type_hash = detail::hash<FunctionType>();
+
+      if (initializers.find(function_type_hash) == initializers.end())
+        {
+          // Build clean type name for the function type
+          std::string clean_name = "std::function<";
+          clean_name += boost::core::type_name<ReturnType>();
+          clean_name += "(";
+          if constexpr (sizeof...(Args) > 0)
+            {
+              std::vector<std::string> arg_type_names = {
+                boost::core::type_name<Args>()...};
+              for (size_t i = 0; i < arg_type_names.size(); ++i)
+                {
+                  if (i > 0)
+                    clean_name += ", ";
+                  clean_name += arg_type_names[i];
+                }
+            }
+          clean_name += ")>";
+
+          // Set type alias and register
+          detail::set_type_alias<FunctionType>(clean_name);
+          register_function_type<ReturnType, Args...>();
+        }
     }
 
     // Overload for raw function pointers

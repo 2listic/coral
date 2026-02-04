@@ -156,3 +156,200 @@ TEST(FunctionType, PassBetweenNodes)
   double result = output_node->get<double>();
   ASSERT_DOUBLE_EQ(result, 25.0);
 }
+
+
+// ============================================================================
+// Phase 2: Automatic std::function Type Registration
+// ============================================================================
+
+// Test 2.1: Auto-Register Single Function
+TEST(AutoRegistration, SingleFunction)
+{
+  // USE CASE: Registering a function automatically creates the function type
+
+  // Register basic types needed for this test
+  NodeObject::register_elementary_type<double>();
+
+  // Register a function
+  auto square = [](double x) { return x * x; };
+  NodeObject::register_function(
+    std::function<double(double)>(square),
+    {"square", "result", "x"});
+
+  // Verify std::function<double(double)> automatically appears in registry
+  using FunctionType = std::function<double(double)>;
+  std::string expected_hash = detail::hash<FunctionType>();
+
+  auto registry = NodeObject::get_registry();
+  bool found = false;
+  for (const auto &item : registry)
+    {
+      if (item.contains("type") && item.at("type") == expected_hash)
+        {
+          found = true;
+          // Verify registry entry has correct metadata
+          ASSERT_TRUE(item.contains("node_type"));
+          ASSERT_EQ(item.at("node_type"), "empty_constructor");
+          break;
+        }
+    }
+
+  ASSERT_TRUE(found) << "std::function<double(double)> not auto-registered. "
+                     << "Expected hash: " << expected_hash;
+}
+
+
+// Test 2.2: Multiple Functions Same Signature
+TEST(AutoRegistration, SameSignatureMultipleFunctions)
+{
+  // USE CASE: Multiple functions with same signature share one function type
+
+  // Register basic types needed for this test
+  NodeObject::register_elementary_type<double>();
+
+  // Register three functions with same signature: double(double)
+  auto square = [](double x) { return x * x; };
+  auto cube = [](double x) { return x * x * x; };
+  auto times2 = [](double x) { return x * 2.0; };
+
+  NodeObject::register_function(
+    std::function<double(double)>(square),
+    {"square", "result", "x"});
+
+  NodeObject::register_function(
+    std::function<double(double)>(cube),
+    {"cube", "result", "x"});
+
+  NodeObject::register_function(
+    std::function<double(double)>(times2),
+    {"times2", "result", "x"});
+
+  // Verify only ONE std::function<double(double)> type is registered
+  using FunctionType = std::function<double(double)>;
+  std::string expected_hash = detail::hash<FunctionType>();
+
+  auto registry = NodeObject::get_registry();
+  int count = 0;
+  for (const auto &item : registry)
+    {
+      if (item.contains("type") && item.at("type") == expected_hash)
+        {
+          count++;
+        }
+    }
+
+  ASSERT_EQ(count, 1) << "Expected exactly 1 std::function<double(double)> "
+                      << "type, found " << count;
+
+  // Verify all three functions are registered (count function node types)
+  int function_count = 0;
+  for (const auto &item : registry)
+    {
+      if (item.contains("node_type") &&
+          item.at("node_type") == "function")
+        {
+          std::string type_name = item.at("type");
+          if (type_name == "square" || type_name == "cube" ||
+              type_name == "times2")
+            {
+              function_count++;
+            }
+        }
+    }
+
+  ASSERT_EQ(function_count, 3) << "Expected 3 registered functions, found "
+                               << function_count;
+}
+
+
+// Test 2.3: Multiple Functions Different Signatures
+TEST(AutoRegistration, DifferentSignatures)
+{
+  // USE CASE: Different signatures create different function types
+
+  // Register basic types needed for this test
+  NodeObject::register_elementary_type<double>();
+  NodeObject::register_elementary_type<int>();
+
+  // Register three functions with different signatures
+  auto square = [](double x) { return x * x; };
+  auto add = [](double a, double b) { return a + b; };
+  auto increment = [](int x) { return x + 1; };
+
+  NodeObject::register_function(
+    std::function<double(double)>(square),
+    {"square_fn", "result", "x"});
+
+  NodeObject::register_function(
+    std::function<double(double, double)>(add),
+    {"add_fn", "result", "a", "b"});
+
+  NodeObject::register_function(
+    std::function<int(int)>(increment),
+    {"increment_fn", "result", "x"});
+
+  // Verify three separate std::function types are registered
+  using FunctionType1 = std::function<double(double)>;
+  using FunctionType2 = std::function<double(double, double)>;
+  using FunctionType3 = std::function<int(int)>;
+
+  std::string hash1 = detail::hash<FunctionType1>();
+  std::string hash2 = detail::hash<FunctionType2>();
+  std::string hash3 = detail::hash<FunctionType3>();
+
+  auto registry = NodeObject::get_registry();
+
+  bool found1 = false, found2 = false, found3 = false;
+  for (const auto &item : registry)
+    {
+      if (item.contains("type"))
+        {
+          std::string type_str = item.at("type");
+          if (type_str == hash1) found1 = true;
+          if (type_str == hash2) found2 = true;
+          if (type_str == hash3) found3 = true;
+        }
+    }
+
+  ASSERT_TRUE(found1) << "std::function<double(double)> not found";
+  ASSERT_TRUE(found2) << "std::function<double(double, double)> not found";
+  ASSERT_TRUE(found3) << "std::function<int(int)> not found";
+}
+
+
+// Test 2.4: Void Function Auto-Registration
+TEST(AutoRegistration, VoidFunction)
+{
+  // USE CASE: Void functions also get auto-registered
+
+  // Register basic types needed for this test
+  NodeObject::register_elementary_type<double>();
+
+  // Register a void function
+  auto print_value = [](double x) {
+    // In a real test, this would do something observable
+    (void)x; // Suppress unused parameter warning
+  };
+
+  NodeObject::register_function(
+    std::function<void(double)>(print_value),
+    {"print_value", "x"});
+
+  // Verify std::function<void(double)> is auto-registered
+  using FunctionType = std::function<void(double)>;
+  std::string expected_hash = detail::hash<FunctionType>();
+
+  auto registry = NodeObject::get_registry();
+  bool found = false;
+  for (const auto &item : registry)
+    {
+      if (item.contains("type") && item.at("type") == expected_hash)
+        {
+          found = true;
+          ASSERT_EQ(item.at("node_type"), "empty_constructor");
+          break;
+        }
+    }
+
+  ASSERT_TRUE(found) << "std::function<void(double)> not auto-registered";
+}

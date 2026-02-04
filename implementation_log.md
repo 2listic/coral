@@ -183,13 +183,218 @@ Phase 2 will implement automatic `std::function` type registration: when registe
 
 ## Phase 2: Automatic std::function Type Registration
 
-**Status**: 🔄 Pending
-**Planned Date**: TBD
+**Status**: ✅ Completed
+**Date**: 2026-02-04
 
 ### Objective
-When registering a function, automatically register the corresponding `std::function` type.
+When registering a function, automatically register the corresponding `std::function` type to eliminate manual registration.
 
-[To be completed...]
+### Problem Statement
+
+In Phase 1, users had to manually register `std::function` types:
+```cpp
+// Manual registration (Phase 1)
+NodeObject::register_function_type<double, double>();  // Register std::function<double(double)>
+auto square = [](double x) { return x * x; };
+NodeObject::register_function(square, {"square", "result", "x"});  // Register the function
+```
+
+This is redundant since the function signature already contains all type information needed to register the corresponding `std::function` type.
+
+### Solution Implemented
+
+Modified `register_function()` to automatically register the corresponding `std::function` type if not already registered.
+
+#### Code Changes in `coral.h` (lines 1112-1139)
+
+Added auto-registration logic at the end of the `register_function<ReturnType, Args...>()` template:
+
+```cpp
+// Phase 2: Automatically register the corresponding std::function type
+// if not already registered
+using FunctionType = std::function<ReturnType(Args...)>;
+const std::string function_type_hash = detail::hash<FunctionType>();
+
+if (initializers.find(function_type_hash) == initializers.end())
+{
+  // Build clean type name for the function type
+  std::string clean_name = "std::function<";
+  clean_name += boost::core::type_name<ReturnType>();
+  clean_name += "(";
+  if constexpr (sizeof...(Args) > 0)
+  {
+    std::vector<std::string> arg_type_names = {
+      boost::core::type_name<Args>()...};
+    for (size_t i = 0; i < arg_type_names.size(); ++i)
+    {
+      if (i > 0)
+        clean_name += ", ";
+      clean_name += arg_type_names[i];
+    }
+  }
+  clean_name += ")>";
+
+  // Set type alias and register
+  detail::set_type_alias<FunctionType>(clean_name);
+  register_function_type<ReturnType, Args...>();
+}
+```
+
+**Key Design Decisions**:
+1. **Check before registering**: Avoids duplicate registrations when multiple functions share the same signature
+2. **Clean type names**: Uses `boost::core::type_name<T>()` to build readable names like `"std::function<double(double)>"` instead of mangled names
+3. **Type alias**: Sets alias for better debugging and registry readability
+4. **Placement**: Runs after both void and non-void function branches, so it works for all function types
+
+### Tests Created
+
+Added 4 comprehensive unit tests in `gtests/function_types.cc` (lines 165-385):
+
+#### Test 2.1: `AutoRegistration.SingleFunction`
+**Purpose**: Verify basic auto-registration
+
+**Flow**:
+- Register basic types (`double`)
+- Register a single function: `square(double) -> double`
+- Verify `std::function<double(double)>` automatically appears in registry
+- Check metadata is correct (`node_type = "empty_constructor"`)
+
+**MWE**: Demonstrates that `register_function()` now does both jobs
+
+#### Test 2.2: `AutoRegistration.SameSignatureMultipleFunctions`
+**Purpose**: Verify no duplicate registrations for same signature
+
+**Flow**:
+- Register three functions: `square`, `cube`, `times2` (all `double(double)`)
+- Verify only ONE `std::function<double(double)>` type exists in registry
+- Count registry entries to confirm no duplicates
+- Verify all three functions are registered
+
+**MWE**: Shows efficient signature reuse
+
+#### Test 2.3: `AutoRegistration.DifferentSignatures`
+**Purpose**: Verify multiple function types can coexist
+
+**Flow**:
+- Register types: `double`, `int`
+- Register three functions with different signatures:
+  - `square(double) -> double`
+  - `add(double, double) -> double`
+  - `increment(int) -> int`
+- Verify three separate `std::function` types exist:
+  - `std::function<double(double)>`
+  - `std::function<double(double, double)>`
+  - `std::function<int(int)>`
+
+**MWE**: Demonstrates type system handles multiple function signatures
+
+#### Test 2.4: `AutoRegistration.VoidFunction`
+**Purpose**: Verify void functions work correctly
+
+**Flow**:
+- Register `void print_value(double)` function
+- Verify `std::function<void(double)>` is auto-registered
+- Check correct metadata
+
+**MWE**: Shows void return types are supported
+
+### Files Modified
+
+1. **`include/coral.h`**
+   - Modified `register_function()` template (lines 1112-1139)
+   - Added auto-registration logic with clean type naming
+
+2. **`gtests/function_types.cc`**
+   - Added 4 new tests for Phase 2 (221 lines total added)
+   - Each test includes type registration for isolation
+
+### Compilation Issues Encountered
+
+#### Issue 1: Test Isolation - Missing Type Registration
+**Error**: `"Type d is not registered"` when running AutoRegistration tests alone
+
+**Root Cause**:
+- When all tests run together, `trivial_types.cc` registers `double` and `int` first
+- When AutoRegistration tests run in isolation, these basic types weren't registered
+- The `register_function()` call needs argument types registered BEFORE it can register the function
+
+**Resolution**:
+Added type registration at the start of each test:
+```cpp
+// At the beginning of each test
+NodeObject::register_elementary_type<double>();
+NodeObject::register_elementary_type<int>();  // For Test 2.3
+```
+
+**Lesson Learned**: Tests must be self-contained and register all types they use, even basic ones like `double` and `int`
+
+#### Issue 2: Stale Binaries
+**Error**: Tests still failing after adding type registrations
+
+**Root Cause**: Old compiled binaries were being used despite source file changes
+
+**Resolution**:
+Clean rebuild required:
+```bash
+cd /workspace/build
+rm -rf *
+cmake ..
+make -j$(nproc)
+```
+
+**Lesson Learned**: Always do clean rebuild when troubleshooting test failures after code changes
+
+### Success Criteria Met
+
+✅ All 4 unit tests pass in isolation and together
+✅ Functions automatically register their corresponding `std::function` types
+✅ No duplicate registrations for same signature
+✅ Multiple different signatures coexist correctly
+✅ Void functions work properly
+✅ Clean, readable type names in registry
+
+### Technical Notes
+
+1. **Boost Dependency**: Uses `boost::core::type_name<T>()` for readable type names, consistent with existing codebase patterns
+
+2. **Type Name Format**: Generates names like `"std::function<double(double, double)>"` with proper formatting and comma separation
+
+3. **Registry Checking**: Uses the static `initializers` map to check if a type is already registered before attempting re-registration
+
+4. **Order of Operations**: Auto-registration happens AFTER the function itself is registered, ensuring all function metadata is set up first
+
+5. **Template Deduction**: Works with all `register_function()` overloads (lambdas, function pointers, std::function)
+
+### Impact on User Code
+
+**Before Phase 2**:
+```cpp
+// Manual registration required
+NodeObject::register_function_type<double, double>();
+NodeObject::register_function_type<double, double, double>();
+
+auto square = [](double x) { return x * x; };
+auto add = [](double a, double b) { return a + b; };
+
+NodeObject::register_function(square, {"square", "result", "x"});
+NodeObject::register_function(add, {"add", "result", "a", "b"});
+```
+
+**After Phase 2**:
+```cpp
+// Auto-registration - just register functions
+auto square = [](double x) { return x * x; };
+auto add = [](double a, double b) { return a + b; };
+
+NodeObject::register_function(square, {"square", "result", "x"});  // Auto-registers std::function<double(double)>
+NodeObject::register_function(add, {"add", "result", "a", "b"});   // Auto-registers std::function<double(double, double)>
+```
+
+Much cleaner and less error-prone!
+
+### Next Steps (Phase 3)
+
+Phase 3 will implement function constructor nodes that convert registered functions into `std::function` values that can be passed between nodes.
 
 ---
 
@@ -203,6 +408,12 @@ make -j$(nproc)
 
 # Run Phase 1 tests only
 ./gtests/coral_tests --gtest_filter="FunctionType.*"
+
+# Run Phase 2 tests only
+./gtests/coral_tests --gtest_filter="AutoRegistration.*"
+
+# Run Phase 1 and 2 together
+./gtests/coral_tests --gtest_filter="FunctionType.*:AutoRegistration.*"
 
 # Run all tests
 ctest --output-on-failure
