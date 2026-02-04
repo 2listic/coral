@@ -559,12 +559,295 @@ evaluator_node->bind_input(0, fn_node->get_output(0));
 
 This "just works" with no special machinery required!
 
-### Next Steps (Phase 4)
+---
 
-Phase 4 will extend function construction to handle:
-- Methods (with object binding)
-- Networks (with input/output mapping)
-- More complex function types (void functions, multi-argument functions)
+## Phase 4: Function Constructor for All Node Types
+
+**Status**: ✅ Completed
+**Date**: 2026-02-04
+
+### Objective
+Extend function construction to handle all node types: void functions, multi-argument functions, methods (const and non-const), and networks wrapped as `std::function` values.
+
+### Implementation Approach
+
+Phase 4 revealed an important design insight: **No specialized constructor infrastructure needed!** Instead, we leverage C++ lambda captures to bind different sources (objects, networks) to `std::function` values. The type system handles dispatch at compile-time.
+
+### Phase 4.1: Void and Multi-Argument Functions
+
+**Status**: ✅ Completed (4 tests)
+
+Phase 2's auto-registration already handles these cases. Phase 4.1 validated with comprehensive tests:
+
+#### Tests Created
+
+**Test 4.1.1: `VoidFunction.Registration`**
+- Registers void function `void(double)`
+- Verifies auto-registration of `std::function<void(double)>`
+- Uses `NodeObject::get_registry()` to verify type existence
+
+**Test 4.1.2: `VoidFunction.StoreAndInvoke`**
+- Creates void function with observable side effect (modifies captured variable)
+- Stores in node, retrieves, and invokes
+- Verifies side effect occurred
+
+**Test 4.1.3: `MultiArgFunction.RegistrationAndInvoke`**
+- Registers 3-argument function: `double sum3(double, double, double)`
+- Verifies auto-registration of `std::function<double(double, double, double)>`
+- Direct invocation test
+
+**Test 4.1.4: `MultiArgFunction.StoreInNode`**
+- Stores 3-argument function in node
+- Creates evaluator network that calls the function
+- End-to-end network execution
+
+#### Key Insights
+
+1. **Void function registration**: Must NOT include output parameter in registration
+   - Correct: `{"function_name", "param1", "param2"}`
+   - Incorrect: `{"function_name", "", "param1", "param2"}`
+
+2. **Output parameters are bound as inputs**: Even output parameters must be bound using `bind_input()`
+
+### Phase 4.2: Non-Const Methods
+
+**Status**: ✅ Completed (3 tests)
+
+Methods require binding an object instance to the method. Achieved using lambda captures.
+
+#### Implementation Pattern
+
+```cpp
+// Create object
+auto obj = std::make_shared<Counter>(initial_value);
+
+// Bind method using lambda capture
+auto bound_method = [obj]() mutable { obj->increment(); };
+std::function<void()> fn = bound_method;
+```
+
+#### Tests Created
+
+**Test 4.2.1: `NonConstMethod.BindAndInvoke`**
+- Creates `Counter` class with `increment()` method
+- Binds using reference capture: `[&counter]()`
+- Invokes multiple times, verifies state changes
+
+**Test 4.2.2: `NonConstMethod.StoreInNode`**
+- Uses `shared_ptr<Counter>` with value capture for lifetime safety
+- Stores bound method in node
+- Retrieves and invokes, verifies state changes
+
+**Test 4.2.3: `NonConstMethod.WithArguments`**
+- Binds method that takes arguments: `add(int)`
+- Captures object and forwards arguments
+- Tests cumulative state changes
+
+#### Key Insights
+
+1. **Object lifetime**: Use `shared_ptr` with value capture `[obj]` to ensure object outlives function
+2. **Mutable lambdas**: Need `mutable` keyword when calling non-const methods on value-captured objects
+3. **No type registration needed**: The captured object doesn't need to be registered in the node system - only the `std::function` wrapper does
+
+### Phase 4.3: Const Methods
+
+**Status**: ✅ Completed (4 tests)
+
+Similar to Phase 4.2 but for const methods. Simpler because const methods don't modify state.
+
+#### Implementation Pattern
+
+```cpp
+auto obj = std::make_shared<Calculator>(value);
+auto bound_method = [obj]() { return obj->get_value(); };
+std::function<int()> fn = bound_method;
+```
+
+#### Tests Created
+
+**Test 4.3.1: `ConstMethod.BindAndInvoke`**
+- Binds const method `get_value()`
+- Verifies object state unchanged
+
+**Test 4.3.2: `ConstMethod.StoreInNode`**
+- Stores bound const method in node
+- Multiple invocations return same value
+
+**Test 4.3.3: `ConstMethod.WithArguments`**
+- Binds parameterized const method `multiply(int)`
+- Tests with different arguments
+
+**Test 4.3.4: `ConstMethod.ConstCorrectness`**
+- Explicitly validates const-correctness
+- Verifies state preservation across invocations
+
+#### Key Insights
+
+1. **No mutable needed**: Lambdas calling const methods don't need `mutable` keyword
+2. **Return values**: Const methods typically return values rather than modify state
+3. **Const-correctness preserved**: The `std::function` wrapper maintains const semantics
+
+### Phase 4.4: Networks as Functions
+
+**Status**: ✅ Completed (3 tests)
+
+Wraps computational graphs (networks) as `std::function` values by capturing network nodes and executing on call.
+
+#### Implementation Pattern
+
+```cpp
+// Create network nodes
+NodeObjectPtr input0 = make_node(0.0);
+NodeObjectPtr input1 = make_node(0.0);
+NodeObjectPtr output = make_node(0.0);
+NodeObjectPtr compute_node = make_node("operation");
+
+// Connect network
+compute_node->bind_input(0, input0->get_output(0));
+compute_node->bind_input(1, input1->get_output(0));
+compute_node->bind_input(2, output->get_output(0));
+
+// Wrap as function
+auto network_fn = [input0, input1, output, compute_node](double a, double b) {
+  // Update inputs
+  input0->get<double>() = a;
+  input1->get<double>() = b;
+
+  // Execute network
+  (*compute_node)();
+
+  // Return output
+  return output->get<double>();
+};
+
+std::function<double(double, double)> fn = network_fn;
+```
+
+#### Tests Created
+
+**Test 4.4.1: `NetworkAsFunction.SimpleAddition`**
+- Simple network: `output = input0 + input1`
+- Single computation node
+- Tests with multiple input values
+
+**Test 4.4.2: `NetworkAsFunction.ComplexComputation`**
+- Multi-node network: `result = (input0 * 2) + input1`
+- Intermediate nodes
+- Demonstrates execution order management
+
+**Test 4.4.3: `NetworkAsFunction.StoreInNode`**
+- Wraps subtraction network as function
+- Stores in node, retrieves, invokes
+- Full end-to-end workflow
+
+#### Key Insights
+
+1. **Input mapping**: Function arguments directly update input node values
+2. **Execution order**: Multi-node networks need careful execution sequencing
+3. **Output extraction**: Final result retrieved from output node after execution
+4. **Lifetime**: Lambda captures keep network nodes alive
+
+### Phase 4.5: Unified Constructor
+
+**Status**: ✅ Completed (3 tests)
+
+Demonstrates that all function sources (free functions, methods, networks) produce interchangeable `std::function` values. The "unified constructor" is achieved through C++'s type system - no runtime dispatch needed.
+
+#### Tests Created
+
+**Test 4.5.1: `UnifiedFunction.AllSourceTypesInterchangeable`**
+- Creates `std::function<double(double, double)>` from:
+  - Free function (lambda for addition)
+  - Method (Calculator object binding)
+  - Network (computational graph)
+- Stores all three in nodes
+- Retrieves and uses identically
+- **Key Point**: All are the same type, fully interchangeable
+
+**Test 4.5.2: `UnifiedFunction.FunctionComposition`**
+- Composes functions from different sources: `add10(double(square(x)))`
+  - `square`: Free function
+  - `double`: Method
+  - `add10`: Network
+- Demonstrates cross-source composition
+
+**Test 4.5.3: `UnifiedFunction.PolymorphicStorage`**
+- Stores functions from all three sources in `std::vector<std::function<...>>`
+- Uses them uniformly through iteration
+- Demonstrates polymorphic storage
+
+#### Key Insights
+
+1. **Type system dispatch**: All sources → `std::function<R(Args...)>` (same type)
+2. **Lambda captures**: Different sources handled by different lambda capture strategies
+3. **Compile-time resolution**: No runtime overhead or type checking needed
+4. **Complete interchangeability**: Functions from any source can be used anywhere `std::function` is expected
+
+### Files Modified
+
+1. **`gtests/function_types.cc`**
+   - Added 17 tests for Phase 4 (lines 488-1150+)
+   - Test classes: `Counter`, `Calculator`
+   - Comprehensive coverage of all function source types
+
+### Compilation Issues Encountered
+
+#### Issue 1: Counter Class JSON Serialization
+**Error**: `no matching function for call to 'nlohmann::json::basic_json(Counter)'`
+
+**Root Cause**: Called `register_elementary_type<Counter>()` which attempts JSON serialization
+
+**Resolution**: Don't register `Counter` - it only exists in lambda captures, not in nodes
+
+**Lesson**: Only register types that are actually stored in nodes. Captured objects don't need registration.
+
+#### Issue 2: Void Function Registration Format
+**Error**: "Wrong number of arguments" when registering void function
+
+**Root Cause**: Used `{"name", "", "param"}` format (with empty output string)
+
+**Resolution**: Void functions use `{"name", "param"}` format (no output parameter at all)
+
+### Success Criteria Met
+
+✅ All 17 unit tests pass
+✅ Void functions work correctly
+✅ Multi-argument functions (3+ parameters) supported
+✅ Non-const methods bind and modify state
+✅ Const methods preserve const-correctness
+✅ Networks wrap as functions with input/output mapping
+✅ All sources produce interchangeable `std::function` values
+✅ Function composition across sources works
+✅ Polymorphic storage demonstrated
+
+### Technical Notes
+
+1. **Lambda Captures**:
+   - Reference capture `[&obj]`: For stack objects (must outlive function)
+   - Value capture with shared_ptr `[obj]`: For heap objects (safe lifetime)
+   - Multiple captures: `[input0, input1, output, node]` for networks
+
+2. **Mutable Lambdas**:
+   - Required when calling non-const methods on value-captured objects
+   - Not needed for reference captures or const methods
+
+3. **Network Execution**:
+   - Update input nodes before execution
+   - Execute nodes in dependency order
+   - Extract output after completion
+
+4. **Type Registration**:
+   - Only register `std::function` types, not captured objects
+   - Auto-registration from Phase 2 handles most cases
+
+### Design Philosophy
+
+Phase 4 demonstrates a key principle: **Leverage C++ features instead of building custom infrastructure**. By using:
+- Lambda captures for object binding
+- `shared_ptr` for lifetime management
+- C++ type system for dispatch
+
+We achieve powerful functionality with minimal code and no runtime overhead.
 
 ---
 
