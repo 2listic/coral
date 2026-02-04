@@ -733,6 +733,35 @@ namespace coral
     }
 
     /**
+     * Register a std::function type. Function types cannot be serialized to
+     * JSON, so we register them without value serialization support.
+     */
+    template <typename R, typename... Args>
+    static auto
+    register_function_type() -> detail::NodeObjectInitializer &
+    {
+      using FunctionType = std::function<R(Args...)>;
+      auto &initializer = register_json_header<FunctionType>();
+      initializer.json_serializer["node_type"] = "empty_constructor";
+      initializer.node_type                    = NodeType::empty_constructor;
+      initializer.json_serializer["outputs"].push_back(-1);
+
+      // Add executor that creates empty std::function
+      initializer.executor = [](const NodeObjectPtr &,
+                                const std::vector<NodeObjectPtr> &args)
+        -> std::shared_ptr<entt::meta_any> {
+        if (args.size() != 0)
+          throw std::runtime_error("Wrong number of arguments.");
+        return std::make_shared<entt::meta_any>(
+          std::make_shared<FunctionType>());
+      };
+
+      // Note: parse_string and to_string are intentionally not set
+      // because std::function objects cannot be serialized to/from JSON
+      return initializer;
+    }
+
+    /**
      * Register a non-trivially constructible type T derived from type B.
      */
     template <typename B, typename T>

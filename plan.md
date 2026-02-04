@@ -23,25 +23,26 @@ This plan implements higher-order functions in CORAL by enabling `std::function`
 
 ---
 
-## Phase 1: Foundation - std::function Type Support
+## Phase 1: Foundation - std::function Type Support ✅
 
+**Status**: Completed (2026-02-04)
 **Goal**: Ensure `std::function` types can be registered, stored, and passed between nodes.
 
 ### Implementation Tasks
-- [ ] Investigate current `std::function` support in type registration
-- [ ] Create helper function `register_function_type<R, Args...>()` to register `std::function<R(Args...)>` as an elementary type
-- [ ] Implement storage and retrieval of `std::function` values in NodeObject
+- [x] Investigate current `std::function` support in type registration
+- [x] Create helper function `register_function_type<R, Args...>()` to register `std::function<R(Args...)>` as an elementary type
+- [x] Implement storage and retrieval of `std::function` values in NodeObject
 
-### Unit Tests (gtests/trivial_types.cc or new gtests/function_types.cc)
+### Unit Tests (gtests/function_types.cc)
 
 #### Test 1.1: Register std::function Type
-- [ ] **TEST**: `FunctionType_Registration`
+- [x] **TEST**: `FunctionType_Registration`
   - Register `std::function<double(double)>` as elementary type
   - Verify it appears in registry with correct metadata
   - **MWE**: Shows how to register a function type
 
 #### Test 1.2: Create Node with std::function Value
-- [ ] **TEST**: `FunctionType_CreateNodeWithStdFunction`
+- [x] **TEST**: `FunctionType_CreateNodeWithStdFunction`
   - Create a simple lambda: `auto square = [](double x) { return x * x; }`
   - Create `std::function<double(double)> fn = square;`
   - Create NodeObject containing this `std::function`
@@ -49,7 +50,7 @@ This plan implements higher-order functions in CORAL by enabling `std::function`
   - **MWE**: Shows how to store a function in a node
 
 #### Test 1.3: Retrieve and Invoke std::function
-- [ ] **TEST**: `FunctionType_RetrieveAndInvoke`
+- [x] **TEST**: `FunctionType_RetrieveAndInvoke`
   - Create node with `std::function<double(double)>` (square function)
   - Retrieve using `node->get<std::function<double(double)>>()`
   - Invoke the function with argument 5.0
@@ -57,7 +58,7 @@ This plan implements higher-order functions in CORAL by enabling `std::function`
   - **MWE**: Shows how to extract and call a function from a node
 
 #### Test 1.4: Pass std::function Between Nodes
-- [ ] **TEST**: `FunctionType_PassBetweenNodes`
+- [x] **TEST**: `FunctionType_PassBetweenNodes`
   - Create node A containing `std::function<double(double)>` (square)
   - Create node B that takes `std::function<double(double)>` and a value, calls function
   - Connect A's output to B's input
@@ -65,7 +66,7 @@ This plan implements higher-order functions in CORAL by enabling `std::function`
   - Verify B produces correct result
   - **MWE**: Shows data flow of functions through graph
 
-**Success Criteria**: All 4 tests pass. Can manually create and pass `std::function` values.
+**Success Criteria**: ✅ All 4 tests pass. Can manually create and pass `std::function` values.
 
 **Files to Create/Modify**:
 - `include/coral.h` - Add `register_function_type<R, Args...>()` helper
