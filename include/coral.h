@@ -1305,6 +1305,30 @@ namespace coral
     size_t
     n_outputs() const;
 
+    /**
+     * Get the type hash of a specific argument.
+     * @param index The argument index (0-based)
+     * @return Type hash string for that argument
+     */
+    std::string
+    get_argument_type_hash(unsigned int index) const;
+
+    /**
+     * Access the type initializer for a given type hash.
+     * This allows creating instances of registered types dynamically.
+     * @param type_hash The type hash string
+     * @return Reference to the initializer for that type
+     */
+    static detail::NodeObjectInitializer &
+    get_type_initializer(const std::string &type_hash);
+
+    /**
+     * Get direct access to the underlying meta_any object.
+     * @return Reference to the shared_ptr containing the meta_any
+     */
+    std::shared_ptr<entt::meta_any> &
+    get_object();
+
   private:
     /**
      * Return true if an output index maps to a pass-through argument.

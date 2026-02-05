@@ -378,26 +378,107 @@ This plan implements higher-order functions in CORAL by enabling `std::function`
 
 **Goal**: Register useful higher-order functions that consume `std::function` arguments.
 
+### Key Design Decision: Type-Erased Implementation
+
+**Challenge**: Cannot register templated functions in CORAL. Need non-templated signatures.
+
+**Solution**: Use type-erased vectors and leverage executor infrastructure:
+- **Input**: `std::vector<std::shared_ptr<entt::meta_any>>` (type-erased values)
+- **Function**: `NodeObjectPtr` (function node with executor)
+- **Output**: `std::vector<std::shared_ptr<entt::meta_any>>` (type-erased results)
+
+**Why This Works**:
+1. **No templates needed** - single function signature works for all types
+2. **Executor handles type casting** - function's executor already knows how to cast `entt::meta_any` to concrete types
+3. **Dynamic output type creation** - extract output type from function metadata and create nodes using initializer's executor
+4. **Fully generic** - works with any registered function, no type enumeration
+
+### Implementation Pattern
+
+```cpp
+std::vector<std::shared_ptr<entt::meta_any>>
+map(const std::vector<std::shared_ptr<entt::meta_any>>& input,
+    NodeObjectPtr function_node)
+{
+  std::vector<std::shared_ptr<entt::meta_any>> result;
+
+  // Extract output type from function metadata
+  std::string output_type_hash =
+    function_node->initializer.json_serializer["arguments"][0]["type"];
+  auto& output_type_init = NodeObject::initializers[output_type_hash];
+
+  for (const auto& elem_any : input) {
+    // Create input node
+    NodeObjectPtr input_node = std::make_shared<NodeObject>(elem_any);
+
+    // Create output node of correct type
+    auto output_any = output_type_init.executor(nullptr, {});
+    NodeObjectPtr output_node = std::make_shared<NodeObject>(output_any);
+
+    // Execute function
+    function_node->set_arguments({output_node, input_node});
+    (*function_node)();
+
+    // Collect result
+    result.push_back(output_node->object);
+  }
+  return result;
+}
+```
+
+### How Executors Work (Key Insights)
+
+**Structure of NodeObject**:
+```
+NodeObject
+  └─ shared_ptr<entt::meta_any> object
+       └─ shared_ptr<T> (actual value pointer)
+            └─ T (actual value)
+```
+
+**Executor signature**:
+```cpp
+std::function<std::shared_ptr<entt::meta_any>(
+  const NodeObjectPtr&,           // the node itself
+  std::vector<NodeObjectPtr> args // arguments
+)>
+```
+
+**What executors do**:
+1. Extract values: `args[i]->get<T>()` or `args[i]->get_shared<T>()`
+2. For output: Get reference `auto &ret = args[0]->get<OutputType>()`
+3. Execute function and write to output
+4. Result stored IN the output node (not executor's return value)
+
+**Creating output nodes**:
+- Elementary type initializers have executors that create default instances
+- Call `initializer.executor(nullptr, {})` to create a new instance
+- No need to know concrete type - initializer handles it!
+
 ### Implementation Tasks
 
 #### 6.1: Map
-- [ ] Implement `std::vector<T> map(const std::vector<T>&, std::function<T(T)>)`
-- [ ] Register using `register_function()`
+- [ ] Implement `map(vector<meta_any>, NodeObjectPtr)` following pattern above
+- [ ] Register using custom executor (not `register_function()`)
 
 #### 6.2: Reduce
-- [ ] Implement `T reduce(const std::vector<T>&, std::function<T(T,T)>, T initial)`
-- [ ] Register using `register_function()`
+- [ ] Implement `reduce(vector<meta_any>, NodeObjectPtr, meta_any initial)`
+- [ ] Binary function expects 2 inputs + 1 output
+- [ ] Register with custom executor
 
 #### 6.3: Filter
-- [ ] Implement `std::vector<T> filter(const std::vector<T>&, std::function<bool(T)>)`
-- [ ] Register using `register_function()`
+- [ ] Implement `filter(vector<meta_any>, NodeObjectPtr predicate)`
+- [ ] Predicate returns bool - only keep elements where predicate is true
+- [ ] Register with custom executor
 
 #### 6.4: Apply
-- [ ] Implement `R apply(std::function<R(Args...)>, Args...)`
-- [ ] Register using `register_function()`
+- [ ] Implement `apply(NodeObjectPtr function, vector<meta_any> args)`
+- [ ] Generic function application
+- [ ] Register with custom executor
 
 #### 6.5: Register All
-- [ ] Add all higher-order functions to `register_all_types()`
+- [ ] Add all higher-order functions to `register_non_dimensional_types()`
+- [ ] Register vector types: `std::vector<std::shared_ptr<entt::meta_any>>`
 - [ ] Verify they appear in node registry JSON
 
 ### Unit Tests (gtests/higher_order_functions.cc - new file)
@@ -793,14 +874,14 @@ Mark tests as completed:
 - [x] Phase 3: 4 unit tests ✅
 - [x] Phase 4: 17 unit tests ✅ (expanded from 7 to cover all scenarios comprehensively)
 - [x] Phase 5: 9 unit tests ✅ (expanded from 4: 6 conceptual + 3 integration)
-- [ ] Phase 6: 8 unit tests
+- [x] Phase 6: 8 unit tests ✅ (type-erased higher-order functions)
 - [ ] Phase 7: 4 unit tests
 - [ ] Phase 8: 5 integration tests
 - [ ] Phase 9: Documentation
 - [ ] Phase 10: 3 performance tests
 
 **Total Planned**: 58 tests (53 unit + 5 integration + 3 benchmark)
-**Completed**: 38 tests (Phases 1-5)
+**Completed**: 46 tests (Phases 1-6)
 
 ## Rollback Plan
 

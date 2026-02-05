@@ -923,6 +923,33 @@ namespace coral::detail
   }
 } // namespace coral::detail
 
+namespace coral
+{
+  CORAL_IMPL_INLINE std::string
+  NodeObject::get_argument_type_hash(unsigned int index) const
+  {
+    if (index >= initializer.json_serializer["arguments"].size())
+      throw std::runtime_error("Argument index out of bounds.");
+    return initializer.json_serializer["arguments"][index]["type"]
+      .get<std::string>();
+  }
+
+  CORAL_IMPL_INLINE detail::NodeObjectInitializer &
+  NodeObject::get_type_initializer(const std::string &type_hash)
+  {
+    auto it = initializers.find(type_hash);
+    if (it == initializers.end())
+      throw std::runtime_error("Type not registered: " + type_hash);
+    return it->second;
+  }
+
+  CORAL_IMPL_INLINE std::shared_ptr<entt::meta_any> &
+  NodeObject::get_object()
+  {
+    return object;
+  }
+} // namespace coral
+
 #undef CORAL_IMPL_INLINE
 
 #endif

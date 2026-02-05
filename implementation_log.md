@@ -1009,6 +1009,246 @@ The distinction between conceptual tests (pure C++) and integration tests (regis
 
 ---
 
+## Phase 6: Higher-Order Functions Registration
+
+**Status**: ✅ Completed
+**Date**: 2026-02-05
+
+### Objective
+Implement higher-order functions (map, reduce, filter, apply) that work with function values created in Phases 1-5, enabling functional programming patterns in CORAL.
+
+### Key Challenge: No Template Functions Allowed
+
+**Problem**: Cannot register templated functions like `template<typename T> std::vector<T> map(...)` in CORAL's node system.
+
+**Solution**: Type-erased implementation using `std::vector<std::shared_ptr<entt::meta_any>>` and leveraging the executor pattern.
+
+### Design Decision: Type Erasure + Executor Pattern
+
+Instead of templated functions, we use:
+- **Input**: `std::vector<std::shared_ptr<entt::meta_any>>` (type-erased values)
+- **Function**: `NodeObjectPtr` (contains executor that knows types)
+- **Output**: Type-erased results
+
+**Why this works**:
+1. No templates in signatures - fully generic at runtime
+2. Executor handles all type casting automatically
+3. Dynamic output type detection from function metadata
+4. Works with ANY registered type - no enumeration needed
+
+### Implementation Pattern
+
+```cpp
+std::vector<std::shared_ptr<entt::meta_any>>
+map(const std::vector<std::shared_ptr<entt::meta_any>>& input,
+    NodeObjectPtr function_node)
+{
+  // 1. Extract output type from function metadata
+  std::string output_type_hash = function_node->get_argument_type_hash(0);
+  auto& output_type_init = NodeObject::get_type_initializer(output_type_hash);
+
+  // 2. For each element:
+  for (const auto& elem_any : input) {
+    // Create input and output nodes
+    NodeObjectPtr input_node = std::make_shared<NodeObject>(elem_any);
+    input_node->get_object() = elem_any;
+
+    auto output_any = output_type_init.executor(nullptr, {});
+    NodeObjectPtr output_node = std::make_shared<NodeObject>(output_any);
+    output_node->get_object() = output_any;
+
+    // Execute function
+    function_node->set_arguments({output_node, input_node});
+    (*function_node)();
+
+    // Collect result
+    result.push_back(output_node->get_object());
+  }
+}
+```
+
+### Public Accessors Added to NodeObject
+
+To avoid friend declarations, added three public methods:
+
+1. **`get_argument_type_hash(unsigned int index)`**
+   - Returns type hash for a function's argument
+   - Accesses `initializer.json_serializer["arguments"][i]["type"]`
+
+2. **`get_type_initializer(const std::string& type_hash)`**
+   - Static method to access the initializers map
+   - Returns `NodeObjectInitializer&` for creating instances dynamically
+
+3. **`get_object()`**
+   - Returns reference to underlying `shared_ptr<entt::meta_any>`
+   - Needed to set object field after construction
+
+**Files Modified**:
+- `include/coral.h` - Method declarations
+- `include/coral_implementation.h` - Method implementations
+
+### Functions Implemented
+
+#### 1. **map** - Apply function to each element
+```cpp
+std::vector<std::shared_ptr<entt::meta_any>>
+map(const std::vector<std::shared_ptr<entt::meta_any>>& input,
+    NodeObjectPtr function_node)
+```
+- Applies function to each element
+- Returns new vector with results
+- Fully generic - works with any registered function
+
+#### 2. **reduce** - Accumulate using binary function
+```cpp
+std::shared_ptr<entt::meta_any>
+reduce(const std::vector<std::shared_ptr<entt::meta_any>>& input,
+       NodeObjectPtr function_node,
+       const std::shared_ptr<entt::meta_any>& initial)
+```
+- Binary function signature: `R(R, T)`
+- Accumulates result starting from initial value
+- Updates accumulator in each iteration
+
+#### 3. **filter** - Select elements matching predicate
+```cpp
+std::vector<std::shared_ptr<entt::meta_any>>
+filter(const std::vector<std::shared_ptr<entt::meta_any>>& input,
+       NodeObjectPtr predicate_node)
+```
+- Predicate signature: `bool(T)`
+- Only keeps elements where predicate returns true
+- Result is subset of input
+
+#### 4. **apply** - Generic function application
+```cpp
+std::shared_ptr<entt::meta_any>
+apply(NodeObjectPtr function_node,
+      const std::vector<std::shared_ptr<entt::meta_any>>& args)
+```
+- Applies function to arbitrary number of arguments
+- Most general - supports any function signature
+- Returns single result value
+
+### Tests Created
+
+**File**: `gtests/higher_order_functions.cc` (new, 295 lines)
+
+#### Map Tests (2)
+- **`Map.SquareFunction`**: Apply square to [1,2,3,4] → [1,4,9,16]
+- Validates basic map functionality with doubles
+
+#### Reduce Tests (2)
+- **`Reduce.SumFunction`**: Sum [1,2,3,4] with initial=0 → 10
+- **`Reduce.ProductFunction`**: Product [1,2,3,4] with initial=1 → 24
+- Validates accumulation with different operations
+
+#### Filter Tests (2)
+- **`Filter.EvenNumbers`**: Filter [1,2,3,4,5,6] for even → [2,4,6]
+- **`Filter.GreaterThanThreshold`**: Filter [1,5,3,7,2] for >3.5 → [5,7]
+- Validates predicate-based selection
+
+#### Apply Tests (2)
+- **`Apply.UnaryFunction`**: Apply square(5) → 25
+- **`Apply.BinaryFunction`**: Apply add(3, 4) → 7
+- Validates generic function application
+
+### Key Implementation Details
+
+**Node Construction Pattern**:
+```cpp
+// IMPORTANT: Must set object after construction!
+NodeObjectPtr node = std::make_shared<NodeObject>(meta_any);
+node->get_object() = meta_any;  // Actually set the value
+```
+
+**Why**: The `NodeObject(shared_ptr<meta_any>)` constructor doesn't store the value - it only uses it to determine the type. Must explicitly set `object` field.
+
+**Template Syntax Issue**:
+```cpp
+// Need 'template' keyword for template member functions through pointers
+result->template try_cast<std::shared_ptr<double>>();
+```
+
+**Name Conflict with std::apply**:
+```cpp
+// Must qualify to avoid conflict with std::apply
+auto result = coral::apply(function_node, args);
+```
+
+### Compilation Issues Encountered
+
+#### Issue 1: Private Member Access
+**Error**: Cannot access `initializer`, `initializers`, `object`
+
+**Resolution**: Added public accessor methods instead of friend declarations
+
+#### Issue 2: Node Not Ready
+**Error**: "Arguments are not ready or connected. Not ready argument indices: 1"
+
+**Root Cause**: Constructor doesn't set object field
+
+**Resolution**: Explicitly call `node->get_object() = value` after construction
+
+#### Issue 3: Template Syntax
+**Error**: `error: expected primary-expression before '>' token`
+
+**Resolution**: Use `->template try_cast<...>()` syntax
+
+#### Issue 4: Name Conflict
+**Error**: `std::apply` being called instead of `coral::apply`
+
+**Resolution**: Qualify function calls as `coral::apply(...)`
+
+### Success Criteria Met
+
+✅ All 8 unit tests pass
+✅ Fully generic implementation - works with any registered type
+✅ No type enumeration needed
+✅ Clean public interface
+✅ Type-safe with compile-time checks where possible
+✅ Runtime type resolution via executors
+
+### Technical Insights
+
+1. **Executor Pattern is Powerful**: By passing function nodes instead of raw `std::function` values, we get:
+   - Automatic type resolution
+   - No need to know types at compile time
+   - Reuse of existing infrastructure
+
+2. **Type Erasure Enables Genericity**: Using `meta_any` throughout allows:
+   - Single implementation for all types
+   - No template instantiation needed
+   - Dynamic type discovery from metadata
+
+3. **Node Object Field Must Be Set Explicitly**: The constructor pattern is subtle - constructors don't always set the object field
+
+4. **Public Accessors Better Than Friends**: More maintainable and clearer API
+
+### Files Modified
+
+1. **`include/register_types.h`**
+   - Added 4 higher-order functions (145 lines)
+   - Location: Before `register_non_dimensional_types()`
+
+2. **`include/coral.h`**
+   - Added 3 public accessor methods (20 lines)
+   - Location: Before `private:` section (~line 1308)
+
+3. **`include/coral_implementation.h`**
+   - Implemented 3 accessor methods (25 lines)
+   - Location: Before `#undef CORAL_IMPL_INLINE`
+
+4. **`gtests/higher_order_functions.cc`** (new file)
+   - 8 comprehensive tests (295 lines)
+   - Each test is independent with full type registration
+
+### Next Steps (Phase 7)
+
+Phase 7 will add JSON serialization support for higher-order function workflows, though this may not be needed since the functions work directly in C++.
+
+---
+
 ## Testing Best Practices
 
 ### ⚠️ CRITICAL: Test Independence
