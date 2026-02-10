@@ -1,5 +1,7 @@
 var NAVTREEINDEX9 =
 {
+"namespaceinternal.html#a6744b8db8bc54f65a0e3c1e1faf6090c":[1,0,58,190],
+"namespaceinternal.html#a6762075acfd82a10c35ca7348c8e85f5":[1,0,58,154],
 "namespaceinternal.html#a6bf01190a058b6102151f254fef46d11":[1,0,58,135],
 "namespaceinternal.html#a71be300aef30a4d27c8d6e7a21df97c8":[1,0,58,96],
 "namespaceinternal.html#a739ba5dd7c145bff96eed6c36ff30dd2":[1,0,58,122],
@@ -247,7 +249,5 @@ var NAVTREEINDEX9 =
 "namespaceinternal_1_1SD.html":[1,0,58,50],
 "namespaceinternal_1_1SolverGMRESImplementation.html":[1,0,58,51],
 "namespaceinternal_1_1SolverGMRESImplementation.html#a29ff9ebb668bdadd7dd56c41f75be9c8":[1,0,58,51,2],
-"namespaceinternal_1_1SolverGMRESImplementation.html#a4a706281e2255cfeff645397c9aca37e":[1,0,58,51,1],
-"namespaceinternal_1_1SolverGMRESImplementation.html#acb781ceeb479b45b7b152adf92cd9fe3":[1,0,58,51,0],
-"namespaceinternal_1_1SolverIDRImplementation.html":[1,0,58,52]
+"namespaceinternal_1_1SolverGMRESImplementation.html#a4a706281e2255cfeff645397c9aca37e":[1,0,58,51,1]
 };

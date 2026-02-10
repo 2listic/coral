@@ -684,6 +684,7 @@ var namespaces_dup =
       [ "hyper_cube", "http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#acea0cbcd68e52ce8113d1134b87de403", null ],
       [ "hyper_cube_slit", "http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#a5114625911496e4f51758fe00562a14a", null ],
       [ "hyper_cube_with_cylindrical_hole", "http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#a17568b9552c9b4f28c7345ad5431fece", null ],
+      [ "hyper_cube_with_spherical_hole", "http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#a54702f2ced395fdc9d27534631341037", null ],
       [ "hyper_L", "http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#a3b2a4ad8296c2b72a11d23b5969e8cc0", null ],
       [ "hyper_rectangle", "http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#a56019d263ae45708302d5d7599f0d458", null ],
       [ "hyper_shell", "http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#a36a5f3b1be1d673f50d01a51a6aba6c3", null ],
@@ -717,7 +718,8 @@ var namespaces_dup =
       [ "surface_mesh_to_volumetric_mesh", "http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#a567d8b0f39dc68d30b90004a76bf7a46", null ],
       [ "torus", "http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#ad28d951eba1e5191f5473489f2e6fb25", null ],
       [ "truncated_cone", "http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#ae63c93351f77276c20de07c91d3c1e48", null ],
-      [ "uniform_channel_with_cylinder", "http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#a597c9be74279f9e825674efe6aaa95da", null ]
+      [ "uniform_channel_with_cylinder", "http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#a597c9be74279f9e825674efe6aaa95da", null ],
+      [ "uniform_channel_with_sphere", "http://www.dealii.org/developer/doxygen/deal.II/namespaceGridGenerator.html#a2d3e9e8122af2a90aee9cf2d2a4cdf0f", null ]
     ] ],
     [ "GridIn", "http://www.dealii.org/developer/doxygen/deal.II/structGridIn_1_1ExodusIIData.html", [
       [ "ExcDBMESHWrongDimension", "http://www.dealii.org/developer/doxygen/deal.II/group__Exceptions.html#ga6f1a166cadd80e25228dd9b68c82ac19", null ],
@@ -1268,8 +1270,7 @@ var namespaces_dup =
         [ "n_cells", "http://www.dealii.org/developer/doxygen/deal.II/namespaceinternal_1_1TriangulationImplementation.html#af7741abe7d6d11f56b29a555f1afb2d5", null ],
         [ "n_cells", "http://www.dealii.org/developer/doxygen/deal.II/namespaceinternal_1_1TriangulationImplementation.html#a26bf383b0f54799d7882a2867add1f02", null ],
         [ "reserve_space", "http://www.dealii.org/developer/doxygen/deal.II/namespaceinternal_1_1TriangulationImplementation.html#ab1f99b23dabaeff541204830564738e5", null ],
-        [ "reserve_space", "http://www.dealii.org/developer/doxygen/deal.II/namespaceinternal_1_1TriangulationImplementation.html#a2766aebb7b6dade91477e908faa01aac", null ],
-        [ "reserve_space", "http://www.dealii.org/developer/doxygen/deal.II/namespaceinternal_1_1TriangulationImplementation.html#ab213fce4d07ee17bf0f964fc8b631e4b", null ]
+        [ "reserve_space", "http://www.dealii.org/developer/doxygen/deal.II/namespaceinternal_1_1TriangulationImplementation.html#a2766aebb7b6dade91477e908faa01aac", null ]
       ] ],
       [ "UtilitiesImplementation", "http://www.dealii.org/developer/doxygen/deal.II/namespaceinternal_1_1UtilitiesImplementation.html", [
         [ "call_stev", "http://www.dealii.org/developer/doxygen/deal.II/namespaceinternal_1_1UtilitiesImplementation.html#a028c87b984cced289275582efedbdca3", null ],

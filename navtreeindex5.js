@@ -1,5 +1,7 @@
 var NAVTREEINDEX5 =
 {
+"namespaceLineMinimization.html#a6a3f8244b6b9ddb1ec7c1942553317ce":[1,0,69,1],
+"namespaceLineMinimization.html#aafd2470d079047ac5105ad2cda9cd9fc":[1,0,69,0],
 "namespaceLineMinimization.html#af6970db0b6fc22e2cbb5145053f05182":[1,0,69,5],
 "namespaceLinearAlgebra.html":[1,0,65],
 "namespaceLinearAlgebra.html#a711c39096eb12afb61e779ade1f19dcb":[1,0,65,4],
@@ -247,7 +249,5 @@ var NAVTREEINDEX5 =
 "namespaceOpenCASCADE.html#a7a919a5ebb75e67a4baa0ddd0caf8f15":[1,0,98,24],
 "namespaceOpenCASCADE.html#a7b0b2393711bae58d859be1bb9761781":[1,0,98,22],
 "namespaceOpenCASCADE.html#a94c26d2fd39062b95c4dc0394dc9a70c":[1,0,98,0],
-"namespaceOpenCASCADE.html#aa3c9ea93645e89d325289cb9d8b14788":[1,0,98,23],
-"namespaceOpenCASCADE.html#acb3e8e294b26a9d1122739fb6c05bf39":[1,0,98,25],
-"namespaceOpenCASCADE.html#ad2e467e8f4db2ca53322908dec25b42d":[1,0,98,21]
+"namespaceOpenCASCADE.html#aa3c9ea93645e89d325289cb9d8b14788":[1,0,98,23]
 };

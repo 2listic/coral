@@ -1,5 +1,7 @@
 var NAVTREEINDEX10 =
 {
+"namespaceinternal_1_1SolverGMRESImplementation.html#acb781ceeb479b45b7b152adf92cd9fe3":[1,0,58,51,0],
+"namespaceinternal_1_1SolverIDRImplementation.html":[1,0,58,52],
 "namespaceinternal_1_1SparseMatrixImplementation.html":[1,0,58,53],
 "namespaceinternal_1_1SparseMatrixImplementation.html#ab3b84e121953503dd5c4eb96a13cd1c9":[1,0,58,53,0],
 "namespaceinternal_1_1SphericalManifold.html":[1,0,58,54],
@@ -43,7 +45,6 @@ var NAVTREEINDEX10 =
 "namespaceinternal_1_1TriangulationImplementation.html#a7983348faf880f81c6f729f6bdefaa5a":[1,0,58,65,25],
 "namespaceinternal_1_1TriangulationImplementation.html#a9f815604be9b560fea00beef8d720480":[1,0,58,65,31],
 "namespaceinternal_1_1TriangulationImplementation.html#ab1f99b23dabaeff541204830564738e5":[1,0,58,65,34],
-"namespaceinternal_1_1TriangulationImplementation.html#ab213fce4d07ee17bf0f964fc8b631e4b":[1,0,58,65,36],
 "namespaceinternal_1_1TriangulationImplementation.html#ab912a458a374aa378575cefde59d63a3":[1,0,58,65,27],
 "namespaceinternal_1_1TriangulationImplementation.html#aeb818244a0e6eabcb81d17f2e8457369":[1,0,58,65,1],
 "namespaceinternal_1_1TriangulationImplementation.html#aed92ce174709fca34e8910479ec9cfc2":[1,0,58,65,30],
@@ -248,6 +249,5 @@ var NAVTREEINDEX10 =
 "structPETScWrappers_1_1SolverLSQR_1_1AdditionalData.html":[1,0,103,22],
 "structPETScWrappers_1_1SolverPreOnly_1_1AdditionalData.html":[1,0,103,23],
 "structPETScWrappers_1_1SolverRichardson_1_1AdditionalData.html":[1,0,103,24],
-"structPETScWrappers_1_1SolverTCQMR_1_1AdditionalData.html":[1,0,103,25],
-"structPETScWrappers_1_1SolverTFQMR_1_1AdditionalData.html":[1,0,103,26]
+"structPETScWrappers_1_1SolverTCQMR_1_1AdditionalData.html":[1,0,103,25]
 };
