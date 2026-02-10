@@ -11,7 +11,7 @@ endif()
 deal_ii_initialize_cached_variables()
 
 add_library(coral_backend_dealii SHARED
-  src/plugin_dealii.cc)
+  src/plugin_dealii.cc src/poisson.cc)
 
 target_compile_features(coral_backend_dealii PRIVATE cxx_std_17)
 
