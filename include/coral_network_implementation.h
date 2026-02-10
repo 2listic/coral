@@ -160,14 +160,20 @@ namespace coral
         // Directory exists: clean up existing touch files
         slog_debug("Cleaning up existing touch files in: %s", path.c_str());
 
+        const auto has_suffix = [](const std::string &value, const char *suffix) {
+          const auto suffix_len = std::char_traits<char>::length(suffix);
+          return value.size() >= suffix_len &&
+                 value.compare(value.size() - suffix_len, suffix_len, suffix) == 0;
+        };
+
         for (const auto &entry : std::filesystem::directory_iterator(touch_file_base_path))
           {
             if (entry.is_regular_file())
               {
                 const auto filename = entry.path().filename().string();
-                if (filename.ends_with(".running") ||
-                    filename.ends_with(".succeeded") ||
-                    filename.ends_with(".failed"))
+                if (has_suffix(filename, ".running") ||
+                    has_suffix(filename, ".succeeded") ||
+                    has_suffix(filename, ".failed"))
                   {
                     std::filesystem::remove(entry.path());
                     slog_debug("Removed touch file: %s", filename.c_str());
