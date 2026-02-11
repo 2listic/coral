@@ -1,10 +1,3 @@
-#include <deal.II/dofs/dof_handler.h>
-
-#include <deal.II/fe/fe_q.h>
-
-#include <deal.II/grid/grid_generator.h>
-#include <deal.II/grid/tria.h>
-
 #define JSON_DIAGNOSTICS 1
 #include <CLI11/CLI11.hpp>
 #include <nlohmann/json.hpp> // JSON library
@@ -12,48 +5,161 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <filesystem>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
+#include <thread>
+#include <utility>
 
 #include "coral.h"
 #include "coral_network.h"
 #include "magic_enum/magic_enum_all.hpp"
-#include "register_types.h"
 #include "slog.h"
 #include "taskflow/taskflow.hpp" // Taskflow library
+
+#if defined(_WIN32)
+#  include <windows.h>
+#else
+#  include <dlfcn.h>
+#endif
 
 using json   = nlohmann::json;
 namespace fs = std::filesystem;
 
-using namespace coral;
-
 void
-dump_registry(const fs::path &outpath)
+dump_registry(const fs::path &outpath, const std::string &backend_name)
 {
-  auto          json = coral::NodeObject::get_registry();
+  json registry = coral::NodeObject::get_registry();
+  if (!backend_name.empty())
+    registry["__backend_name"] = backend_name;
   std::ofstream output{outpath};
-  output << std::setw(4) << json << std::endl;
+  output << std::setw(4) << registry << std::endl;
 }
 
 namespace
 {
+  using RegisterFn = void (*)();
+  using NameFn     = const char *(*)();
+
+  struct PluginHandle
+  {
+#if defined(_WIN32)
+    HMODULE handle = nullptr;
+#else
+    void *handle = nullptr;
+#endif
+  };
+
+  template <typename Fn>
+  static Fn
+  load_symbol(const PluginHandle &h, const char *name)
+  {
+#if defined(_WIN32)
+    auto *sym = GetProcAddress(h.handle, name);
+    if (!sym)
+      throw std::runtime_error(std::string("GetProcAddress failed for: ") +
+                               name);
+    return reinterpret_cast<Fn>(sym);
+#else
+    dlerror();
+    void       *sym = dlsym(h.handle, name);
+    const char *err = dlerror();
+    if (err)
+      throw std::runtime_error(std::string("dlsym failed: ") + err);
+    return reinterpret_cast<Fn>(sym);
+#endif
+  }
+
+  struct BackendPlugin
+  {
+    PluginHandle handle;
+    std::string  name;
+
+    explicit BackendPlugin(const fs::path &path)
+    {
+#if defined(_WIN32)
+      handle.handle = LoadLibraryA(path.string().c_str());
+      if (!handle.handle)
+        throw std::runtime_error("LoadLibrary failed for: " +
+                                 path.string());
+#else
+      handle.handle = dlopen(path.string().c_str(), RTLD_NOW | RTLD_LOCAL);
+      if (!handle.handle)
+        throw std::runtime_error(std::string("dlopen failed: ") + dlerror());
+#endif
+
+      auto reg =
+        load_symbol<RegisterFn>(handle, "coral_backend_register_types");
+      auto name_fn = load_symbol<NameFn>(handle, "coral_backend_name");
+      reg();
+      name = name_fn();
+    }
+
+    BackendPlugin() = default;
+
+    BackendPlugin(const BackendPlugin &)            = delete;
+    BackendPlugin &operator=(const BackendPlugin &) = delete;
+
+    BackendPlugin(BackendPlugin &&other) noexcept
+    {
+      handle       = other.handle;
+      name         = std::move(other.name);
+      other.handle = {};
+    }
+
+    BackendPlugin &
+    operator=(BackendPlugin &&other) noexcept
+    {
+      if (this != &other)
+        {
+          unload();
+          handle       = other.handle;
+          name         = std::move(other.name);
+          other.handle = {};
+        }
+      return *this;
+    }
+
+    ~BackendPlugin()
+    {
+      unload();
+    }
+
+    void
+    unload()
+    {
+#if defined(_WIN32)
+      if (handle.handle)
+        FreeLibrary(handle.handle);
+#else
+      if (handle.handle)
+        dlclose(handle.handle);
+#endif
+      handle.handle = nullptr;
+    }
+  };
+
   struct SlogCliConfig
   {
-    std::string name = "coral";
-    std::string flags = "all";
+    std::string name        = "coral";
+    std::string flags       = "all";
     int         thread_safe = 1;
 
     // -1 means "leave slog default".
-    int n_to_screen  = -1;
-    int n_to_file    = -1;
-    int n_keep_open  = -1;
-    int n_trace_tid  = -1;
-    int n_use_heap   = -1;
-    int n_indent     = -1;
-    int n_rotate     = -1;
-    int n_flush      = 1;
+    int n_to_screen = -1;
+    int n_to_file   = -1;
+    int n_keep_open = -1;
+    int n_trace_tid = -1;
+    int n_use_heap  = -1;
+    int n_indent    = -1;
+    int n_rotate    = -1;
+    int n_flush     = 1;
 
     std::string file_name;
     std::string file_path;
@@ -68,7 +174,9 @@ namespace
     std::transform(value.begin(),
                    value.end(),
                    value.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+                   [](unsigned char c) {
+                     return static_cast<char>(std::tolower(c));
+                   });
     return value;
   }
 
@@ -81,8 +189,8 @@ namespace
     if (lowered == "none" || lowered == "0")
       return 0;
 
-    uint16_t flags = 0;
-    std::string token;
+    uint16_t           flags = 0;
+    std::string        token;
     std::istringstream ss(lowered);
     while (std::getline(ss, token, ','))
       {
@@ -102,11 +210,15 @@ namespace
           token = "warn";
 
         std::string enum_name = token;
-        if (enum_name.rfind("slog_", 0) != 0 && enum_name.rfind("SLOG_", 0) != 0)
+        if (enum_name.rfind("slog_", 0) != 0 &&
+            enum_name.rfind("SLOG_", 0) != 0)
           enum_name = "SLOG_" + to_lower_copy(token);
 
-        // magic_enum expects the exact enumerator name, but supports case-insensitive matching.
-        auto value = magic_enum::enum_cast<slog_flag_t>(enum_name, magic_enum::case_insensitive);
+        // magic_enum expects the exact enumerator name, but supports
+        // case-insensitive matching.
+        auto value =
+          magic_enum::enum_cast<slog_flag_t>(enum_name,
+                                             magic_enum::case_insensitive);
         if (!value)
           throw std::runtime_error("Unknown slog flag: '" + token + "'");
 
@@ -122,7 +234,8 @@ namespace
     auto v = magic_enum::enum_cast<Enum>(value, magic_enum::case_insensitive);
     if (v)
       return *v;
-    throw std::runtime_error(std::string("Unknown ") + what + ": '" + value + "'");
+    throw std::runtime_error(std::string("Unknown ") + what + ": '" + value +
+                             "'");
   }
 
   static slog_date_ctrl_t
@@ -177,7 +290,9 @@ namespace
         slog_destroy();
 
       const uint16_t flags = parse_slog_flags(cli.flags);
-      slog_init(cli.name.c_str(), flags, static_cast<uint8_t>(cli.thread_safe != 0));
+      slog_init(cli.name.c_str(),
+                flags,
+                static_cast<uint8_t>(cli.thread_safe != 0));
 
       slog_config_t cfg;
       slog_config_get(&cfg);
@@ -199,15 +314,24 @@ namespace
 
       if (!cli.separator.empty())
         {
-          std::snprintf(cfg.sSeparator, sizeof(cfg.sSeparator), "%s", cli.separator.c_str());
+          std::snprintf(cfg.sSeparator,
+                        sizeof(cfg.sSeparator),
+                        "%s",
+                        cli.separator.c_str());
         }
       if (!cli.file_name.empty())
         {
-          std::snprintf(cfg.sFileName, sizeof(cfg.sFileName), "%s", cli.file_name.c_str());
+          std::snprintf(cfg.sFileName,
+                        sizeof(cfg.sFileName),
+                        "%s",
+                        cli.file_name.c_str());
         }
       if (!cli.file_path.empty())
         {
-          std::snprintf(cfg.sFilePath, sizeof(cfg.sFilePath), "%s", cli.file_path.c_str());
+          std::snprintf(cfg.sFilePath,
+                        sizeof(cfg.sFilePath),
+                        "%s",
+                        cli.file_path.c_str());
         }
 
       if (!cli.date_control.empty())
@@ -235,7 +359,7 @@ main(int argc, char *argv[])
 
   // Parse command line arguments
 
-  CLI::App app{"dealii-backend. A backend for coral."};
+  CLI::App app{"coral. Load, dump, and run a backend."};
 
   app.failure_message([&](const CLI::App *app, const CLI::Error &error) {
     slog_error("Error: %s", error.what());
@@ -247,15 +371,25 @@ main(int argc, char *argv[])
 
   SlogCliConfig slog_cli;
 
+  fs::path plugin_path;
+  app.add_option("-p,--plugin",
+                 plugin_path,
+                 "Backend plugin path (.so/.dylib/.dll)")
+    ->required()
+    ->check(CLI::ExistingPath.description(""))
+    ->type_name("PATH");
+
   auto *slog_group = app.add_option_group("slog", "SLog logging configuration");
-  slog_group->add_option("--slog-name",
-                         slog_cli.name,
-                         "SLog instance name (used for log file naming)")
+  slog_group
+    ->add_option("--slog-name",
+                 slog_cli.name,
+                 "SLog instance name (used for log file naming)")
     ->capture_default_str();
-  slog_group->add_option(
-    "--slog-flags",
-    slog_cli.flags,
-    "Enabled slog flags (comma-separated: notag,note,info,warn,debug,trace,error,fatal,all,none)")
+  slog_group
+    ->add_option(
+      "--slog-flags",
+      slog_cli.flags,
+      "Enabled slog flags (comma-separated: notag,note,info,warn,debug,trace,error,fatal,all,none)")
     ->capture_default_str();
   slog_group
     ->add_option("--slog-thread-safe",
@@ -264,53 +398,64 @@ main(int argc, char *argv[])
     ->check(CLI::Range(0, 1))
     ->capture_default_str();
 
-  slog_group->add_option("--slog-to-screen",
-                         slog_cli.n_to_screen,
-                         "Enable screen logging (0/1, default: keep slog default)")
+  slog_group
+    ->add_option("--slog-to-screen",
+                 slog_cli.n_to_screen,
+                 "Enable screen logging (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-to-file",
-                         slog_cli.n_to_file,
-                         "Enable file logging (0/1, default: keep slog default)")
+  slog_group
+    ->add_option("--slog-to-file",
+                 slog_cli.n_to_file,
+                 "Enable file logging (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-keep-open",
-                         slog_cli.n_keep_open,
-                         "Keep log file handle open (0/1, default: keep slog default)")
+  slog_group
+    ->add_option("--slog-keep-open",
+                 slog_cli.n_keep_open,
+                 "Keep log file handle open (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-rotate",
-                         slog_cli.n_rotate,
-                         "Enable log rotation (0/1, default: keep slog default)")
+  slog_group
+    ->add_option("--slog-rotate",
+                 slog_cli.n_rotate,
+                 "Enable log rotation (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-indent",
-                         slog_cli.n_indent,
-                         "Enable indentation formatting (0/1, default: keep slog default)")
+  slog_group
+    ->add_option(
+      "--slog-indent",
+      slog_cli.n_indent,
+      "Enable indentation formatting (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-flush",
-                         slog_cli.n_flush,
-                         "Flush stdout after screen log (0/1)")
+  slog_group
+    ->add_option("--slog-flush",
+                 slog_cli.n_flush,
+                 "Flush stdout after screen log (0/1)")
     ->check(CLI::Range(0, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-use-heap",
-                         slog_cli.n_use_heap,
-                         "Use heap allocation in slog (0/1, default: keep slog default)")
+  slog_group
+    ->add_option(
+      "--slog-use-heap",
+      slog_cli.n_use_heap,
+      "Use heap allocation in slog (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
-  slog_group->add_option("--slog-trace-tid",
-                         slog_cli.n_trace_tid,
-                         "Trace thread id in output (0/1, default: keep slog default)")
+  slog_group
+    ->add_option("--slog-trace-tid",
+                 slog_cli.n_trace_tid,
+                 "Trace thread id in output (0/1, default: keep slog default)")
     ->check(CLI::Range(-1, 1))
     ->capture_default_str();
 
   slog_group->add_option("--slog-file-name",
                          slog_cli.file_name,
                          "Log file name (when file logging is enabled)");
-  slog_group->add_option("--slog-file-path",
-                         slog_cli.file_path,
-                         "Log file directory path (when file logging is enabled)");
+  slog_group->add_option(
+    "--slog-file-path",
+    slog_cli.file_path,
+    "Log file directory path (when file logging is enabled)");
   slog_group->add_option("--slog-separator",
                          slog_cli.separator,
                          "Separator between header and message");
@@ -388,12 +533,23 @@ main(int argc, char *argv[])
 
   // do the job
 
-  coral::register_all_types();
-  slog_info("Registered all types.");
+  BackendPlugin backend;
+  try
+    {
+      backend = BackendPlugin(plugin_path);
+    }
+  catch (const std::exception &e)
+    {
+      slog_error("Failed to load backend plugin '%s': %s",
+                 plugin_path.string().c_str(),
+                 e.what());
+      return EXIT_FAILURE;
+    }
+  slog_info("Loaded backend plugin '%s'.", backend.name.c_str());
 
   if (dump_reg)
     {
-      dump_registry(register_path);
+      dump_registry(register_path, backend.name);
       slog_info("Dumped registered nodes to %s.", register_path.c_str());
     }
 
@@ -413,16 +569,17 @@ main(int argc, char *argv[])
   slog_info("File %s read.", input_json.c_str());
 
 
-  const char *env_th = std::getenv("THREADS");
-  const size_t n_threads = env_th ? static_cast<size_t>(std::stoull(env_th)) : std::thread::hardware_concurrency();
+  const char  *env_th    = std::getenv("THREADS");
+  const size_t n_threads = env_th ? static_cast<size_t>(std::stoull(env_th)) :
+                                    std::thread::hardware_concurrency();
   slog_info("Thread pool size of %zu.", n_threads);
 
   coral::Network network;
-  Network::set_threads_number(n_threads);
+  coral::Network::set_threads_number(n_threads);
   network.from_json(data);
   slog_info("Built network from data.");
 
-  Network::set_touch_file_base_path(touch_file_path);
+  coral::Network::set_touch_file_base_path(touch_file_path);
   slog_info("Touch file base path: %s", touch_file_path.c_str());
 
   if (dump_graph)

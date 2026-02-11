@@ -44,7 +44,8 @@ TEST(NodeObject, TriviallyConstructibleType)
 
 TEST(NodeObject, NonTriviallyConstructibleType)
 {
-  coral_test::ScopedTestOutputDir output_dir("NodeObject_NonTriviallyConstructibleType");
+  coral_test::ScopedTestOutputDir output_dir(
+    "NodeObject_NonTriviallyConstructibleType");
 
   using type = FE_Q<2>;
   NodeObject::register_elementary_type<int>();

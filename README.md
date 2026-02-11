@@ -112,6 +112,134 @@ include:
 - **register_method**: For member functions (void/non-void, const/non-const)
 - **register_function**: For free functions
 
+## Repository Layout
+
+The codebase is intentionally split so the **core graph library** can be built
+without any particular “backend” (e.g. deal.II), and UIs can be built without
+linking backend types. Backends provide types at runtime via a small plugin ABI
+and/or by dumping a `registry.json` for UI authoring.
+
+### Top-level directories
+
+- `core/`
+  - `core/include/`: CORAL public headers (NodeObject, Network, JSON, etc.)
+  - `core/source/`: CORAL core implementation + CLI sources
+  - `core/include/coral_plugin.h`: minimal C ABI that backend plugins export
+- `backends/`
+  - `backends/dealii/`: one backend implementation (deal.II)
+    - `backends/dealii/src/plugin_dealii.cc`: backend plugin (`coral_backend_dealii`)
+    - `backends/dealii/include/register_types.h`: deal.II type registration
+    - `backends/dealii/tests/`: backend-specific gtests
+  - `core/source/backend_main.cc`: main CLI (`coral`)
+
+## Build System (CMake)
+
+The top-level `CMakeLists.txt` composes independent subprojects:
+
+- `coral_core` (always): the core library under `core/`
+- `coral_backend_dealii`: deal.II backend plugin under `backends/dealii/`
+- `coral`: main CLI under `core/`
+
+### Options
+
+These options are enabled by default:
+
+- `CORAL_BUILD_BACKEND_DEALII=ON` (auto-skips if `deal.II` is not found)
+- `CORAL_BUILD_TESTS=ON`
+
+Example:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j 8
+```
+
+### Warning-free builds
+
+External libraries (and translation units that include a lot of external
+headers, such as deal.II-heavy code) are built with warnings disabled
+to keep output clean by default.
+
+## Backend Plugins and Registries
+
+CORAL “registration” is backend-specific: a backend is responsible for calling
+`coral::NodeObject::register_*` for its own node types.
+
+### Creating a new plugin
+
+To add a new backend plugin (e.g. `my_backend`), create a new subdirectory and
+provide two pieces: (1) a normal C++ registration function that calls
+`coral::NodeObject::register_*`, and (2) a shared library that exports the CORAL
+plugin ABI from `core/include/coral_plugin.h`.
+
+Suggested layout:
+
+- `backends/my_backend/include/register_types.h` (declares `void register_types();`)
+- `backends/my_backend/src/register_types.cc` (implements `register_types()`)
+- `backends/my_backend/src/plugin_my_backend.cc` (exports the plugin ABI)
+- `backends/my_backend/CMakeLists.txt` (builds the shared library target)
+
+Minimal plugin entry points (`backends/my_backend/src/plugin_my_backend.cc`):
+
+```cpp
+#include "coral_plugin.h"
+#include "register_types.h"
+
+CORAL_PLUGIN_EXPORT void
+coral_backend_register_types()
+{
+  register_types();
+}
+
+CORAL_PLUGIN_EXPORT const char *
+coral_backend_name()
+{
+  return "my_backend";
+}
+```
+
+CMake should build a shared library and link it against `coral_core` plus any
+backend dependencies:
+
+- `add_library(coral_backend_my_backend SHARED ...)`
+- `target_link_libraries(coral_backend_my_backend PRIVATE coral_core ...)`
+
+### Dump a registry from a plugin
+
+Use `coral register` (built under `core/`) to load a plugin and write the
+registry JSON:
+
+```bash
+./build/core/coral --plugin ./build/backends/dealii/libcoral_backend_dealii.(dylib|so|dll) register registry.json
+```
+
+## Tests
+
+Core tests live in `core/tests/`. Backend-specific tests live next to the backend
+(`backends/dealii/tests/`).
+Instead of using `ctest`, the build provides a fast path to run the gtest
+executable directly:
+
+```bash
+cmake --build build --target run_dealii_backend_tests
+```
+
+Run core tests:
+
+```bash
+cmake --build build --target run_coral_core_tests
+```
+
+Or run the binary yourself:
+
+```bash
+./build/backends/dealii/tests/dealii_backend_tests
+```
+
+```bash
+./build/core/tests/coral_core_tests
+```
+
 ## Execution Model
 
 The execution model is based on the Taskflow library:
@@ -360,7 +488,7 @@ A typical workflow using CORAL involves:
 
 ## Prectical Usage
 
-The program `dealii_backend.g` has two subcommands:
+The program `coral` has two subcommands (both require `--plugin <path>`):
 
 - `register [register_path]`: simply register all types and dump them to
 `register_path`, a json file which defaults to `node_types.json`.
@@ -370,6 +498,7 @@ in the json file `input_json`. The options are:
     defaults to `nodes_type.json`;
   - `--graph [graph_path]`: dump the dot file of the network to `graph_path`,
     which defaults to `network.dot`.
+  - `--plugin <path>`: path to the backend plugin to load.
 
 Of course `-h` or `--help` to get a usage guide.
 

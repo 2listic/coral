@@ -1,161 +1,37 @@
-## ---------------------------------------------------------------------
-##
-## Copyright (C) 2000 2020 by the deal.II authors
-##
-## This file is part of the deal.II library.
-##
-## The deal.II library is free software; you can use it, redistribute
-## it, and/or modify it under the terms of the GNU Lesser General
-## Public License as published by the Free Software Foundation; either
-## version 2.1 of the License, or (at your option) any later version.
-## The full text of the license can be found in the file LICENSE.md at
-## the top level directory of deal.II.
-##
-## ---------------------------------------------------------------------
+cmake_minimum_required(VERSION 3.16)
 
-##
-# CMake script for large project, with one executable
-# and a library of objects
-#
-# The structure of the directory is assumed to be: 
-# ./source: containing implementations and one file with "int main()"
-# ./include: containing all class declarations
-# ./gtests: containing gtest unit tests
-##
+project(coral LANGUAGES C CXX)
 
-# Set the name of the project and target
-# If your application follows the structure above, you don't need to 
-# specify anything else. 
-SET(_main_target dealii_backend)
-SET(_main source/main.cc)
+option(CORAL_BUILD_BACKEND_DEALII "Build the deal.II backend (plugin + CLI)." ON)
+option(CORAL_BUILD_TESTS "Build tests (backend-specific where applicable)." ON)
+option(CORAL_BUILD_SHARED_CORE "Build coral_core as a shared library (recommended for plugins)." ON)
 
-# Set the _main variable to empty if you don't want an executable
-# but only a library
-#SET(_main "")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-############################################################
-# Normally you shouldn't need to change anything below.
-############################################################
-# Declare all source files the target consists of:
+if(CORAL_BUILD_BACKEND_DEALII AND NOT CORAL_BUILD_SHARED_CORE)
+  message(WARNING "CORAL_BUILD_BACKEND_DEALII=ON with CORAL_BUILD_SHARED_CORE=OFF may prevent plugins from sharing the type registry with the host.")
+endif()
 
-# INCLUDE_DIRECTORIES(include ./)
+if(CORAL_BUILD_TESTS)
+  # We intentionally run GoogleTest executables directly (faster than ctest).
+  # Do not call enable_testing() so CMake doesn't generate its own `test` target.
+  add_custom_target(test)
+endif()
 
-# Disable specific warnings related to the nlohmann/json library
-IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-  ADD_COMPILE_OPTIONS(-Wno-array-bounds -Wno-maybe-uninitialized -Wno-class-memaccess)
-ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  ADD_COMPILE_OPTIONS(-Wno-array-bounds -Wno-uninitialized -Wno-self-assign-overloaded)
-ENDIF()
-
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
+add_subdirectory(core)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-FIND_PACKAGE(deal.II 9.5 REQUIRED
-HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR})
-DEAL_II_INITIALIZE_CACHED_VARIABLES()
+if(CORAL_BUILD_BACKEND_DEALII)
+  add_subdirectory(backends/dealii)
+endif()
 
-
-PROJECT(${_main_target})
-DEAL_II_INITIALIZE_CACHED_VARIABLES()
-OPTION(ENABLE_GOOGLE_TESTING 
-"Enable googletest style tests in this application." ON)
-OPTION(CORAL_HEADER_ONLY "Build CORAL as a header-only library." OFF)
-
-# We add one library and one target for each type of deal.II library
-# we found. If you compiled deal.II with both Release and Debug
-# mode, this will generate both Release and Debug programs for you.
-# The debug library and program are postfixed with ".g"
-SET(_d2_build_types "Release;Debug")
-SET(Release_postfix "")
-SET(Debug_postfix ".g")
-
-FOREACH(_build_type ${_d2_build_types})
-  # Postfix to use everywhere
-  SET(_p "${${_build_type}_postfix}")
-  # Only build this type, if deal.II was compiled with it.
-  IF(CMAKE_BUILD_TYPE MATCHES "${_build_type}" AND
-      DEAL_II_BUILD_TYPE MATCHES "${_build_type}")
-
-    MESSAGE("-- Found ${_build_type} version of deal.II.")
-
-    STRING(TOUPPER "${_build_type}" _BUILD_TYPE)
-
-    # Setup slog (C library)
-    SET(_slog_lib "slog${_p}")
-    if (NOT TARGET ${_slog_lib})
-      ADD_LIBRARY(${_slog_lib} STATIC source/slog/slog.c)
-      TARGET_INCLUDE_DIRECTORIES(
-        ${_slog_lib} PUBLIC ./include ./include/slog)
-      # libdealii_backend_lib is a shared library; ensure slog can be linked into it.
-      set_target_properties(${_slog_lib} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-    endif()
-
-    # Setup library
-    SET(_lib "${_main_target}_lib${_p}")
-    MESSAGE("-- Configuring library ${_lib}")
-
-    if (CORAL_HEADER_ONLY)
-      ADD_LIBRARY(${_lib} INTERFACE)
-      TARGET_INCLUDE_DIRECTORIES(
-        ${_lib} INTERFACE ./include ./include/slog ${CMAKE_CURRENT_SOURCE_DIR}/entt/single_include)
-      TARGET_LINK_LIBRARIES(${_lib} INTERFACE ${_slog_lib})
-      TARGET_COMPILE_DEFINITIONS(
-        ${_lib} INTERFACE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-        CORAL_HEADER_ONLY=1
-        JSON_DIAGNOSTICS=1)
-    else()
-      ADD_LIBRARY(${_lib} SHARED
-        source/coral_implementation.cc
-        source/coral_network_implementation.cc)
-      TARGET_INCLUDE_DIRECTORIES(
-        ${_lib} PUBLIC ./include ./include/slog ${CMAKE_CURRENT_SOURCE_DIR}/entt/single_include)
-      TARGET_LINK_LIBRARIES(${_lib} ${_slog_lib})
-      TARGET_COMPILE_DEFINITIONS(
-        ${_lib} PUBLIC SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-        CORAL_HEADER_ONLY=0
-        JSON_DIAGNOSTICS=1)
-      DEAL_II_SETUP_TARGET(${_lib} ${_BUILD_TYPE})
-    endif()
-    SET(TEST_LIBRARIES_${_BUILD_TYPE} ${_lib})
-
-    # Setup one executable per dimension/per build type
-    # FOREACH(_dim 1 2 3)
-    #   SET(_exe "${_main_target}_${_dim}d${${_build_type}_postfix}")
-    #   MESSAGE("-- Configuring executable ${_exe}")
-    #   ADD_EXECUTABLE(${_exe} ${_main})
-    #   TARGET_LINK_LIBRARIES(${_exe} ${_lib})      
-    #   TARGET_COMPILE_DEFINITIONS(${_exe} PUBLIC DEAL_DIMENSION=${_dim})
-    #   DEAL_II_SETUP_TARGET(${_exe} ${_BUILD_TYPE})
-    # ENDFOREACH()
-
-    # Setup one executable per build type
-    SET(_exe "${_main_target}${${_build_type}_postfix}")
-    MESSAGE("-- Configuring executable ${_exe}")
-    ADD_EXECUTABLE(${_exe} ${_main})
-    TARGET_LINK_LIBRARIES(${_exe} ${_lib})
-    DEAL_II_SETUP_TARGET(${_exe} ${_BUILD_TYPE})
-  ENDIF()
-ENDFOREACH()
-
-# Google test style testing
-IF(ENABLE_GOOGLE_TESTING)
-  find_package(GTest)
-  if (GTest_FOUND)
-      ADD_SUBDIRECTORY(gtests)
-  else ()
-      MESSAGE(WARNING "GTest library not found. Tests will not be compiled!")
-  endif ()
-ENDIF()
-
-find_package(Doxygen)
-
-if(DOXYGEN_FOUND)
-  add_custom_target(doc
-    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMENT "Generating API documentation with Doxygen" VERBATIM)
-  MESSAGE("-- Configured Doxygen")
-endif(DOXYGEN_FOUND)
+if(CORAL_BUILD_TESTS)
+  add_subdirectory(core/tests)
+  if(TARGET test AND TARGET run_coral_core_tests)
+    add_dependencies(test run_coral_core_tests)
+  endif()
+endif()
