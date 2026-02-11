@@ -1247,6 +1247,19 @@ namespace coral
     size_t
     n_outputs() const;
 
+    /**
+     * Get the qualified_id of this node.
+     * Returns empty string if qualified_id is not set.
+     */
+    std::string
+    get_qualified_id() const;
+
+    /**
+     * Set the qualified_id of this node.
+     */
+    void
+    set_qualified_id(const std::string &id);
+
   private:
     /**
      * Return true if an output index maps to a pass-through argument.

@@ -53,20 +53,24 @@ Add a `qualified_id` field to node JSON serialization for human-readable identif
 
 ## Implementation Plan
 
-### Step 1: Add qualified_id to NodeObject JSON serialization
-- [ ] **Task 1.1:** Add `get_qualified_id()` helper method to NodeObject
+### Step 1: Add qualified_id to NodeObject JSON serialization ✅
+- [x] **Task 1.1:** Add `get_qualified_id()` helper method to NodeObject
   - Location: `core/include/coral.h` (NodeObject public methods)
   - Return `qualified_id` from `initializer.json_serializer` or empty string if not present
 
-- [ ] **Task 1.2:** Modify `from_json` to store `qualified_id` in initializer
-  - Location: `core/include/coral_implementation.h:806` (from_json function)
-  - Store `qualified_id` in `obj->initializer.json_serializer["qualified_id"]` if present in JSON
+- [x] **Task 1.2:** Add `set_qualified_id()` method and modify `from_json`
+  - Location: `core/include/coral.h:1260` (set_qualified_id declaration)
+  - Location: `core/include/coral_implementation.h:624` (set_qualified_id implementation)
+  - Location: `core/include/coral_implementation.h:888` (from_json usage)
+  - Uses public setter method (coherent with `parse_string` pattern)
 
-- [ ] **Task 1.3:** Verify `get_info` automatically includes `qualified_id`
+- [x] **Task 1.3:** Verify `get_info` automatically includes `qualified_id`
   - Location: `core/include/coral_implementation.h:522` (get_info function)
   - No changes needed (automatic since it returns `initializer.json_serializer`)
 
-- [ ] **CHECKPOINT:** Build + run tests (verify nothing broke)
+- [x] **CHECKPOINT:** Build + run tests (verify nothing broke) ✅
+  - Added tests: `Serialize.QualifiedId` and `Serialize.QualifiedIdMissing`
+  - All tests passing
 
 ### Step 2: Add qualified_id handling to Network class
 - [ ] **Task 2.1:** Add `get_node_qualified_id()` method to Network
@@ -138,6 +142,22 @@ Add a `qualified_id` field to node JSON serialization for human-readable identif
 - Analyzed project structure and requirements
 - Defined implementation plan with 5 major steps
 - Documented 3 key design decisions
+
+**Step 1 Implementation (Completed):**
+- Added `get_qualified_id()` method to NodeObject (coral.h:1254)
+- Added `set_qualified_id()` method to NodeObject (coral.h:1260, coral_implementation.h:624)
+- Modified `from_json` to store qualified_id using public setter (coral_implementation.h:888)
+- Verified `get_info()` automatically includes qualified_id
+- Added two unit tests to verify functionality:
+  - `Serialize.QualifiedId` - tests reading and writing qualified_id
+  - `Serialize.QualifiedIdMissing` - tests behavior when qualified_id is absent
+- Fixed test to use proper type hash (learned to serialize existing object first)
+- All core tests passing ✅
+
+**Design Refinement:**
+- Initially tried to access `obj->initializer` directly from `from_json`
+- Learned this violates encapsulation (initializer is private)
+- Solution: Added public `set_qualified_id()` method, coherent with existing `parse_string()` pattern
 
 ---
 

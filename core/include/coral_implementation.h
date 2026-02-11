@@ -612,6 +612,24 @@ namespace coral
 
 
 
+  CORAL_IMPL_INLINE std::string
+  NodeObject::get_qualified_id() const
+  {
+    const auto &j = initializer.json_serializer;
+    return j.contains("qualified_id") ? j["qualified_id"].get<std::string>() :
+                                        std::string();
+  }
+
+
+
+  CORAL_IMPL_INLINE void
+  NodeObject::set_qualified_id(const std::string &id)
+  {
+    initializer.json_serializer["qualified_id"] = id;
+  }
+
+
+
   CORAL_IMPL_INLINE bool
   NodeObject::is_passthrough_output(const unsigned int index) const
   {
@@ -819,11 +837,11 @@ namespace coral
     const bool  is_network = NodeObject::is_network_type(obj->hash());
 
     // If the input JSON contains fields that also exist in the registry
-    // description, they must match exactly (except for "value", which is
-    // allowed to differ when provided).
+    // description, they must match exactly (except for "value" and
+    // "qualified_id", which are allowed to differ when provided).
     for (const auto &[key, val] : j.items())
       {
-        if (key == "value")
+        if (key == "value" || key == "qualified_id")
           continue;
         if (is_network &&
             (key == "arguments" || key == "inputs" || key == "outputs"))
@@ -859,6 +877,12 @@ namespace coral
             // Refresh serialized value to match the parsed object.
             (void)obj->get_info();
           }
+      }
+
+    // Store qualified_id if present in the JSON
+    if (j.contains("qualified_id"))
+      {
+        obj->set_qualified_id(j["qualified_id"].get<std::string>());
       }
 
     if (is_network)
