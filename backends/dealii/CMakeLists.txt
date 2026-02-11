@@ -30,26 +30,6 @@ else()
   target_compile_options(coral_backend_dealii PRIVATE -w)
 endif()
 
-add_executable(dealii_backend
-  src/backend_main.cc)
-
-target_compile_features(dealii_backend PRIVATE cxx_std_17)
-
-target_include_directories(dealii_backend
-  PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}/include)
-
-target_link_libraries(dealii_backend
-  coral_core)
-
-deal_ii_setup_target(dealii_backend)
-
-if(MSVC)
-  target_compile_options(dealii_backend PRIVATE /W0)
-else()
-  target_compile_options(dealii_backend PRIVATE -w)
-endif()
-
 if(CORAL_BUILD_TESTS)
   add_subdirectory(tests)
   if(TARGET test AND TARGET run_dealii_backend_tests)

@@ -1,10 +1,3 @@
-#include <deal.II/dofs/dof_handler.h>
-
-#include <deal.II/fe/fe_q.h>
-
-#include <deal.II/grid/grid_generator.h>
-#include <deal.II/grid/tria.h>
-
 #define JSON_DIAGNOSTICS 1
 #include <CLI11/CLI11.hpp>
 #include <nlohmann/json.hpp> // JSON library
@@ -12,33 +5,146 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <filesystem>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
+#include <thread>
+#include <utility>
 
 #include "coral.h"
 #include "coral_network.h"
 #include "magic_enum/magic_enum_all.hpp"
-#include "register_types.h"
 #include "slog.h"
 #include "taskflow/taskflow.hpp" // Taskflow library
+
+#if defined(_WIN32)
+#  include <windows.h>
+#else
+#  include <dlfcn.h>
+#endif
 
 using json   = nlohmann::json;
 namespace fs = std::filesystem;
 
-using namespace coral;
-
 void
-dump_registry(const fs::path &outpath)
+dump_registry(const fs::path &outpath, const std::string &backend_name)
 {
-  auto          json = coral::NodeObject::get_registry();
+  json registry = coral::NodeObject::get_registry();
+  if (!backend_name.empty())
+    registry["__backend_name"] = backend_name;
   std::ofstream output{outpath};
-  output << std::setw(4) << json << std::endl;
+  output << std::setw(4) << registry << std::endl;
 }
 
 namespace
 {
+  using RegisterFn = void (*)();
+  using NameFn     = const char *(*)();
+
+  struct PluginHandle
+  {
+#if defined(_WIN32)
+    HMODULE handle = nullptr;
+#else
+    void *handle = nullptr;
+#endif
+  };
+
+  template <typename Fn>
+  static Fn
+  load_symbol(const PluginHandle &h, const char *name)
+  {
+#if defined(_WIN32)
+    auto *sym = GetProcAddress(h.handle, name);
+    if (!sym)
+      throw std::runtime_error(std::string("GetProcAddress failed for: ") +
+                               name);
+    return reinterpret_cast<Fn>(sym);
+#else
+    dlerror();
+    void       *sym = dlsym(h.handle, name);
+    const char *err = dlerror();
+    if (err)
+      throw std::runtime_error(std::string("dlsym failed: ") + err);
+    return reinterpret_cast<Fn>(sym);
+#endif
+  }
+
+  struct BackendPlugin
+  {
+    PluginHandle handle;
+    std::string  name;
+
+    explicit BackendPlugin(const fs::path &path)
+    {
+#if defined(_WIN32)
+      handle.handle = LoadLibraryA(path.string().c_str());
+      if (!handle.handle)
+        throw std::runtime_error("LoadLibrary failed for: " +
+                                 path.string());
+#else
+      handle.handle = dlopen(path.string().c_str(), RTLD_NOW | RTLD_LOCAL);
+      if (!handle.handle)
+        throw std::runtime_error(std::string("dlopen failed: ") + dlerror());
+#endif
+
+      auto reg =
+        load_symbol<RegisterFn>(handle, "coral_backend_register_types");
+      auto name_fn = load_symbol<NameFn>(handle, "coral_backend_name");
+      reg();
+      name = name_fn();
+    }
+
+    BackendPlugin() = default;
+
+    BackendPlugin(const BackendPlugin &)            = delete;
+    BackendPlugin &operator=(const BackendPlugin &) = delete;
+
+    BackendPlugin(BackendPlugin &&other) noexcept
+    {
+      handle       = other.handle;
+      name         = std::move(other.name);
+      other.handle = {};
+    }
+
+    BackendPlugin &
+    operator=(BackendPlugin &&other) noexcept
+    {
+      if (this != &other)
+        {
+          unload();
+          handle       = other.handle;
+          name         = std::move(other.name);
+          other.handle = {};
+        }
+      return *this;
+    }
+
+    ~BackendPlugin()
+    {
+      unload();
+    }
+
+    void
+    unload()
+    {
+#if defined(_WIN32)
+      if (handle.handle)
+        FreeLibrary(handle.handle);
+#else
+      if (handle.handle)
+        dlclose(handle.handle);
+#endif
+      handle.handle = nullptr;
+    }
+  };
+
   struct SlogCliConfig
   {
     std::string name        = "coral";
@@ -253,7 +359,7 @@ main(int argc, char *argv[])
 
   // Parse command line arguments
 
-  CLI::App app{"dealii-backend. A backend for coral."};
+  CLI::App app{"coral. Load, dump, and run a backend."};
 
   app.failure_message([&](const CLI::App *app, const CLI::Error &error) {
     slog_error("Error: %s", error.what());
@@ -264,6 +370,14 @@ main(int argc, char *argv[])
   app.require_subcommand(1, 1);
 
   SlogCliConfig slog_cli;
+
+  fs::path plugin_path;
+  app.add_option("-p,--plugin",
+                 plugin_path,
+                 "Backend plugin path (.so/.dylib/.dll)")
+    ->required()
+    ->check(CLI::ExistingPath.description(""))
+    ->type_name("PATH");
 
   auto *slog_group = app.add_option_group("slog", "SLog logging configuration");
   slog_group
@@ -419,12 +533,23 @@ main(int argc, char *argv[])
 
   // do the job
 
-  coral::register_all_types();
-  slog_info("Registered all types.");
+  BackendPlugin backend;
+  try
+    {
+      backend = BackendPlugin(plugin_path);
+    }
+  catch (const std::exception &e)
+    {
+      slog_error("Failed to load backend plugin '%s': %s",
+                 plugin_path.string().c_str(),
+                 e.what());
+      return EXIT_FAILURE;
+    }
+  slog_info("Loaded backend plugin '%s'.", backend.name.c_str());
 
   if (dump_reg)
     {
-      dump_registry(register_path);
+      dump_registry(register_path, backend.name);
       slog_info("Dumped registered nodes to %s.", register_path.c_str());
     }
 
@@ -450,11 +575,11 @@ main(int argc, char *argv[])
   slog_info("Thread pool size of %zu.", n_threads);
 
   coral::Network network;
-  Network::set_threads_number(n_threads);
+  coral::Network::set_threads_number(n_threads);
   network.from_json(data);
   slog_info("Built network from data.");
 
-  Network::set_touch_file_base_path(touch_file_path);
+  coral::Network::set_touch_file_base_path(touch_file_path);
   slog_info("Touch file base path: %s", touch_file_path.c_str());
 
   if (dump_graph)
