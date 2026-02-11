@@ -16,6 +16,31 @@
 namespace coral
 {
   /**
+   * Exception thrown when duplicate qualified_id values are detected in a network.
+   */
+  class DuplicateQualifiedIdException : public std::runtime_error
+  {
+  private:
+    std::string duplicate_id;
+
+  public:
+    explicit DuplicateQualifiedIdException(const std::string &id)
+      : std::runtime_error("Duplicate qualified_id found in network: '" + id +
+                           "'")
+      , duplicate_id(id)
+    {}
+
+    /**
+     * Get the duplicate qualified_id that caused this exception.
+     */
+    const std::string &
+    get_duplicate_id() const
+    {
+      return duplicate_id;
+    }
+  };
+
+  /**
    * Directed edge between two nodes and their ports.
    */
   class Connection

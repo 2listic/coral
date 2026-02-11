@@ -585,9 +585,7 @@ namespace coral
             qualified_id = node_data["qualified_id"].get<std::string>();
             if (!seen_qualified_ids.insert(qualified_id).second)
               {
-                throw std::runtime_error(
-                  "Duplicate qualified_id '" + qualified_id +
-                  "' found in network. Each node must have a unique qualified_id.");
+                throw DuplicateQualifiedIdException(qualified_id);
               }
           }
         else

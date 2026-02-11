@@ -34,6 +34,27 @@
 
 ---
 
+## Code Style and Documentation Guidelines
+
+### No Emojis
+**Emojis are strictly banned everywhere in the project.**
+
+This includes:
+- Source code (comments, strings, documentation)
+- Commit messages
+- Issue descriptions
+- Planning documents (`issues/*.md`)
+- Pull request descriptions
+- README files
+- All other documentation
+
+Use clear, professional text instead. For status indicators in markdown:
+- Use text: `Status: Completed`, `Status: In Progress`
+- Use checkboxes: `- [x]` for completed, `- [ ]` for pending
+- Use symbols if needed: `✓` (checkmark) is acceptable, but text is preferred
+
+---
+
 ## Planning Document Structure
 
 Each issue has a corresponding markdown file in `issues/`:
