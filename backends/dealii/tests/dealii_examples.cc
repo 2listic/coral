@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <locale>
+#include <set>
 
 #include "coral.h"
 #include "coral_network.h" // Added include for Network class
@@ -280,4 +281,48 @@ TEST(dealiiExamples, NetworkFromJsonStep00)
   // Verify results
   auto &tria = tria_node->get<Triangulation<2>>();
   ASSERT_EQ(16, tria.n_active_cells());
+}
+
+TEST(dealiiExamples, PoissonSolver)
+{
+  ScopedTestOutputDir output_dir("dealiiExamples_PoissonSolver");
+
+  register_non_dimensional_types();
+  register_dimensional_types<2, 2>();
+
+  auto tria = make_node<Triangulation<2>>();
+  (*tria)();
+  auto &tria_ref = tria->get<Triangulation<2>>();
+  GridGenerator::hyper_cube(tria_ref, 0, 1, true);
+  tria_ref.refine_global(1);
+
+  auto fe_degree = make_node(1u);
+  auto fe        = make_node<FE_Q<2>>();
+  fe->set_arguments({fe_degree});
+  (*fe)();
+
+  auto output_name = make_node((output_dir.path() / "solution.vtu").string());
+  auto rhs_expr    = make_node(std::string("1"));
+  auto dirichlet_ids =
+    make_node(std::set<types::boundary_id>{types::boundary_id{0}});
+  auto dirichlet_expr = make_node(std::string("0"));
+  auto neumann_ids    = make_node(std::set<types::boundary_id>{});
+  auto neumann_expr   = make_node(std::string("0"));
+
+  auto poisson = make_node<PoissonSolver<2, 2>>();
+  poisson->set_arguments({tria,
+                          fe,
+                          output_name,
+                          rhs_expr,
+                          dirichlet_ids,
+                          dirichlet_expr,
+                          neumann_ids,
+                          neumann_expr});
+
+  ASSERT_TRUE((*poisson)());
+  ASSERT_TRUE(poisson->ready());
+  // check that the output file was created
+  std::ifstream file(output_dir.path() / "solution.vtu");
+  ASSERT_TRUE(file.good());
+  file.close();
 }

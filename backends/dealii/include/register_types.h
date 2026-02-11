@@ -18,6 +18,7 @@
 
 #include "coral.h"
 #include "coral_network.h"
+#include "poisson.h"
 
 /** \cond INTERNAL */
 namespace nlohmann
@@ -69,6 +70,8 @@ namespace coral
     NodeObject::register_elementary_type<types::manifold_id>();
     NodeObject::register_elementary_type<types::material_id>();
 
+    NodeObject::register_elementary_type<std::set<types::boundary_id>>();
+
     NodeObject::register_type<GridOut>();
 
     NodeObject::register_derived_type<std::ostream, std::ofstream, std::string>(
@@ -111,6 +114,28 @@ namespace coral
        "grid_out",
        "triangulation",
        "output_file"});
+
+    NodeObject::register_derived_type<FiniteElement<dim, spacedim>,
+                                      FE_Q<dim, spacedim>,
+                                      unsigned int>("fe_degree");
+
+    NodeObject::register_type<PoissonSolver<dim, spacedim>,
+                              const Triangulation<dim, spacedim> &,
+                              const FiniteElement<dim, spacedim> &,
+                              const std::string &,
+                              const std::string &,
+                              const std::set<types::boundary_id> &,
+                              const std::string &,
+                              const std::set<types::boundary_id> &,
+                              const std::string &>(
+      {{"triangulation",
+        "fe",
+        "output_file_name",
+        "rhs_function_expression",
+        "dirichlet_boundary_ids",
+        "dirichlet_function_expression",
+        "neumann_boundary_ids",
+        "neumann_function_expression"}});
   }
 
 
