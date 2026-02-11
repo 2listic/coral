@@ -10,7 +10,7 @@ endif()
 
 deal_ii_initialize_cached_variables()
 
-add_library(coral_backend_dealii SHARED
+add_library(coral_backend_dealii MODULE
   src/plugin_dealii.cc)
 
 target_compile_features(coral_backend_dealii PRIVATE cxx_std_17)
