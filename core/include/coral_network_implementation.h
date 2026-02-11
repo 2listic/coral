@@ -343,6 +343,19 @@ namespace coral
 
 
 
+  CORAL_IMPL_INLINE std::string
+  Network::get_node_qualified_id(unsigned int id) const
+  {
+    auto it = nodes.find(id);
+    if (it == nodes.end() || !it->second)
+      return std::to_string(id); // Fallback to node_id
+
+    const std::string qid = it->second->get_qualified_id();
+    return qid.empty() ? std::to_string(id) : qid;
+  }
+
+
+
   CORAL_IMPL_INLINE void
   Network::add_connection(unsigned int id, const Connection &conn)
   {
@@ -549,6 +562,10 @@ namespace coral
     const auto &nodes_data = workflow["nodes"];
     slog_info("Loading network from json: %zu nodes", nodes_data.size());
 
+    // Track qualified_ids to ensure uniqueness
+    std::set<std::string> seen_qualified_ids;
+    int                   auto_qualified_id_counter = 0;
+
     // First pass: create all nodes
     for (const auto &[key, value] : nodes_data.items())
       {
@@ -563,6 +580,40 @@ namespace coral
               "Node " + key +
               " does not contain a 'type' field: " + node_data.dump(2));
           }
+
+        // Handle qualified_id: validate uniqueness or auto-generate
+        std::string qualified_id;
+        if (node_data.contains("qualified_id"))
+          {
+            qualified_id = node_data["qualified_id"].get<std::string>();
+            if (!seen_qualified_ids.insert(qualified_id).second)
+              {
+                throw std::runtime_error(
+                  "Duplicate qualified_id '" + qualified_id +
+                  "' found in network. Each node must have a unique qualified_id.");
+              }
+          }
+        else
+          {
+            // Auto-generate qualified_id with distinctive format
+            do
+              {
+                qualified_id = std::to_string(id) + "_auto_" +
+                               std::to_string(auto_qualified_id_counter++);
+              }
+            while (!seen_qualified_ids.insert(qualified_id).second);
+
+            // Add to node_data so it gets stored in the NodeObject
+            node_data["qualified_id"] = qualified_id;
+
+            // Track that this qualified_id was auto-generated
+            auto_generated_qualified_ids.insert(qualified_id);
+
+            slog_warn("Node %d missing qualified_id, auto-generated: '%s'",
+                      id,
+                      qualified_id.c_str());
+          }
+
         std::string node_name = node_data.value("name", "");
         try
           {
@@ -634,6 +685,7 @@ namespace coral
     node_tasks.clear();
     connections.clear();
     taskflow.clear();
+    auto_generated_qualified_ids.clear();
   }
 
 
@@ -997,9 +1049,21 @@ namespace coral
         if (!name.empty())
           node_json["name"] = name;
 
+        // Get node info once for both qualified_id and value
+        const auto &info = node->get_info();
+        if (info.contains("qualified_id"))
+          {
+            const std::string qid = info["qualified_id"].get<std::string>();
+            // Only serialize qualified_id if it's NOT auto-generated
+            if (auto_generated_qualified_ids.find(qid) ==
+                auto_generated_qualified_ids.end())
+              {
+                node_json["qualified_id"] = qid;
+              }
+          }
+
         if (node->node_type() == NodeType::elementary_constructor)
           {
-            const auto &info = node->get_info();
             if (info.contains("value"))
               node_json["value"] = info["value"];
           }

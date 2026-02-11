@@ -66,6 +66,7 @@ namespace coral
     std::string                           name;
     static size_t                         n_threads;
     static std::filesystem::path          touch_file_base_path;
+    std::set<std::string> auto_generated_qualified_ids; // Track auto-generated IDs
 
     void
     rebuild_taskflow();
@@ -121,6 +122,9 @@ namespace coral
 
     const std::map<unsigned int, std::string> &
     get_nodes_name() const;
+
+    std::string
+    get_node_qualified_id(unsigned int id) const;
 
     void
     add_connection(unsigned int id, const Connection &conn);
