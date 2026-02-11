@@ -108,16 +108,16 @@ Add a `qualified_id` field to node JSON serialization for human-readable identif
   - Fixed `Network.HyperCubeNetworkRoundTrip` compatibility
   - All tests passing
 
-### Step 3: Use qualified_id in touch files and logs
-- [ ] **Task 3.1:** Modify `execute_node_task` to use `qualified_id` for touch files
+### Step 3: Use qualified_id in touch files and logs ✅
+- [x] **Task 3.1:** Modify `execute_node_task` to use `qualified_id` for touch files
   - Location: `core/include/coral_network_implementation.h:207-239`
   - Replace `std::to_string(node_id)` with `get_node_qualified_id(node_id)` in touch_file calls (lines 216, 227, 237)
 
-- [ ] **Task 3.2:** Update log messages to include `qualified_id`
+- [x] **Task 3.2:** Update log messages to include `qualified_id`
   - Location: `core/include/coral_network_implementation.h:212-215, 232-235`
   - Modify slog_info calls to show both `node_id` and `qualified_id`
 
-- [ ] **CHECKPOINT:** Build + run tests
+- [x] **CHECKPOINT:** Build + run tests ✅
 
 ### Step 4: Update all test JSON files
 - [ ] **Task 4.1:** Add `qualified_id` to all test files in `test_files/` directory
@@ -208,6 +208,20 @@ Add a `qualified_id` field to node JSON serialization for human-readable identif
 - **Problem:** User could legitimately name qualified_id like "my_auto_script" causing incorrect filtering
 - **Solution:** Track auto-generated IDs explicitly in `std::set<std::string> auto_generated_qualified_ids`
 - **Benefits:** Robust, no reliance on string patterns, clear intent
+
+**Step 3 Implementation (Completed):**
+- Modified `execute_node_task` to use qualified_id for touch file names (coral_network_implementation.h:207-239)
+- Updated all log messages to display both `node_id` and `qualified_id` in format: "Node <id> [<qualified_id>]: ..."
+- Touch files now created with qualified_id as filename (e.g., "12_3.running", "0.succeeded")
+- Updated `verify_status_files` test helper function to look for touch files using qualified_id (backends/dealii/tests/modules.cc:48-82)
+- All tests passing ✅
+
+**Implementation Details:**
+- Line 210: Get qualified_id at start of execute_node_task
+- Lines 212-215: Updated "Start running node" log to include qualified_id
+- Lines 216, 227, 237: Changed touch_file calls from std::to_string(node_id) to qualified_id
+- Lines 232-235: Updated "Finished executing node" log to include qualified_id
+- Test fix: verify_status_files now constructs file paths using network.get_node_qualified_id(node_id)
 
 ---
 

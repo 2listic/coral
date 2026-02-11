@@ -6,6 +6,7 @@
 
 #include "coral.h"
 #include "register_types.h"
+#include "test_utils.h"
 
 using namespace dealii;
 using namespace coral;
@@ -39,6 +40,8 @@ TEST(Serialize, Point)
 
 TEST(Serialize, Triangulation)
 {
+  coral_test::ScopedTestOutputDir output_dir("Serialize_Triangulation");
+
   using type = Triangulation<2>;
   NodeObject::register_type<type>();
   NodeObjectPtr obj = make_node<type>();
@@ -60,7 +63,7 @@ TEST(Serialize, Triangulation)
   ASSERT_NE(&obj->get<type>(), &obj2->get<type>());
 
   // Dump the json to a file
-  std::ofstream ofs("triangulation.json");
+  std::ofstream ofs(output_dir.path() / "triangulation.json");
   ofs << j.dump(2);
   ofs.close();
 }

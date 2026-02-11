@@ -209,13 +209,13 @@ namespace coral
                              const NodeObjectPtr &node,
                              const std::string   &node_name)
   {
-    slog_info("Start running node %u: %s (type = %s)",
+    const std::string qualified_id = get_node_qualified_id(node_id);
+    slog_info("Start running node %u [%s]: %s (type = %s)",
               node_id,
+              qualified_id.c_str(),
               node_name.c_str(),
               node->type_name().c_str());
-    touch_file(touch_file_base_path,
-               std::to_string(node_id),
-               TouchMode::Running);
+    touch_file(touch_file_base_path, qualified_id, TouchMode::Running);
     try
       {
         refresh_dynamic_inputs(node_id);
@@ -223,19 +223,16 @@ namespace coral
       }
     catch (const std::exception &e)
       {
-        touch_file(touch_file_base_path,
-                   std::to_string(node_id),
-                   TouchMode::Failed);
-        throw std::runtime_error("Node " + std::to_string(node_id) +
-                                 " failed: " + e.what());
+        touch_file(touch_file_base_path, qualified_id, TouchMode::Failed);
+        throw std::runtime_error("Node " + std::to_string(node_id) + " [" +
+                                 qualified_id + "] failed: " + e.what());
       }
-    slog_info("Node %u: %s (type = %s) run",
+    slog_info("Node %u [%s]: %s (type = %s) run",
               node_id,
+              qualified_id.c_str(),
               node_name.c_str(),
               node->type_name().c_str());
-    touch_file(touch_file_base_path,
-               std::to_string(node_id),
-               TouchMode::Succeeded);
+    touch_file(touch_file_base_path, qualified_id, TouchMode::Succeeded);
   }
 
 
