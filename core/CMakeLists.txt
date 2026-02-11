@@ -32,6 +32,27 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     -Wno-array-bounds -Wno-uninitialized -Wno-self-assign-overloaded)
 endif()
 
+# Main CLI (loads backend plugins, dumps registries, runs graphs).
+# Main CLI (loads backend plugins, dumps registries, runs graphs).
+add_executable(coral
+  source/backend_main.cc)
+
+target_compile_features(coral PRIVATE cxx_std_17)
+target_link_libraries(coral PRIVATE coral_core)
+
+# Keep build output warning-free by default.
+if(MSVC)
+  target_compile_options(coral PRIVATE /W0)
+else()
+  target_compile_options(coral PRIVATE -w)
+endif()
+
+if(APPLE)
+  # dlopen is in libSystem on macOS.
+elseif(UNIX)
+  target_link_libraries(coral PRIVATE dl)
+endif()
+
 # Keep build output warning-free by default.
 if(MSVC)
   target_compile_options(coral_core PRIVATE /W0)

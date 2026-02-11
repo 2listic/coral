@@ -123,23 +123,22 @@ and/or by dumping a `registry.json` for UI authoring.
 
 - `core/`
   - `core/include/`: CORAL public headers (NodeObject, Network, JSON, etc.)
-  - `core/src/`: CORAL implementation
+  - `core/source/`: CORAL core implementation + CLI sources
   - `core/include/coral_plugin.h`: minimal C ABI that backend plugins export
 - `backends/`
   - `backends/dealii/`: one backend implementation (deal.II)
-    - `backends/dealii/src/backend_main.cc`: backend CLI (`dealii_backend`)
     - `backends/dealii/src/plugin_dealii.cc`: backend plugin (`coral_backend_dealii`)
     - `backends/dealii/include/register_types.h`: deal.II type registration
     - `backends/dealii/tests/`: backend-specific gtests
-  - `tools/src/coral_dump_registry.cc`: helper to dump a registry from a plugin
+  - `core/source/backend_main.cc`: main CLI (`coral`)
 
 ## Build System (CMake)
 
 The top-level `CMakeLists.txt` composes independent subprojects:
 
 - `coral_core` (always): the core library under `core/`
-- `coral_backend_dealii` + `dealii_backend`: deal.II backend plugin + CLI under `backends/dealii/`
-- `coral_dump_registry`: tool under `tools/`
+- `coral_backend_dealii`: deal.II backend plugin under `backends/dealii/`
+- `coral`: main CLI under `core/`
 
 ### Options
 
@@ -147,7 +146,6 @@ These options are enabled by default:
 
 - `CORAL_BUILD_BACKEND_DEALII=ON` (auto-skips if `deal.II` is not found)
 - `CORAL_BUILD_TESTS=ON`
-- `CORAL_BUILD_TOOLS=ON`
 
 Example:
 
@@ -208,11 +206,11 @@ backend dependencies:
 
 ### Dump a registry from a plugin
 
-Use `coral_dump_registry` (built under `tools/`) to load a plugin and write the
+Use `coral register` (built under `core/`) to load a plugin and write the
 registry JSON:
 
 ```bash
-./build/tools/coral_dump_registry ./build/backends/dealii/libcoral_backend_dealii.(dylib|so|dll) registry.json
+./build/core/coral --plugin ./build/backends/dealii/libcoral_backend_dealii.(dylib|so|dll) register registry.json
 ```
 
 ## Tests
@@ -490,7 +488,7 @@ A typical workflow using CORAL involves:
 
 ## Prectical Usage
 
-The program `dealii_backend.g` has two subcommands:
+The program `coral` has two subcommands (both require `--plugin <path>`):
 
 - `register [register_path]`: simply register all types and dump them to
 `register_path`, a json file which defaults to `node_types.json`.
@@ -500,6 +498,7 @@ in the json file `input_json`. The options are:
     defaults to `nodes_type.json`;
   - `--graph [graph_path]`: dump the dot file of the network to `graph_path`,
     which defaults to `network.dot`.
+  - `--plugin <path>`: path to the backend plugin to load.
 
 Of course `-h` or `--help` to get a usage guide.
 

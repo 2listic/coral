@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 
 project(coral LANGUAGES C CXX)
 
-option(CORAL_BUILD_TOOLS "Build small CLI tools." ON)
 option(CORAL_BUILD_BACKEND_DEALII "Build the deal.II backend (plugin + CLI)." ON)
 option(CORAL_BUILD_TESTS "Build tests (backend-specific where applicable)." ON)
 option(CORAL_BUILD_SHARED_CORE "Build coral_core as a shared library (recommended for plugins)." ON)
@@ -21,10 +20,6 @@ if(CORAL_BUILD_TESTS)
 endif()
 
 add_subdirectory(core)
-
-if(CORAL_BUILD_TOOLS)
-  add_subdirectory(tools)
-endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
