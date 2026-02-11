@@ -25,54 +25,13 @@
 var NAVTREE =
 [
   [ "Coral backend", "index.html", [
-    [ "CORAL - Computational Object-oriented Representation And Library", "index.html", "index" ],
-    [ "Namespaces", "namespaces.html", [
-      [ "Namespace List", "namespaces.html", "namespaces_dup" ],
-      [ "Namespace Members", "namespacemembers.html", [
-        [ "All", "namespacemembers.html", null ],
-        [ "Functions", "namespacemembers_func.html", null ],
-        [ "Typedefs", "namespacemembers_type.html", null ],
-        [ "Enumerations", "namespacemembers_enum.html", null ]
-      ] ]
-    ] ],
-    [ "Classes", "annotated.html", [
-      [ "Class List", "annotated.html", "annotated_dup" ],
-      [ "Class Index", "classes.html", null ],
-      [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],
-      [ "Class Members", "functions.html", [
-        [ "All", "functions.html", null ],
-        [ "Functions", "functions_func.html", null ],
-        [ "Variables", "functions_vars.html", null ],
-        [ "Typedefs", "functions_type.html", null ],
-        [ "Related Symbols", "functions_rela.html", null ]
-      ] ]
-    ] ],
-    [ "Files", "files.html", [
-      [ "File List", "files.html", "files_dup" ],
-      [ "File Members", "globals.html", [
-        [ "All", "globals.html", null ],
-        [ "Functions", "globals_func.html", null ],
-        [ "Typedefs", "globals_type.html", null ],
-        [ "Macros", "globals_defs.html", null ]
-      ] ]
-    ] ]
+    [ "CORAL - Computational Object-oriented Representation And Library", "index.html", "index" ]
   ] ]
 ];
 
 var NAVTREEINDEX =
 [
-"annotated.html",
-"classcoral_1_1_node_object.html#a7add7f32e9004f1798650b72b2f62023",
-"group__constraints.html#ga7fad61d8ca271f193156cb9ca9d935cb",
-"namespaceDoFRenumbering.html#a126f17ce3959e408e25dfacaef517273",
-"namespaceGridGenerator.html#a1cef2def7a0b1ce88eef4ec630b1e3b8",
-"namespaceLineMinimization.html#a6a3f8244b6b9ddb1ec7c1942553317ce",
-"namespaceOpenCASCADE.html#acb3e8e294b26a9d1122739fb6c05bf39",
-"namespaceUtilities.html#a21aa22d290ce783e37587b6c879b926c",
-"namespaceVectorTools.html#a69967cb7a148a7169963126249213db1a485d4198c1f422388b80cadb98af1f27",
-"namespaceinternal.html#a6744b8db8bc54f65a0e3c1e1faf6090c",
-"namespaceinternal_1_1SolverGMRESImplementation.html#acb781ceeb479b45b7b152adf92cd9fe3",
-"structPETScWrappers_1_1SolverTFQMR_1_1AdditionalData.html"
+"index.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

@@ -114,7 +114,6 @@ var searchData=
   ['tuple_2eh_111',['tuple.h',['http://www.dealii.org/developer/doxygen/deal.II/tuple_8h.html',1,'']]],
   ['tutorial_2eh_112',['tutorial.h',['http://www.dealii.org/developer/doxygen/deal.II/tutorial_8h.html',1,'']]],
   ['two_5fphase_5fflow_2eh_113',['two_phase_flow.h',['http://www.dealii.org/developer/doxygen/deal.II/two__phase__flow_8h.html',1,'']]],
-  ['type_5fname_2eh_114',['type_name.h',['../type__name_8h.html',1,'']]],
-  ['type_5ftraits_2eh_115',['type_traits.h',['http://www.dealii.org/developer/doxygen/deal.II/base_2std__cxx20_2type__traits_8h.html',1,'(Global Namespace)'],['http://www.dealii.org/developer/doxygen/deal.II/matrix__free_2type__traits_8h.html',1,'(Global Namespace)']]],
-  ['types_2eh_116',['types.h',['http://www.dealii.org/developer/doxygen/deal.II/types_8h.html',1,'']]]
+  ['type_5ftraits_2eh_114',['type_traits.h',['http://www.dealii.org/developer/doxygen/deal.II/base_2std__cxx20_2type__traits_8h.html',1,'(Global Namespace)'],['http://www.dealii.org/developer/doxygen/deal.II/matrix__free_2type__traits_8h.html',1,'(Global Namespace)']]],
+  ['types_2eh_115',['types.h',['http://www.dealii.org/developer/doxygen/deal.II/types_8h.html',1,'']]]
 ];

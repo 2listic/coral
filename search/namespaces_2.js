@@ -8,7 +8,5 @@ var searchData=
   ['colorenriched_5',['ColorEnriched',['http://www.dealii.org/developer/doxygen/deal.II/namespaceColorEnriched.html',1,'']]],
   ['colorenriched_3a_3ainternal_6',['internal',['http://www.dealii.org/developer/doxygen/deal.II/namespaceColorEnriched_1_1internal.html',1,'ColorEnriched']]],
   ['concepts_7',['concepts',['http://www.dealii.org/developer/doxygen/deal.II/namespaceconcepts.html',1,'']]],
-  ['concepts_3a_3ainternal_8',['internal',['http://www.dealii.org/developer/doxygen/deal.II/namespaceconcepts_1_1internal.html',1,'concepts']]],
-  ['coral_9',['coral',['../namespacecoral.html',1,'']]],
-  ['coral_3a_3adetail_10',['detail',['../namespacecoral_1_1detail.html',1,'coral']]]
+  ['concepts_3a_3ainternal_8',['internal',['http://www.dealii.org/developer/doxygen/deal.II/namespaceconcepts_1_1internal.html',1,'concepts']]]
 ];

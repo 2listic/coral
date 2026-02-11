@@ -177,6 +177,96 @@ Type Registration System</h1>
 <li><b>register_function</b>: For free functions</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md9"></a>
+Repository Layout</h1>
+<p>The codebase is intentionally split so the <b>core graph library</b> can be built without any particular “backend” (e.g. deal.II), and UIs can be built without linking backend types. Backends provide types at runtime via a small plugin ABI and/or by dumping a <code>registry.json</code> for UI authoring.</p>
+<h2><a class="anchor" id="autotoc_md10"></a>
+Top-level directories</h2>
+<ul>
+<li><code>core/</code><ul>
+<li><code>core/include/</code>: CORAL public headers (NodeObject, Network, JSON, etc.)</li>
+<li><code>core/source/</code>: CORAL core implementation + CLI sources</li>
+<li><code>core/include/coral_plugin.h</code>: minimal C ABI that backend plugins export</li>
+</ul>
+</li>
+<li><code>backends/</code><ul>
+<li><code>backends/dealii/</code>: one backend implementation (deal.II)<ul>
+<li><code>backends/dealii/src/plugin_dealii.cc</code>: backend plugin (<code>coral_backend_dealii</code>)</li>
+<li><code>backends/dealii/include/register_types.h</code>: deal.II type registration</li>
+<li><code>backends/dealii/tests/</code>: backend-specific gtests</li>
+</ul>
+</li>
+<li><code>core/source/backend_main.cc</code>: main CLI (<code>coral</code>)</li>
+</ul>
+</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md11"></a>
+Build System (CMake)</h1>
+<p>The top-level <code>CMakeLists.txt</code> composes independent subprojects:</p>
+<ul>
+<li><code>coral_core</code> (always): the core library under <code>core/</code></li>
+<li><code>coral_backend_dealii</code>: deal.II backend plugin under <code>backends/dealii/</code></li>
+<li><code>coral</code>: main CLI under <code>core/</code></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md12"></a>
+Options</h2>
+<p>These options are enabled by default:</p>
+<ul>
+<li><code>CORAL_BUILD_BACKEND_DEALII=ON</code> (auto-skips if <code>deal.II</code> is not found)</li>
+<li><code>CORAL_BUILD_TESTS=ON</code></li>
+</ul>
+<p>Example:</p>
+<div class="fragment"><div class="line">cmake -S . -B build -DCMAKE_BUILD_TYPE=Release</div>
+<div class="line">cmake --build build -j 8</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md13"></a>
+Warning-free builds</h2>
+<p>External libraries (and translation units that include a lot of external headers, such as deal.II-heavy code) are built with warnings disabled to keep output clean by default.</p>
+<h1><a class="anchor" id="autotoc_md14"></a>
+Backend Plugins and Registries</h1>
+<p>CORAL “registration” is backend-specific: a backend is responsible for calling <code>coral::NodeObject::register_*</code> for its own node types.</p>
+<h2><a class="anchor" id="autotoc_md15"></a>
+Creating a new plugin</h2>
+<p>To add a new backend plugin (e.g. <code>my_backend</code>), create a new subdirectory and provide two pieces: (1) a normal C++ registration function that calls <code>coral::NodeObject::register_*</code>, and (2) a shared library that exports the CORAL plugin ABI from <code>core/include/coral_plugin.h</code>.</p>
+<p>Suggested layout:</p>
+<ul>
+<li><code>backends/my_backend/include/register_types.h</code> (declares <code>void register_types();</code>)</li>
+<li><code>backends/my_backend/src/register_types.cc</code> (implements <code>register_types()</code>)</li>
+<li><code>backends/my_backend/src/plugin_my_backend.cc</code> (exports the plugin ABI)</li>
+<li><code>backends/my_backend/CMakeLists.txt</code> (builds the shared library target)</li>
+</ul>
+<p>Minimal plugin entry points (<code>backends/my_backend/src/plugin_my_backend.cc</code>):</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &quot;coral_plugin.h&quot;</span></div>
+<div class="line"><span class="preprocessor">#include &quot;register_types.h&quot;</span></div>
+<div class="line"> </div>
+<div class="line">CORAL_PLUGIN_EXPORT <span class="keywordtype">void</span></div>
+<div class="line">coral_backend_register_types()</div>
+<div class="line">{</div>
+<div class="line">  register_types();</div>
+<div class="line">}</div>
+<div class="line"> </div>
+<div class="line">CORAL_PLUGIN_EXPORT <span class="keyword">const</span> <span class="keywordtype">char</span> *</div>
+<div class="line">coral_backend_name()</div>
+<div class="line">{</div>
+<div class="line">  <span class="keywordflow">return</span> <span class="stringliteral">&quot;my_backend&quot;</span>;</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>CMake should build a shared library and link it against <code>coral_core</code> plus any backend dependencies:</p>
+<ul>
+<li><code>add_library(coral_backend_my_backend SHARED ...)</code></li>
+<li><code>target_link_libraries(coral_backend_my_backend PRIVATE coral_core ...)</code></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md16"></a>
+Dump a registry from a plugin</h2>
+<p>Use <code>coral register</code> (built under <code>core/</code>) to load a plugin and write the registry JSON:</p>
+<div class="fragment"><div class="line">./build/core/coral --plugin ./build/backends/dealii/libcoral_backend_dealii.(dylib|so|dll) register registry.json</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md17"></a>
+Tests</h1>
+<p>Core tests live in <code>core/tests/</code>. Backend-specific tests live next to the backend (<code>backends/dealii/tests/</code>). Instead of using <code>ctest</code>, the build provides a fast path to run the gtest executable directly:</p>
+<div class="fragment"><div class="line">cmake --build build --target run_dealii_backend_tests</div>
+</div><!-- fragment --><p>Run core tests:</p>
+<div class="fragment"><div class="line">cmake --build build --target run_coral_core_tests</div>
+</div><!-- fragment --><p>Or run the binary yourself:</p>
+<div class="fragment"><div class="line">./build/backends/dealii/tests/dealii_backend_tests</div>
+</div><!-- fragment --><div class="fragment"><div class="line">./build/core/tests/coral_core_tests</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md18"></a>
 Execution Model</h1>
 <p>The execution model is based on the Taskflow library:</p>
 <ol type="1">
@@ -185,7 +275,7 @@ Execution Model</h1>
 <li>When execution is requested, tasks are run in the correct order (potentially in parallel)</li>
 <li>Results flow through the network as tasks complete</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md10"></a>
+<h1><a class="anchor" id="autotoc_md19"></a>
 JSON Serialization</h1>
 <p>The library provides comprehensive JSON serialization for:</p>
 <ul>
@@ -195,75 +285,69 @@ JSON Serialization</h1>
 <li>Method and function registrations</li>
 </ul>
 <p>This enables workflows to be saved, loaded, and shared between applications.</p>
-<h1><a class="anchor" id="autotoc_md11"></a>
+<h1><a class="anchor" id="autotoc_md20"></a>
 API Reference (User-Facing)</h1>
 <p>This section lists the public entry points, grouped by class and purpose. Each entry is shown with a short example. All symbols are referenced with their fully qualified names for Doxygen navigation.</p>
-<h2><a class="anchor" id="autotoc_md12"></a>
+<h2><a class="anchor" id="autotoc_md21"></a>
 NodeObject (core node API)</h2>
-<h3><a class="anchor" id="autotoc_md13"></a>
+<h3><a class="anchor" id="autotoc_md22"></a>
 Construction and helpers</h3>
 <ul>
-<li><a class="el" href="namespacecoral.html#a9426e4a0f9f090e55049bfba670e3c16">coral::make_node</a> (value or type)</li>
-<li><a class="el" href="namespacecoral.html#a4fbf4f7d71920aa426067eb4c3a219e5">coral::make_method_node</a> (function or method)</li>
+<li>coral::make_node (value or type)</li>
+<li>coral::make_method_node (function or method)</li>
 </ul>
-<div class="fragment"><div class="line"><a class="code hl_typedef" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">coral::NodeObjectPtr</a> a = <a class="code hl_function" href="namespacecoral.html#aed92ee9769d9710df9eb7e1a33fe21df">coral::make_node</a>(42);</div>
-<div class="line"><a class="code hl_typedef" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">coral::NodeObjectPtr</a> <a class="code hl_functionRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespacePhysics_1_1Elasticity_1_1Kinematics.html#a85ec995f892fbfa61268d84cbe2fefea">b</a> = <a class="code hl_function" href="namespacecoral.html#aed92ee9769d9710df9eb7e1a33fe21df">coral::make_node&lt;std::string&gt;</a>();</div>
+<div class="fragment"><div class="line">coral::NodeObjectPtr a = coral::make_node(42);</div>
+<div class="line">coral::NodeObjectPtr <a class="code hl_functionRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespacePhysics_1_1Elasticity_1_1Kinematics.html#a85ec995f892fbfa61268d84cbe2fefea">b</a> = coral::make_node&lt;std::string&gt;();</div>
 <div class="line"><span class="keyword">auto</span> sum = [](<span class="keywordtype">int</span> x, <span class="keywordtype">int</span> y) { <span class="keywordflow">return</span> x + y; };</div>
-<div class="line"><a class="code hl_typedef" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">coral::NodeObjectPtr</a> f = <a class="code hl_function" href="namespacecoral.html#a4fbf4f7d71920aa426067eb4c3a219e5">coral::make_method_node</a>(<span class="stringliteral">&quot;sum_ints&quot;</span>, sum);</div>
+<div class="line">coral::NodeObjectPtr f = coral::make_method_node(<span class="stringliteral">&quot;sum_ints&quot;</span>, sum);</div>
 <div class="ttc" id="anamespacePhysics_1_1Elasticity_1_1Kinematics_html_a85ec995f892fbfa61268d84cbe2fefea"><div class="ttname"><a href="http://www.dealii.org/developer/doxygen/deal.II/namespacePhysics_1_1Elasticity_1_1Kinematics.html#a85ec995f892fbfa61268d84cbe2fefea">b</a></div><div class="ttdeci">SymmetricTensor&lt; 2, dim, Number &gt; b(const Tensor&lt; 2, dim, Number &gt; &amp;F)</div></div>
-<div class="ttc" id="anamespacecoral_html_a4fbf4f7d71920aa426067eb4c3a219e5"><div class="ttname"><a href="namespacecoral.html#a4fbf4f7d71920aa426067eb4c3a219e5">coral::make_method_node</a></div><div class="ttdeci">auto make_method_node(const std::string &amp;method_name, Arg &amp;&amp;) -&gt; NodeObjectPtr</div><div class="ttdoc">Construct a pointer to a NodeObject for a named method.</div><div class="ttdef"><b>Definition</b> <a href="coral_8h_source.html#l00259">coral.h:259</a></div></div>
-<div class="ttc" id="anamespacecoral_html_adb673966abf56ec47b2c826e992c4d7f"><div class="ttname"><a href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">coral::NodeObjectPtr</a></div><div class="ttdeci">std::shared_ptr&lt; NodeObject &gt; NodeObjectPtr</div><div class="ttdef"><b>Definition</b> <a href="coral_8h_source.html#l00045">coral.h:45</a></div></div>
-<div class="ttc" id="anamespacecoral_html_aed92ee9769d9710df9eb7e1a33fe21df"><div class="ttname"><a href="namespacecoral.html#aed92ee9769d9710df9eb7e1a33fe21df">coral::make_node</a></div><div class="ttdeci">auto make_node() -&gt; NodeObjectPtr</div><div class="ttdoc">Construct a pointer to a NodeObject from a type T.</div><div class="ttdef"><b>Definition</b> <a href="coral_8h_source.html#l00247">coral.h:247</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md14"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md23"></a>
 Execution and value access</h3>
 <ul>
-<li><a class="el" href="classcoral_1_1_node_object.html#af5dcaf072f2167c934fbfa9669c9b489">coral::NodeObject::operator()()</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#add0d5cdb14f4b245ad4e15639d6c00d7">coral::NodeObject::ready</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#ad80f68f0485fcf05e7319e5fdb2a2723">coral::NodeObject::get</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a036d508f2c176e0068e14f88cbd4c8f3">coral::NodeObject::get_shared</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a96668d8c5e52b7ebf51c0bff77594eae">coral::NodeObject::parse_string</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a1ee0bddd5356aaad2777fad91228f18d">coral::NodeObject::to_string</a></li>
+<li>coral::NodeObject::operator()()</li>
+<li>coral::NodeObject::ready</li>
+<li>coral::NodeObject::get</li>
+<li>coral::NodeObject::get_shared</li>
+<li>coral::NodeObject::parse_string</li>
+<li>coral::NodeObject::to_string</li>
 </ul>
-<div class="fragment"><div class="line"><a class="code hl_function" href="classcoral_1_1_node_object.html#add7659cd4922486187670cc61d3a78ef">coral::NodeObject::register_elementary_type&lt;int&gt;</a>();</div>
-<div class="line"><a class="code hl_typedef" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">coral::NodeObjectPtr</a> n = <a class="code hl_function" href="namespacecoral.html#aed92ee9769d9710df9eb7e1a33fe21df">coral::make_node</a>(7);</div>
+<div class="fragment"><div class="line">coral::NodeObject::register_elementary_type&lt;int&gt;();</div>
+<div class="line">coral::NodeObjectPtr n = coral::make_node(7);</div>
 <div class="line"><span class="keywordflow">if</span> (n-&gt;ready())</div>
 <div class="line">  (void)(*n)();</div>
 <div class="line"><span class="keywordtype">int</span> value = n-&gt;get&lt;<span class="keywordtype">int</span>&gt;();</div>
 <div class="line"><span class="keyword">auto</span> ptr = n-&gt;get_shared&lt;<span class="keywordtype">int</span>&gt;();</div>
 <div class="line">std::string as_text = n-&gt;to_string();</div>
 <div class="line">n-&gt;parse_string(<span class="stringliteral">&quot;8&quot;</span>);</div>
-<div class="ttc" id="aclasscoral_1_1_node_object_html_add7659cd4922486187670cc61d3a78ef"><div class="ttname"><a href="classcoral_1_1_node_object.html#add7659cd4922486187670cc61d3a78ef">coral::NodeObject::register_elementary_type</a></div><div class="ttdeci">static auto register_elementary_type() -&gt; detail::NodeObjectInitializer &amp;</div><div class="ttdoc">Register an elementary type.</div><div class="ttdef"><b>Definition</b> <a href="coral_8h_source.html#l00622">coral.h:622</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md15"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md24"></a>
 Wiring: inputs and outputs</h3>
 <ul>
-<li><a class="el" href="classcoral_1_1_node_object.html#af2092c1f57c192b8ef396c3f6e26c7b1">coral::NodeObject::get_input</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#ae07955cdffb99375af36a56c7cded9ad">coral::NodeObject::get_output</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a382eac800def61aef59e707441145f78">coral::NodeObject::bind_input</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a88cb6eff7c89531ee8c76f268d51f649">coral::NodeObject::bind_output</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a6728ac293911e6e5a8b5aa126f8c4a5e">coral::NodeObject::bind_inputs</a></li>
-<li><a class="el" href="namespacecoral.html#a7431aba48f81b14d34f0e28f7529b96c">coral::connect</a></li>
+<li>coral::NodeObject::get_input</li>
+<li>coral::NodeObject::get_output</li>
+<li>coral::NodeObject::bind_input</li>
+<li>coral::NodeObject::bind_output</li>
+<li>coral::NodeObject::bind_inputs</li>
+<li>coral::connect</li>
 </ul>
 <div class="fragment"><div class="line"><span class="keyword">auto</span> add = [](<span class="keywordtype">int</span> a, <span class="keywordtype">int</span> <a class="code hl_functionRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespacePhysics_1_1Elasticity_1_1Kinematics.html#a85ec995f892fbfa61268d84cbe2fefea">b</a>) { <span class="keywordflow">return</span> a + <a class="code hl_functionRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespacePhysics_1_1Elasticity_1_1Kinematics.html#a85ec995f892fbfa61268d84cbe2fefea">b</a>; };</div>
-<div class="line"><a class="code hl_function" href="classcoral_1_1_node_object.html#a7add7f32e9004f1798650b72b2f62023">coral::NodeObject::register_function</a>(add, {<span class="stringliteral">&quot;add_ints&quot;</span>, <span class="stringliteral">&quot;sum&quot;</span>, <span class="stringliteral">&quot;a&quot;</span>, <span class="stringliteral">&quot;b&quot;</span>});</div>
-<div class="line"><a class="code hl_typedef" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">coral::NodeObjectPtr</a> add_node = <a class="code hl_function" href="namespacecoral.html#a4fbf4f7d71920aa426067eb4c3a219e5">coral::make_method_node</a>(<span class="stringliteral">&quot;add_ints&quot;</span>, add);</div>
-<div class="line"><a class="code hl_typedef" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">coral::NodeObjectPtr</a> a = <a class="code hl_function" href="namespacecoral.html#aed92ee9769d9710df9eb7e1a33fe21df">coral::make_node</a>(1);</div>
-<div class="line"><a class="code hl_typedef" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">coral::NodeObjectPtr</a> <a class="code hl_functionRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespacePhysics_1_1Elasticity_1_1Kinematics.html#a85ec995f892fbfa61268d84cbe2fefea">b</a> = <a class="code hl_function" href="namespacecoral.html#aed92ee9769d9710df9eb7e1a33fe21df">coral::make_node</a>(2);</div>
-<div class="line"><a class="code hl_typedef" href="namespacecoral.html#adb673966abf56ec47b2c826e992c4d7f">coral::NodeObjectPtr</a> out = <a class="code hl_function" href="namespacecoral.html#aed92ee9769d9710df9eb7e1a33fe21df">coral::make_node</a>(0);</div>
+<div class="line">coral::NodeObject::register_function(add, {<span class="stringliteral">&quot;add_ints&quot;</span>, <span class="stringliteral">&quot;sum&quot;</span>, <span class="stringliteral">&quot;a&quot;</span>, <span class="stringliteral">&quot;b&quot;</span>});</div>
+<div class="line">coral::NodeObjectPtr add_node = coral::make_method_node(<span class="stringliteral">&quot;add_ints&quot;</span>, add);</div>
+<div class="line">coral::NodeObjectPtr a = coral::make_node(1);</div>
+<div class="line">coral::NodeObjectPtr <a class="code hl_functionRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespacePhysics_1_1Elasticity_1_1Kinematics.html#a85ec995f892fbfa61268d84cbe2fefea">b</a> = coral::make_node(2);</div>
+<div class="line">coral::NodeObjectPtr out = coral::make_node(0);</div>
 <div class="line">add_node-&gt;bind_input(0, a);</div>
 <div class="line">add_node-&gt;bind_input(1, <a class="code hl_functionRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespacePhysics_1_1Elasticity_1_1Kinematics.html#a85ec995f892fbfa61268d84cbe2fefea">b</a>);</div>
 <div class="line">add_node-&gt;bind_output(0, out);</div>
-<div class="line"><a class="code hl_function" href="namespacecoral.html#a7431aba48f81b14d34f0e28f7529b96c">coral::connect</a>(add_node, {{a, 0}, {<a class="code hl_functionRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespacePhysics_1_1Elasticity_1_1Kinematics.html#a85ec995f892fbfa61268d84cbe2fefea">b</a>, 0}});</div>
-<div class="ttc" id="aclasscoral_1_1_node_object_html_a7add7f32e9004f1798650b72b2f62023"><div class="ttname"><a href="classcoral_1_1_node_object.html#a7add7f32e9004f1798650b72b2f62023">coral::NodeObject::register_function</a></div><div class="ttdeci">static void register_function(std::function&lt; ReturnType(Args...)&gt; ptr, std::vector&lt; std::string &gt; arg_names)</div><div class="ttdoc">Register a free function.</div><div class="ttdef"><b>Definition</b> <a href="coral_8h_source.html#l01008">coral.h:1008</a></div></div>
-<div class="ttc" id="anamespacecoral_html_a7431aba48f81b14d34f0e28f7529b96c"><div class="ttname"><a href="namespacecoral.html#a7431aba48f81b14d34f0e28f7529b96c">coral::connect</a></div><div class="ttdeci">void connect(NodeObjectPtr &amp;node, const std::vector&lt; std::pair&lt; NodeObjectPtr, unsigned int &gt; &gt; &amp;inputs={})</div><div class="ttdoc">Connect the inputs of a node.</div><div class="ttdef"><b>Definition</b> <a href="coral__implementation_8h_source.html#l00902">coral_implementation.h:902</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md16"></a>
+<div class="line">coral::connect(add_node, {{a, 0}, {<a class="code hl_functionRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespacePhysics_1_1Elasticity_1_1Kinematics.html#a85ec995f892fbfa61268d84cbe2fefea">b</a>, 0}});</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md25"></a>
 Binding state and topology queries</h3>
 <ul>
-<li><a class="el" href="classcoral_1_1_node_object.html#a3db12e74b8b1da243f810ddfd2bbcbfa">coral::NodeObject::is_bindable</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a93cb167eacbe86f23b4fb1c8e7236ebe">coral::NodeObject::is_input_bound</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a09ba5f2a22f66ee9c8973783598e5ef9">coral::NodeObject::is_output_bound</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a07c74845d298cd00292ef4f624d144df">coral::NodeObject::is_passthrough_input</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#ad098db6e321700ea6f9838abe787a42d">coral::NodeObject::has_unbound_inputs</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a00b346944530b1f9af5ee0caeef16053">coral::NodeObject::has_unbound_outputs</a></li>
+<li>coral::NodeObject::is_bindable</li>
+<li>coral::NodeObject::is_input_bound</li>
+<li>coral::NodeObject::is_output_bound</li>
+<li>coral::NodeObject::is_passthrough_input</li>
+<li>coral::NodeObject::has_unbound_inputs</li>
+<li>coral::NodeObject::has_unbound_outputs</li>
 </ul>
 <div class="fragment"><div class="line"><span class="keywordtype">bool</span> can_bind = add_node-&gt;is_bindable(0);</div>
 <div class="line"><span class="keywordtype">bool</span> in0 = add_node-&gt;is_input_bound(0);</div>
@@ -271,152 +355,125 @@ Binding state and topology queries</h3>
 <div class="line"><span class="keywordtype">bool</span> pass0 = add_node-&gt;is_passthrough_input(0);</div>
 <div class="line"><span class="keywordtype">bool</span> any_in = add_node-&gt;has_unbound_inputs();</div>
 <div class="line"><span class="keywordtype">bool</span> any_out = add_node-&gt;has_unbound_outputs();</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md17"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md26"></a>
 Introspection and serialization</h3>
 <ul>
-<li><a class="el" href="classcoral_1_1_node_object.html#a6f40e4b4d61e8890e71263d8fba85e17">coral::NodeObject::hash</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a159af08022006355603416ecbbffb8c7">coral::NodeObject::type_name</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#ae091e45472e6eb61e6d2c58571f7de76">coral::NodeObject::node_type</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a8024cf8820916b65bc4cd94309e7c0ed">coral::NodeObject::n_arguments</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#af0719c794fb9a5606ae426da67206cac">coral::NodeObject::n_inputs</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a7068deb4344861ebfa6ec94fb1d5c5ef">coral::NodeObject::n_outputs</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#af5ac9e7d6839550e519b222d86745539">coral::NodeObject::get_info</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a34ba77e19b37e6c30697b5f58283bb15">coral::NodeObject::get_registry</a></li>
+<li>coral::NodeObject::hash</li>
+<li>coral::NodeObject::type_name</li>
+<li>coral::NodeObject::node_type</li>
+<li>coral::NodeObject::n_arguments</li>
+<li>coral::NodeObject::n_inputs</li>
+<li>coral::NodeObject::n_outputs</li>
+<li>coral::NodeObject::get_info</li>
+<li>coral::NodeObject::get_registry</li>
 </ul>
 <div class="fragment"><div class="line">std::string h = n-&gt;hash();</div>
 <div class="line">std::string tn = n-&gt;type_name();</div>
-<div class="line"><a class="code hl_enumeration" href="namespacecoral.html#a28b9a276ed3a04787d899304a5e49536">coral::NodeType</a> kind = n-&gt;node_type();</div>
+<div class="line">coral::NodeType kind = n-&gt;node_type();</div>
 <div class="line"><span class="keywordtype">size_t</span> args = n-&gt;n_arguments();</div>
 <div class="line"><span class="keywordtype">size_t</span> ins = n-&gt;n_inputs();</div>
 <div class="line"><span class="keywordtype">size_t</span> outs = n-&gt;n_outputs();</div>
 <div class="line">nlohmann::json info = n-&gt;get_info();</div>
-<div class="line">nlohmann::json registry = <a class="code hl_function" href="classcoral_1_1_node_object.html#a34ba77e19b37e6c30697b5f58283bb15">coral::NodeObject::get_registry</a>();</div>
-<div class="ttc" id="aclasscoral_1_1_node_object_html_a34ba77e19b37e6c30697b5f58283bb15"><div class="ttname"><a href="classcoral_1_1_node_object.html#a34ba77e19b37e6c30697b5f58283bb15">coral::NodeObject::get_registry</a></div><div class="ttdeci">static auto get_registry() -&gt; json</div><div class="ttdoc">Return the registry of all types known to this class.</div><div class="ttdef"><b>Definition</b> <a href="coral__implementation_8h_source.html#l00044">coral_implementation.h:44</a></div></div>
-<div class="ttc" id="anamespacecoral_html_a28b9a276ed3a04787d899304a5e49536"><div class="ttname"><a href="namespacecoral.html#a28b9a276ed3a04787d899304a5e49536">coral::NodeType</a></div><div class="ttdeci">NodeType</div><div class="ttdoc">The different types of nodes.</div><div class="ttdef"><b>Definition</b> <a href="coral_8h_source.html#l00310">coral.h:311</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md18"></a>
+<div class="line">nlohmann::json registry = coral::NodeObject::get_registry();</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md27"></a>
 Type registration</h3>
 <ul>
-<li><a class="el" href="classcoral_1_1_node_object.html#add7659cd4922486187670cc61d3a78ef">coral::NodeObject::register_elementary_type</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#aacd4aa69ade3f9656fdd2686ac055162">coral::NodeObject::register_type</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a56b0d87fa02e29b03f3fb00ae905dc96">coral::NodeObject::register_abstract_type</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#af6428b19865bbeaad39525d00ad8a5e6">coral::NodeObject::register_derived_type</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a7add7f32e9004f1798650b72b2f62023">coral::NodeObject::register_function</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a95d0a83ddfa8e71943d61fc4cf290275">coral::NodeObject::register_method</a></li>
-<li><a class="el" href="classcoral_1_1_node_object.html#a8801ab634511089107518a67754a79b1">coral::NodeObject::register_json_header</a></li>
+<li>coral::NodeObject::register_elementary_type</li>
+<li>coral::NodeObject::register_type</li>
+<li>coral::NodeObject::register_abstract_type</li>
+<li>coral::NodeObject::register_derived_type</li>
+<li>coral::NodeObject::register_function</li>
+<li>coral::NodeObject::register_method</li>
+<li>coral::NodeObject::register_json_header</li>
 </ul>
-<div class="fragment"><div class="line"><a class="code hl_function" href="classcoral_1_1_node_object.html#add7659cd4922486187670cc61d3a78ef">coral::NodeObject::register_elementary_type&lt;int&gt;</a>();</div>
-<div class="line"><a class="code hl_function" href="classcoral_1_1_node_object.html#aacd4aa69ade3f9656fdd2686ac055162">coral::NodeObject::register_type&lt;dealii::Triangulation&lt;2&gt;</a>&gt;();</div>
+<div class="fragment"><div class="line">coral::NodeObject::register_elementary_type&lt;int&gt;();</div>
+<div class="line">coral::NodeObject::register_type&lt;dealii::Triangulation&lt;2&gt;&gt;();</div>
 <div class="line"><span class="keyword">struct </span>Base {};</div>
 <div class="line"><span class="keyword">struct </span>Derived : Base {};</div>
 <div class="line"><span class="keyword">struct </span>Example</div>
 <div class="line">{</div>
 <div class="line">  <span class="keywordtype">void</span> set_value(<span class="keywordtype">int</span>) {}</div>
 <div class="line">};</div>
-<div class="line"><a class="code hl_function" href="classcoral_1_1_node_object.html#a56b0d87fa02e29b03f3fb00ae905dc96">coral::NodeObject::register_abstract_type&lt;Base&gt;</a>();</div>
-<div class="line"><a class="code hl_function" href="classcoral_1_1_node_object.html#af6428b19865bbeaad39525d00ad8a5e6">coral::NodeObject::register_derived_type&lt;Base, Derived&gt;</a>();</div>
+<div class="line">coral::NodeObject::register_abstract_type&lt;Base&gt;();</div>
+<div class="line">coral::NodeObject::register_derived_type&lt;Base, Derived&gt;();</div>
 <div class="line"><span class="keyword">auto</span> fn = [](<span class="keywordtype">int</span> x) { <span class="keywordflow">return</span> x + 1; };</div>
-<div class="line"><a class="code hl_function" href="classcoral_1_1_node_object.html#a7add7f32e9004f1798650b72b2f62023">coral::NodeObject::register_function</a>(fn, {<span class="stringliteral">&quot;inc_int&quot;</span>, <span class="stringliteral">&quot;out&quot;</span>, <span class="stringliteral">&quot;in&quot;</span>});</div>
-<div class="line"><a class="code hl_function" href="classcoral_1_1_node_object.html#a95d0a83ddfa8e71943d61fc4cf290275">coral::NodeObject::register_method</a>(&amp;Example::set_value,</div>
+<div class="line">coral::NodeObject::register_function(fn, {<span class="stringliteral">&quot;inc_int&quot;</span>, <span class="stringliteral">&quot;out&quot;</span>, <span class="stringliteral">&quot;in&quot;</span>});</div>
+<div class="line">coral::NodeObject::register_method(&amp;Example::set_value,</div>
 <div class="line">                                   {<span class="stringliteral">&quot;set_value&quot;</span>, <span class="stringliteral">&quot;obj&quot;</span>, <span class="stringliteral">&quot;value&quot;</span>});</div>
-<div class="line"><a class="code hl_function" href="classcoral_1_1_node_object.html#a8801ab634511089107518a67754a79b1">coral::NodeObject::register_json_header&lt;int&gt;</a>(<span class="stringliteral">&quot;custom_int&quot;</span>);</div>
-<div class="ttc" id="aclasscoral_1_1_node_object_html_a56b0d87fa02e29b03f3fb00ae905dc96"><div class="ttname"><a href="classcoral_1_1_node_object.html#a56b0d87fa02e29b03f3fb00ae905dc96">coral::NodeObject::register_abstract_type</a></div><div class="ttdeci">static auto register_abstract_type() -&gt; detail::NodeObjectInitializer &amp;</div><div class="ttdoc">Register an abstract type.</div><div class="ttdef"><b>Definition</b> <a href="coral_8h_source.html#l00720">coral.h:720</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_node_object_html_a8801ab634511089107518a67754a79b1"><div class="ttname"><a href="classcoral_1_1_node_object.html#a8801ab634511089107518a67754a79b1">coral::NodeObject::register_json_header</a></div><div class="ttdeci">static auto register_json_header(const std::string &amp;suffix=&quot;&quot;) -&gt; detail::NodeObjectInitializer &amp;</div><div class="ttdoc">Register a new type in the json registry.</div><div class="ttdef"><b>Definition</b> <a href="coral_8h_source.html#l01402">coral.h:1402</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_node_object_html_a95d0a83ddfa8e71943d61fc4cf290275"><div class="ttname"><a href="classcoral_1_1_node_object.html#a95d0a83ddfa8e71943d61fc4cf290275">coral::NodeObject::register_method</a></div><div class="ttdeci">static void register_method(MethodPtr&lt; T, ReturnType, Args... &gt; ptr, std::vector&lt; std::string &gt; arg_names)</div><div class="ttdoc">Register a non-const method of a class.</div><div class="ttdef"><b>Definition</b> <a href="coral_8h_source.html#l00816">coral.h:816</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_node_object_html_aacd4aa69ade3f9656fdd2686ac055162"><div class="ttname"><a href="classcoral_1_1_node_object.html#aacd4aa69ade3f9656fdd2686ac055162">coral::NodeObject::register_type</a></div><div class="ttdeci">static auto register_type(const std::vector&lt; std::string &gt; &amp;arg_names) -&gt; detail::NodeObjectInitializer &amp;</div><div class="ttdoc">Register a non-trivially constructible type T with constructor arguments.</div><div class="ttdef"><b>Definition</b> <a href="coral_8h_source.html#l01532">coral.h:1532</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_node_object_html_af6428b19865bbeaad39525d00ad8a5e6"><div class="ttname"><a href="classcoral_1_1_node_object.html#af6428b19865bbeaad39525d00ad8a5e6">coral::NodeObject::register_derived_type</a></div><div class="ttdeci">static auto register_derived_type() -&gt; detail::NodeObjectInitializer &amp;</div><div class="ttdoc">Register a non-trivially constructible type T derived from type B.</div><div class="ttdef"><b>Definition</b> <a href="coral_8h_source.html#l00740">coral.h:740</a></div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md19"></a>
+<div class="line">coral::NodeObject::register_json_header&lt;int&gt;(<span class="stringliteral">&quot;custom_int&quot;</span>);</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md28"></a>
 Network (graph API)</h2>
-<h3><a class="anchor" id="autotoc_md20"></a>
+<h3><a class="anchor" id="autotoc_md29"></a>
 Construction, mutation, execution</h3>
 <ul>
-<li><a class="el" href="classcoral_1_1_network.html#a95f5fc2bb7480d21ed379e5f06eddd3c">coral::Network::add_node</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#ab40aa2ff5d5fd15b865e91268b883dbb">coral::Network::add_connection</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#ab6fd79c8010c070a3fa0eb0d14afb300">coral::Network::remove_nodes_and_connections</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#a0be0d3a1f7d845200cdd2c283c0cb44d">coral::Network::run</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#a609fcc9deb02115a0e14d5f755d1fe8a">coral::Network::clear_network</a></li>
+<li>coral::Network::add_node</li>
+<li>coral::Network::add_connection</li>
+<li>coral::Network::remove_nodes_and_connections</li>
+<li>coral::Network::run</li>
+<li>coral::Network::clear_network</li>
 </ul>
-<div class="fragment"><div class="line"><a class="code hl_class" href="classcoral_1_1_network.html">coral::Network</a> net;</div>
-<div class="line"><span class="keyword">auto</span> id_a = net.<a class="code hl_function" href="classcoral_1_1_network.html#a95f5fc2bb7480d21ed379e5f06eddd3c">add_node</a>(<a class="code hl_function" href="namespacecoral.html#a9426e4a0f9f090e55049bfba670e3c16">coral::make_node</a>(1.0), <span class="stringliteral">&quot;a&quot;</span>);</div>
-<div class="line"><span class="keyword">auto</span> id_b = net.<a class="code hl_function" href="classcoral_1_1_network.html#a95f5fc2bb7480d21ed379e5f06eddd3c">add_node</a>(<a class="code hl_function" href="namespacecoral.html#a9426e4a0f9f090e55049bfba670e3c16">coral::make_node</a>(2.0), <span class="stringliteral">&quot;b&quot;</span>);</div>
-<div class="line"><span class="keyword">auto</span> id_sum = net.<a class="code hl_function" href="classcoral_1_1_network.html#a95f5fc2bb7480d21ed379e5f06eddd3c">add_node</a>(<a class="code hl_function" href="namespacecoral.html#a4fbf4f7d71920aa426067eb4c3a219e5">coral::make_method_node</a>(<span class="stringliteral">&quot;sum_ints&quot;</span>, sum), <span class="stringliteral">&quot;sum&quot;</span>);</div>
-<div class="line">net.<a class="code hl_function" href="classcoral_1_1_network.html#ab40aa2ff5d5fd15b865e91268b883dbb">add_connection</a>(id_a, id_sum, 0, 0);</div>
-<div class="line">net.<a class="code hl_function" href="classcoral_1_1_network.html#ab40aa2ff5d5fd15b865e91268b883dbb">add_connection</a>(id_b, id_sum, 0, 1);</div>
-<div class="line">net.<a class="code hl_function" href="classcoral_1_1_network.html#a0be0d3a1f7d845200cdd2c283c0cb44d">run</a>();</div>
-<div class="ttc" id="aclasscoral_1_1_network_html"><div class="ttname"><a href="classcoral_1_1_network.html">coral::Network</a></div><div class="ttdoc">Graph of nodes and connections with Taskflow execution.</div><div class="ttdef"><b>Definition</b> <a href="coral__network_8h_source.html#l00046">coral_network.h:47</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_network_html_a0be0d3a1f7d845200cdd2c283c0cb44d"><div class="ttname"><a href="classcoral_1_1_network.html#a0be0d3a1f7d845200cdd2c283c0cb44d">coral::Network::run</a></div><div class="ttdeci">void run()</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l00587">coral_network_implementation.h:587</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_network_html_a95f5fc2bb7480d21ed379e5f06eddd3c"><div class="ttname"><a href="classcoral_1_1_network.html#a95f5fc2bb7480d21ed379e5f06eddd3c">coral::Network::add_node</a></div><div class="ttdeci">void add_node(unsigned int id, const NodeObjectPtr &amp;node, const std::string &amp;node_name=&quot;&quot;)</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l00259">coral_network_implementation.h:259</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_network_html_ab40aa2ff5d5fd15b865e91268b883dbb"><div class="ttname"><a href="classcoral_1_1_network.html#ab40aa2ff5d5fd15b865e91268b883dbb">coral::Network::add_connection</a></div><div class="ttdeci">void add_connection(unsigned int id, const Connection &amp;conn)</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l00328">coral_network_implementation.h:328</a></div></div>
-<div class="ttc" id="anamespacecoral_html_a9426e4a0f9f090e55049bfba670e3c16"><div class="ttname"><a href="namespacecoral.html#a9426e4a0f9f090e55049bfba670e3c16">coral::make_node</a></div><div class="ttdeci">auto make_node(Args &amp;&amp;...args) -&gt; NodeObjectPtr</div><div class="ttdoc">Construct a pointer to a NodeObject from the arguments of the constructor.</div><div class="ttdef"><b>Definition</b> <a href="coral_8h_source.html#l00235">coral.h:235</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md21"></a>
+<div class="fragment"><div class="line">coral::Network net;</div>
+<div class="line"><span class="keyword">auto</span> id_a = net.add_node(coral::make_node(1.0), <span class="stringliteral">&quot;a&quot;</span>);</div>
+<div class="line"><span class="keyword">auto</span> id_b = net.add_node(coral::make_node(2.0), <span class="stringliteral">&quot;b&quot;</span>);</div>
+<div class="line"><span class="keyword">auto</span> id_sum = net.add_node(coral::make_method_node(<span class="stringliteral">&quot;sum_ints&quot;</span>, sum), <span class="stringliteral">&quot;sum&quot;</span>);</div>
+<div class="line">net.add_connection(id_a, id_sum, 0, 0);</div>
+<div class="line">net.add_connection(id_b, id_sum, 0, 1);</div>
+<div class="line">net.run();</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md30"></a>
 Inputs/outputs and inspection</h3>
 <ul>
-<li><a class="el" href="classcoral_1_1_network.html#aab1256ffbbca680e8bff1ef88fcd0464">coral::Network::get_inputs</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#a1834365e850531b13347d56941f3f888">coral::Network::get_outputs</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#aa92ab659a1c2b1b06b13cb3fff61277e">coral::Network::get_input</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#aa2f7a6e9373f1a49ed2b199ac720bd6a">coral::Network::get_output</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#abcd4b6d2d7474016aeba045b01e626a3">coral::Network::get_node</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#ade4859706ec2448bd09979c3cd097bc8">coral::Network::get_node_name</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#a5003f016615524ac31f4e3fb13a2b7ad">coral::Network::set_node_name</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#a8509a7a64dba128dc3b839198a43ec6f">coral::Network::n_nodes</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#a804ffa235f3ea366c53bda38d67ed73f">coral::Network::n_connections</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#a9f1b021442ddafa7c35e534a94370e10">coral::Network::size</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#ad24de35e5aa73b1dac4c6fa1622500a8">coral::Network::is_connected</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#adae9c768164ad0de9f69595169945d80">coral::Network::get_connected_nodes</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#a9f30b1c958706ff6c82b36f6c668b7be">coral::Network::get_node_connections</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#a2b4fc9acf12aa07524690ba3c8874962">coral::Network::get_registry</a></li>
+<li>coral::Network::get_inputs</li>
+<li>coral::Network::get_outputs</li>
+<li>coral::Network::get_input</li>
+<li>coral::Network::get_output</li>
+<li>coral::Network::get_node</li>
+<li>coral::Network::get_node_name</li>
+<li>coral::Network::set_node_name</li>
+<li>coral::Network::n_nodes</li>
+<li>coral::Network::n_connections</li>
+<li>coral::Network::size</li>
+<li>coral::Network::is_connected</li>
+<li>coral::Network::get_connected_nodes</li>
+<li>coral::Network::get_node_connections</li>
+<li>coral::Network::get_registry</li>
 </ul>
-<div class="fragment"><div class="line"><span class="keyword">auto</span> inputs = net.<a class="code hl_function" href="classcoral_1_1_network.html#aab1256ffbbca680e8bff1ef88fcd0464">get_inputs</a>();</div>
-<div class="line"><span class="keyword">auto</span> outputs = net.<a class="code hl_function" href="classcoral_1_1_network.html#a1834365e850531b13347d56941f3f888">get_outputs</a>();</div>
-<div class="line"><span class="keyword">auto</span> out0 = net.<a class="code hl_function" href="classcoral_1_1_network.html#aa2f7a6e9373f1a49ed2b199ac720bd6a">get_output</a>(0);</div>
-<div class="line"><span class="keyword">auto</span> node = net.<a class="code hl_function" href="classcoral_1_1_network.html#abcd4b6d2d7474016aeba045b01e626a3">get_node</a>(id_sum);</div>
-<div class="line">net.<a class="code hl_function" href="classcoral_1_1_network.html#a5003f016615524ac31f4e3fb13a2b7ad">set_node_name</a>(id_sum, <span class="stringliteral">&quot;sum&quot;</span>);</div>
-<div class="line"><span class="keywordtype">bool</span> linked = net.<a class="code hl_function" href="classcoral_1_1_network.html#ad24de35e5aa73b1dac4c6fa1622500a8">is_connected</a>(id_a, id_sum);</div>
-<div class="line"><span class="keyword">auto</span> targets = net.<a class="code hl_function" href="classcoral_1_1_network.html#adae9c768164ad0de9f69595169945d80">get_connected_nodes</a>(id_a);</div>
-<div class="line"><span class="keyword">auto</span> conns = net.<a class="code hl_function" href="classcoral_1_1_network.html#a9f30b1c958706ff6c82b36f6c668b7be">get_node_connections</a>(id_a);</div>
-<div class="line">nlohmann::json reg = net.<a class="code hl_function" href="classcoral_1_1_network.html#a2b4fc9acf12aa07524690ba3c8874962">get_registry</a>();</div>
-<div class="ttc" id="aclasscoral_1_1_network_html_a1834365e850531b13347d56941f3f888"><div class="ttname"><a href="classcoral_1_1_network.html#a1834365e850531b13347d56941f3f888">coral::Network::get_outputs</a></div><div class="ttdeci">auto get_outputs() const -&gt; std::vector&lt; std::pair&lt; unsigned int, unsigned int &gt; &gt;</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l00737">coral_network_implementation.h:737</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_network_html_a2b4fc9acf12aa07524690ba3c8874962"><div class="ttname"><a href="classcoral_1_1_network.html#a2b4fc9acf12aa07524690ba3c8874962">coral::Network::get_registry</a></div><div class="ttdeci">nlohmann::json get_registry() const</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l00479">coral_network_implementation.h:479</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_network_html_a5003f016615524ac31f4e3fb13a2b7ad"><div class="ttname"><a href="classcoral_1_1_network.html#a5003f016615524ac31f4e3fb13a2b7ad">coral::Network::set_node_name</a></div><div class="ttdeci">void set_node_name(unsigned int id, const std::string &amp;name)</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l00297">coral_network_implementation.h:297</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_network_html_a9f30b1c958706ff6c82b36f6c668b7be"><div class="ttname"><a href="classcoral_1_1_network.html#a9f30b1c958706ff6c82b36f6c668b7be">coral::Network::get_node_connections</a></div><div class="ttdeci">auto get_node_connections(unsigned int nodeId) const -&gt; std::vector&lt; Connection &gt;</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l00678">coral_network_implementation.h:678</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_network_html_aa2f7a6e9373f1a49ed2b199ac720bd6a"><div class="ttname"><a href="classcoral_1_1_network.html#aa2f7a6e9373f1a49ed2b199ac720bd6a">coral::Network::get_output</a></div><div class="ttdeci">NodeObjectPtr get_output(const unsigned int index)</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l00793">coral_network_implementation.h:793</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_network_html_aab1256ffbbca680e8bff1ef88fcd0464"><div class="ttname"><a href="classcoral_1_1_network.html#aab1256ffbbca680e8bff1ef88fcd0464">coral::Network::get_inputs</a></div><div class="ttdeci">auto get_inputs() const -&gt; std::vector&lt; std::pair&lt; unsigned int, unsigned int &gt; &gt;</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l00697">coral_network_implementation.h:697</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_network_html_abcd4b6d2d7474016aeba045b01e626a3"><div class="ttname"><a href="classcoral_1_1_network.html#abcd4b6d2d7474016aeba045b01e626a3">coral::Network::get_node</a></div><div class="ttdeci">auto get_node(unsigned int id) const -&gt; NodeObjectPtr</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l00624">coral_network_implementation.h:624</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_network_html_ad24de35e5aa73b1dac4c6fa1622500a8"><div class="ttname"><a href="classcoral_1_1_network.html#ad24de35e5aa73b1dac4c6fa1622500a8">coral::Network::is_connected</a></div><div class="ttdeci">auto is_connected(unsigned int inId, unsigned int outId) const -&gt; bool</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l00998">coral_network_implementation.h:998</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_network_html_adae9c768164ad0de9f69595169945d80"><div class="ttname"><a href="classcoral_1_1_network.html#adae9c768164ad0de9f69595169945d80">coral::Network::get_connected_nodes</a></div><div class="ttdeci">auto get_connected_nodes(unsigned int nodeId) const -&gt; std::vector&lt; unsigned int &gt;</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l00659">coral_network_implementation.h:659</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md22"></a>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> inputs = net.get_inputs();</div>
+<div class="line"><span class="keyword">auto</span> outputs = net.get_outputs();</div>
+<div class="line"><span class="keyword">auto</span> out0 = net.get_output(0);</div>
+<div class="line"><span class="keyword">auto</span> node = net.get_node(id_sum);</div>
+<div class="line">net.set_node_name(id_sum, <span class="stringliteral">&quot;sum&quot;</span>);</div>
+<div class="line"><span class="keywordtype">bool</span> linked = net.is_connected(id_a, id_sum);</div>
+<div class="line"><span class="keyword">auto</span> targets = net.get_connected_nodes(id_a);</div>
+<div class="line"><span class="keyword">auto</span> conns = net.get_node_connections(id_a);</div>
+<div class="line">nlohmann::json reg = net.get_registry();</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md31"></a>
 Serialization and debug helpers</h3>
 <ul>
-<li><a class="el" href="classcoral_1_1_network.html#a6bda394922350bab9e79c8da75810a85">coral::Network::from_json</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#a11e5ac29bbfd84225eba39affaeb9a88">coral::Network::to_json</a></li>
-<li><a class="el" href="classcoral_1_1_network.html#a440d7955045a08f11d6becb4d7af3e00">coral::Network::output_dot</a></li>
+<li>coral::Network::from_json</li>
+<li>coral::Network::to_json</li>
+<li>coral::Network::output_dot</li>
 </ul>
-<div class="fragment"><div class="line">nlohmann::json serialized = net.<a class="code hl_function" href="classcoral_1_1_network.html#a11e5ac29bbfd84225eba39affaeb9a88">to_json</a>();</div>
-<div class="line"><a class="code hl_class" href="classcoral_1_1_network.html">coral::Network</a> copy;</div>
+<div class="fragment"><div class="line">nlohmann::json serialized = net.to_json();</div>
+<div class="line">coral::Network copy;</div>
 <div class="line">copy.from_json(serialized);</div>
-<div class="line">net.<a class="code hl_function" href="classcoral_1_1_network.html#a440d7955045a08f11d6becb4d7af3e00">output_dot</a>(<span class="stringliteral">&quot;network.dot&quot;</span>);</div>
-<div class="ttc" id="aclasscoral_1_1_network_html_a11e5ac29bbfd84225eba39affaeb9a88"><div class="ttname"><a href="classcoral_1_1_network.html#a11e5ac29bbfd84225eba39affaeb9a88">coral::Network::to_json</a></div><div class="ttdeci">auto to_json() const -&gt; nlohmann::json</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l01015">coral_network_implementation.h:1015</a></div></div>
-<div class="ttc" id="aclasscoral_1_1_network_html_a440d7955045a08f11d6becb4d7af3e00"><div class="ttname"><a href="classcoral_1_1_network.html#a440d7955045a08f11d6becb4d7af3e00">coral::Network::output_dot</a></div><div class="ttdeci">void output_dot(const std::filesystem::path &amp;filepath) const</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l00649">coral_network_implementation.h:649</a></div></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md23"></a>
+<div class="line">net.output_dot(<span class="stringliteral">&quot;network.dot&quot;</span>);</div>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md32"></a>
 Network node registration</h3>
 <ul>
-<li><a class="el" href="classcoral_1_1_network.html#a865af94d92214ea6933876b59222d580">coral::Network::register_node</a></li>
+<li>coral::Network::register_node</li>
 </ul>
-<div class="fragment"><div class="line"><a class="code hl_function" href="classcoral_1_1_network.html#a865af94d92214ea6933876b59222d580">coral::Network::register_node</a>();</div>
-<div class="ttc" id="aclasscoral_1_1_network_html_a865af94d92214ea6933876b59222d580"><div class="ttname"><a href="classcoral_1_1_network.html#a865af94d92214ea6933876b59222d580">coral::Network::register_node</a></div><div class="ttdeci">static void register_node()</div><div class="ttdef"><b>Definition</b> <a href="coral__network__implementation_8h_source.html#l01070">coral_network_implementation.h:1070</a></div></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md24"></a>
+<div class="fragment"><div class="line">coral::Network::register_node();</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md33"></a>
 Register* helpers (type bundles)</h2>
 <ul>
-<li><a class="el" href="namespacecoral.html#ac0a93248e4f3c01e12240a573debbd1e">coral::register_non_dimensional_types</a></li>
-<li><a class="el" href="namespacecoral.html#aa364f2f2bd0df69cc7c99db3df22543f">coral::register_dimensional_types</a></li>
-<li><a class="el" href="namespacecoral.html#a8a727a04a0a181eb30a962949718b629">coral::register_all_types</a></li>
+<li>coral::register_non_dimensional_types</li>
+<li>coral::register_dimensional_types</li>
+<li>coral::register_all_types</li>
 </ul>
-<div class="fragment"><div class="line"><a class="code hl_function" href="namespacecoral.html#ac0a93248e4f3c01e12240a573debbd1e">coral::register_non_dimensional_types</a>();</div>
-<div class="line"><a class="code hl_function" href="namespacecoral.html#aa364f2f2bd0df69cc7c99db3df22543f">coral::register_dimensional_types&lt;2, 2&gt;</a>();</div>
-<div class="line"><a class="code hl_function" href="namespacecoral.html#a8a727a04a0a181eb30a962949718b629">coral::register_all_types</a>();</div>
-<div class="ttc" id="anamespacecoral_html_a8a727a04a0a181eb30a962949718b629"><div class="ttname"><a href="namespacecoral.html#a8a727a04a0a181eb30a962949718b629">coral::register_all_types</a></div><div class="ttdeci">void register_all_types()</div><div class="ttdef"><b>Definition</b> <a href="register__types_8h_source.html#l00116">register_types.h:116</a></div></div>
-<div class="ttc" id="anamespacecoral_html_aa364f2f2bd0df69cc7c99db3df22543f"><div class="ttname"><a href="namespacecoral.html#aa364f2f2bd0df69cc7c99db3df22543f">coral::register_dimensional_types</a></div><div class="ttdeci">void register_dimensional_types()</div><div class="ttdef"><b>Definition</b> <a href="register__types_8h_source.html#l00080">register_types.h:80</a></div></div>
-<div class="ttc" id="anamespacecoral_html_ac0a93248e4f3c01e12240a573debbd1e"><div class="ttname"><a href="namespacecoral.html#ac0a93248e4f3c01e12240a573debbd1e">coral::register_non_dimensional_types</a></div><div class="ttdeci">void register_non_dimensional_types()</div><div class="ttdef"><b>Definition</b> <a href="register__types_8h_source.html#l00051">register_types.h:51</a></div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md25"></a>
+<div class="fragment"><div class="line">coral::register_non_dimensional_types();</div>
+<div class="line">coral::register_dimensional_types&lt;2, 2&gt;();</div>
+<div class="line">coral::register_all_types();</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md34"></a>
 Example Usage</h1>
 <p>A typical workflow using CORAL involves:</p>
 <ol type="1">
@@ -426,19 +483,20 @@ Example Usage</h1>
 <li>Send the resulting json to the backend for execution</li>
 <li>Executing the graph to perform the computation</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md26"></a>
+<h1><a class="anchor" id="autotoc_md35"></a>
 Prectical Usage</h1>
-<p>The program <code>dealii_backend.g</code> has two subcommands:</p>
+<p>The program <code>coral</code> has two subcommands (both require <code>--plugin &lt;path&gt;</code>):</p>
 <ul>
 <li><code>register [register_path]</code>: simply register all types and dump them to <code>register_path</code>, a json file which defaults to <code>node_types.json</code>.</li>
 <li><code>run [OPTIONS] input_json</code>: register all types and run the graph described in the json file <code>input_json</code>. The options are:<ul>
 <li><code>--register [register_path]</code>: dump the types to <code>register_path</code>, which defaults to <code>nodes_type.json</code>;</li>
 <li><code>--graph [graph_path]</code>: dump the dot file of the network to <code>graph_path</code>, which defaults to <code>network.dot</code>.</li>
+<li><code>--plugin &lt;path&gt;</code>: path to the backend plugin to load.</li>
 </ul>
 </li>
 </ul>
 <p>Of course <code>-h</code> or <code>--help</code> to get a usage guide.</p>
-<h1><a class="anchor" id="autotoc_md27"></a>
+<h1><a class="anchor" id="autotoc_md36"></a>
 Author</h1>
 <p>Luca Heltai <a href="#" onclick="location.href='mai'+'lto:'+'luc'+'a.'+'hel'+'ta'+'i@u'+'ni'+'pi.'+'it'; return false;">luca.<span class="obfuscator">.nosp@m.</span>helt<span class="obfuscator">.nosp@m.</span>ai@un<span class="obfuscator">.nosp@m.</span>ipi.<span class="obfuscator">.nosp@m.</span>it</a> </p>
 </div></div><!-- PageDoc -->
@@ -448,7 +506,7 @@ Author</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Feb 10 2026 16:13:43 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
+    <li class="footer">Generated on Wed Feb 11 2026 11:47:20 for Coral backend by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.13.2 </li>
   </ul>
 </div>
 </body>
