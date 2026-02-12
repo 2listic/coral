@@ -60,12 +60,14 @@ namespace
         if (name.empty())
           continue;
 
+        const std::string qualified_id = network.get_node_qualified_id(node_id);
+
         std::filesystem::path running_file =
-          touch_dir / (std::to_string(node_id) + ".running");
+          touch_dir / (qualified_id + ".running");
         std::filesystem::path succeeded_file =
-          touch_dir / (std::to_string(node_id) + ".succeeded");
+          touch_dir / (qualified_id + ".succeeded");
         std::filesystem::path failed_file =
-          touch_dir / (std::to_string(node_id) + ".failed");
+          touch_dir / (qualified_id + ".failed");
 
         // Check that .running file exists
         EXPECT_TRUE(std::filesystem::exists(running_file))

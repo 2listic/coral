@@ -576,7 +576,24 @@ main(int argc, char *argv[])
 
   coral::Network network;
   coral::Network::set_threads_number(n_threads);
-  network.from_json(data);
+
+  try
+    {
+      network.from_json(data);
+    }
+  catch (const coral::DuplicateQualifiedIdException &e)
+    {
+      slog_fatal("Failed to load network: duplicate qualified_id '%s' found. "
+                 "Each node must have a unique qualified_id.",
+                 e.get_duplicate_id().c_str());
+      return EXIT_FAILURE;
+    }
+  catch (const std::exception &e)
+    {
+      slog_fatal("Failed to load network: %s", e.what());
+      return EXIT_FAILURE;
+    }
+
   slog_info("Built network from data.");
 
   coral::Network::set_touch_file_base_path(touch_file_path);

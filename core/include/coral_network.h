@@ -16,6 +16,31 @@
 namespace coral
 {
   /**
+   * Exception thrown when duplicate qualified_id values are detected in a network.
+   */
+  class DuplicateQualifiedIdException : public std::runtime_error
+  {
+  private:
+    std::string duplicate_id;
+
+  public:
+    explicit DuplicateQualifiedIdException(const std::string &id)
+      : std::runtime_error("Duplicate qualified_id found in network: '" + id +
+                           "'")
+      , duplicate_id(id)
+    {}
+
+    /**
+     * Get the duplicate qualified_id that caused this exception.
+     */
+    const std::string &
+    get_duplicate_id() const
+    {
+      return duplicate_id;
+    }
+  };
+
+  /**
    * Directed edge between two nodes and their ports.
    */
   class Connection
@@ -66,6 +91,7 @@ namespace coral
     std::string                           name;
     static size_t                         n_threads;
     static std::filesystem::path          touch_file_base_path;
+    std::set<std::string> auto_generated_qualified_ids; // Track auto-generated IDs
 
     void
     rebuild_taskflow();
@@ -121,6 +147,9 @@ namespace coral
 
     const std::map<unsigned int, std::string> &
     get_nodes_name() const;
+
+    std::string
+    get_node_qualified_id(unsigned int id) const;
 
     void
     add_connection(unsigned int id, const Connection &conn);

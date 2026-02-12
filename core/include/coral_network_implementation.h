@@ -209,13 +209,13 @@ namespace coral
                              const NodeObjectPtr &node,
                              const std::string   &node_name)
   {
-    slog_info("Start running node %u: %s (type = %s)",
+    const std::string qualified_id = get_node_qualified_id(node_id);
+    slog_info("Start running node %u [%s]: %s (type = %s)",
               node_id,
+              qualified_id.c_str(),
               node_name.c_str(),
               node->type_name().c_str());
-    touch_file(touch_file_base_path,
-               std::to_string(node_id),
-               TouchMode::Running);
+    touch_file(touch_file_base_path, qualified_id, TouchMode::Running);
     try
       {
         refresh_dynamic_inputs(node_id);
@@ -223,19 +223,16 @@ namespace coral
       }
     catch (const std::exception &e)
       {
-        touch_file(touch_file_base_path,
-                   std::to_string(node_id),
-                   TouchMode::Failed);
-        throw std::runtime_error("Node " + std::to_string(node_id) +
-                                 " failed: " + e.what());
+        touch_file(touch_file_base_path, qualified_id, TouchMode::Failed);
+        throw std::runtime_error("Node " + std::to_string(node_id) + " [" +
+                                 qualified_id + "] failed: " + e.what());
       }
-    slog_info("Node %u: %s (type = %s) run",
+    slog_info("Node %u [%s]: %s (type = %s) run",
               node_id,
+              qualified_id.c_str(),
               node_name.c_str(),
               node->type_name().c_str());
-    touch_file(touch_file_base_path,
-               std::to_string(node_id),
-               TouchMode::Succeeded);
+    touch_file(touch_file_base_path, qualified_id, TouchMode::Succeeded);
   }
 
 
@@ -339,6 +336,19 @@ namespace coral
   Network::get_nodes_name() const
   {
     return nodes_name;
+  }
+
+
+
+  CORAL_IMPL_INLINE std::string
+  Network::get_node_qualified_id(unsigned int id) const
+  {
+    auto it = nodes.find(id);
+    if (it == nodes.end() || !it->second)
+      return std::to_string(id); // Fallback to node_id
+
+    const std::string qid = it->second->get_qualified_id();
+    return qid.empty() ? std::to_string(id) : qid;
   }
 
 
@@ -549,6 +559,10 @@ namespace coral
     const auto &nodes_data = workflow["nodes"];
     slog_info("Loading network from json: %zu nodes", nodes_data.size());
 
+    // Track qualified_ids to ensure uniqueness
+    std::set<std::string> seen_qualified_ids;
+    int                   auto_qualified_id_counter = 0;
+
     // First pass: create all nodes
     for (const auto &[key, value] : nodes_data.items())
       {
@@ -563,6 +577,38 @@ namespace coral
               "Node " + key +
               " does not contain a 'type' field: " + node_data.dump(2));
           }
+
+        // Handle qualified_id: validate uniqueness or auto-generate
+        std::string qualified_id;
+        if (node_data.contains("qualified_id"))
+          {
+            qualified_id = node_data["qualified_id"].get<std::string>();
+            if (!seen_qualified_ids.insert(qualified_id).second)
+              {
+                throw DuplicateQualifiedIdException(qualified_id);
+              }
+          }
+        else
+          {
+            // Auto-generate qualified_id with distinctive format
+            do
+              {
+                qualified_id = std::to_string(id) + "_auto_" +
+                               std::to_string(auto_qualified_id_counter++);
+              }
+            while (!seen_qualified_ids.insert(qualified_id).second);
+
+            // Add to node_data so it gets stored in the NodeObject
+            node_data["qualified_id"] = qualified_id;
+
+            // Track that this qualified_id was auto-generated
+            auto_generated_qualified_ids.insert(qualified_id);
+
+            slog_warn("Node %d missing qualified_id, auto-generated: '%s'",
+                      id,
+                      qualified_id.c_str());
+          }
+
         std::string node_name = node_data.value("name", "");
         try
           {
@@ -634,6 +680,7 @@ namespace coral
     node_tasks.clear();
     connections.clear();
     taskflow.clear();
+    auto_generated_qualified_ids.clear();
   }
 
 
@@ -997,9 +1044,21 @@ namespace coral
         if (!name.empty())
           node_json["name"] = name;
 
+        // Get node info once for both qualified_id and value
+        const auto &info = node->get_info();
+        if (info.contains("qualified_id"))
+          {
+            const std::string qid = info["qualified_id"].get<std::string>();
+            // Only serialize qualified_id if it's NOT auto-generated
+            if (auto_generated_qualified_ids.find(qid) ==
+                auto_generated_qualified_ids.end())
+              {
+                node_json["qualified_id"] = qid;
+              }
+          }
+
         if (node->node_type() == NodeType::elementary_constructor)
           {
-            const auto &info = node->get_info();
             if (info.contains("value"))
               node_json["value"] = info["value"];
           }
