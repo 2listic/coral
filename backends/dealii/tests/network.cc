@@ -712,6 +712,9 @@ TEST(Network, DuplicateQualifiedIdFromFile)
   json network_json;
   input >> network_json;
 
+  // Register types so the network can be deserialized
+  coral::register_all_types();
+
   // Attempting to load this network should throw DuplicateQualifiedIdException
   coral::Network network;
   ASSERT_THROW(
