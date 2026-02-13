@@ -51,6 +51,10 @@ public:
     , neumann_boundary_ids(neumann_boundary_ids)
     , neumann_function_expression(neumann_function_expression)
     , dof_handler(triangulation)
+  {}
+
+  void
+  solve()
   {
     dof_handler.distribute_dofs(fe);
 

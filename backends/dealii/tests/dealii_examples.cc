@@ -321,6 +321,12 @@ TEST(dealiiExamples, PoissonSolver)
 
   ASSERT_TRUE((*poisson)());
   ASSERT_TRUE(poisson->ready());
+
+  // Create a method node for solve() and invoke it using coral machinery
+  auto solve_method = make_node("PoissonSolver::solve<2>");
+  solve_method->set_arguments({poisson});
+  (*solve_method)();
+
   // check that the output file was created
   std::ifstream file(output_dir.path() / "solution.vtu");
   ASSERT_TRUE(file.good());

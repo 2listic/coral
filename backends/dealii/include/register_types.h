@@ -136,6 +136,11 @@ namespace coral
         "dirichlet_function_expression",
         "neumann_boundary_ids",
         "neumann_function_expression"}});
+
+    NodeObject::register_method<PoissonSolver<dim, spacedim>, void>(
+      &PoissonSolver<dim, spacedim>::solve,
+      {"PoissonSolver::solve<" + Utilities::dim_string(dim, spacedim) + ">",
+       "poisson_solver"});
   }
 
 
