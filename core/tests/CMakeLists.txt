@@ -24,3 +24,9 @@ add_custom_target(run_coral_core_tests
   DEPENDS coral_core_tests
   USES_TERMINAL)
 
+# Register tests with CTest using GoogleTest discovery
+include(GoogleTest)
+gtest_discover_tests(coral_core_tests
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  PROPERTIES LABELS "core")
+

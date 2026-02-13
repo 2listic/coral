@@ -42,6 +42,11 @@ add_custom_target(run_dealii_backend_tests
   DEPENDS dealii_backend_tests
   USES_TERMINAL)
 
+# Register backend tests with CTest
+gtest_discover_tests(dealii_backend_tests
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  PROPERTIES LABELS "dealii;backend")
+
 add_executable(dealii_plugin_tests ${_plugin_test_file})
 target_link_libraries(dealii_plugin_tests coral_core ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
 if(GTEST_INCLUDE_DIRS)
@@ -64,3 +69,8 @@ add_custom_target(run_dealii_plugin_tests
   COMMAND $<TARGET_FILE:dealii_plugin_tests>
   DEPENDS dealii_plugin_tests coral_backend_dealii
   USES_TERMINAL)
+
+# Register plugin tests with CTest
+gtest_discover_tests(dealii_plugin_tests
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  PROPERTIES LABELS "dealii;plugin")
