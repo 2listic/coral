@@ -85,6 +85,28 @@ namespace coral
   inline void
   register_dimensional_types()
   {
+    // When dim == spacedim, create aliases to handle both forms:
+    // - Static linking produces: Type<2>
+    // - Shared library produces: Type<2, 2>
+    // This ensures JSON compatibility between plugin and test builds
+    if constexpr (dim == spacedim)
+      {
+        const std::string dims_short = std::to_string(dim);
+        const std::string dims_full = dims_short + ", " + std::to_string(spacedim);
+
+        // Alias for all dimensional types
+        coral::detail::set_type_alias<Triangulation<dim, spacedim>>(
+          "dealii::Triangulation<" + dims_full + ">");
+        coral::detail::set_type_alias<FiniteElement<dim, spacedim>>(
+          "dealii::FiniteElement<" + dims_full + ">");
+        coral::detail::set_type_alias<FE_Q<dim, spacedim>>(
+          "dealii::FE_Q<" + dims_full + ">");
+        coral::detail::set_type_alias<DoFHandler<dim, spacedim>>(
+          "dealii::DoFHandler<" + dims_full + ">");
+        coral::detail::set_type_alias<PoissonSolver<dim, spacedim>>(
+          "PoissonSolver<" + dims_full + ">");
+      }
+
     NodeObject::register_type<Triangulation<dim, spacedim>>();
     NodeObject::register_type<DoFHandler<dim, spacedim>,
                               Triangulation<dim, spacedim>>("triangulation");

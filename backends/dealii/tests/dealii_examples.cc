@@ -332,3 +332,53 @@ TEST(dealiiExamples, PoissonSolver)
   ASSERT_TRUE(file.good());
   file.close();
 }
+
+TEST(dealiiExamples, NetworkFromJsonPoissonSolverSolution)
+{
+  ScopedTestOutputDir output_dir(
+    "dealiiExamples_NetworkFromJsonPoissonSolverSolution");
+
+  register_non_dimensional_types();
+  register_dimensional_types<2, 2>();
+
+  Network network;
+  network.set_touch_file_base_path(output_dir);
+  network.clear_network();
+
+  std::ifstream file(SOURCE_DIR "/test_files/PoissonSolverSolution.json");
+  ASSERT_TRUE(file.is_open())
+    << "Failed to open PoissonSolverSolution.json file.";
+
+  nlohmann::json json_data;
+  file >> json_data;
+  file.close();
+
+  ASSERT_FALSE(json_data.empty()) << "JSON data is empty.";
+
+  // Update the output file path to use the test output directory
+  // Node 9 contains the output filename
+  if (json_data["workflow"]["nodes"].contains("9") &&
+      json_data["workflow"]["nodes"]["9"].contains("value"))
+    {
+      std::string output_filename =
+        json_data["workflow"]["nodes"]["9"]["value"];
+      json_data["workflow"]["nodes"]["9"]["value"] =
+        (output_dir.path() / output_filename).string();
+    }
+
+  network.from_json(json_data);
+
+  // Print some debugging information
+  slog_debug("Network has %u nodes and %u connections",
+             network.n_nodes(),
+             network.n_connections());
+
+  // Run the network
+  network.run();
+
+  // Check that the output file was created (assuming the JSON specifies
+  // solution.vtu)
+  std::ifstream solution_file(output_dir.path() / "solution.vtu");
+  ASSERT_TRUE(solution_file.good()) << "Solution VTU file was not created.";
+  solution_file.close();
+}
