@@ -1,0 +1,34 @@
+{
+  "workflow": {
+    "nodes": {
+      "0": {
+        "type": "std::set<unsigned int>",
+        "position": {
+          "x": 235.20748070627937,
+          "y": 16.63389801607004
+        },
+        "value": "[1, 2, 3, 4, 5]",
+        "qualified_id": "0"
+      },
+      "1": {
+        "type": "sum_set",
+        "position": {
+          "x": 727.0019134920428,
+          "y": 74.81589338742796
+        },
+        "qualified_id": "1"
+      }
+    },
+    "edges": {
+      "0": {
+        "source": 0,
+        "target": 1,
+        "source_output": 0,
+        "target_input": 0
+      }
+    }
+  },
+  "version": 1,
+  "author": "dealiix-platform",
+  "date_time_utc": "2026-02-16T08:33:25.780Z"
+}

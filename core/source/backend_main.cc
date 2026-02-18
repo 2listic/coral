@@ -86,8 +86,7 @@ namespace
 #if defined(_WIN32)
       handle.handle = LoadLibraryA(path.string().c_str());
       if (!handle.handle)
-        throw std::runtime_error("LoadLibrary failed for: " +
-                                 path.string());
+        throw std::runtime_error("LoadLibrary failed for: " + path.string());
 #else
       handle.handle = dlopen(path.string().c_str(), RTLD_NOW | RTLD_LOCAL);
       if (!handle.handle)
@@ -103,8 +102,9 @@ namespace
 
     BackendPlugin() = default;
 
-    BackendPlugin(const BackendPlugin &)            = delete;
-    BackendPlugin &operator=(const BackendPlugin &) = delete;
+    BackendPlugin(const BackendPlugin &) = delete;
+    BackendPlugin &
+    operator=(const BackendPlugin &) = delete;
 
     BackendPlugin(BackendPlugin &&other) noexcept
     {
@@ -372,9 +372,10 @@ main(int argc, char *argv[])
   SlogCliConfig slog_cli;
 
   fs::path plugin_path;
-  app.add_option("-p,--plugin",
-                 plugin_path,
-                 "Backend plugin path (.so/.dylib/.dll)")
+  app
+    .add_option("-p,--plugin",
+                plugin_path,
+                "Backend plugin path (.so/.dylib/.dll)")
     ->required()
     ->check(CLI::ExistingPath.description(""))
     ->type_name("PATH");
@@ -549,7 +550,10 @@ main(int argc, char *argv[])
 
   if (dump_reg)
     {
-      dump_registry(register_path, backend.name);
+      // FIXME: we should switch back to `dump_registry(register_path,
+      // backend.name)`
+      //        when the FE will validate the `__backend_name` field.
+      dump_registry(register_path, "");
       slog_info("Dumped registered nodes to %s.", register_path.c_str());
     }
 

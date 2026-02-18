@@ -14,6 +14,80 @@ using namespace dealii;
 using namespace coral;
 using coral_test::ScopedTestOutputDir;
 
+// Function to sum all numbers in a set
+unsigned int
+sum_set(const std::set<unsigned int> &input_set)
+{
+  unsigned int sum = 0;
+  for (const auto &val : input_set)
+    sum += val;
+  return sum;
+}
+
+TEST(dealiiExamples, SumSetRegistry)
+{
+  ScopedTestOutputDir output_dir("dealiiExamples_SumSetRegistry");
+
+  // Register the types
+  NodeObject::register_elementary_type<unsigned int>();
+  NodeObject::register_elementary_type<std::set<unsigned int>>();
+
+  // Register the function
+  NodeObject::register_function(sum_set, {"sum_set", "result", "input_set"});
+
+  // Dump the registry to a file
+  std::ofstream registry_file(output_dir.path() / "registry.json");
+  registry_file << NodeObject::get_registry().dump(2) << std::endl;
+  registry_file.close();
+
+  // Check that the file exists
+  std::ifstream check_file(output_dir.path() / "registry.json");
+  ASSERT_TRUE(check_file.good());
+  check_file.close();
+
+  // Load and execute the network from SetSum.json
+  Network network;
+  network.set_touch_file_base_path(output_dir);
+  network.clear_network();
+
+  std::ifstream json_file(SOURCE_DIR "/test_files/SetSum.json");
+  ASSERT_TRUE(json_file.is_open()) << "Failed to open SetSum.json file.";
+
+  nlohmann::json json_data;
+  json_file >> json_data;
+  json_file.close();
+
+  ASSERT_FALSE(json_data.empty()) << "JSON data is empty.";
+
+  // Load the network from JSON
+  network.from_json(json_data);
+
+  // Print debugging information
+  slog_debug("Network has %u nodes and %u connections",
+             network.n_nodes(),
+             network.n_connections());
+
+  // Run the network
+  network.run();
+
+  // Get the function node (node 1)
+  auto function_node = network.get_node(1);
+  ASSERT_TRUE(function_node != nullptr) << "Node 1 not found.";
+
+  // For non-void functions, the result is stored in the output of the function
+  // node
+  slog_debug("Function node has %zu outputs", function_node->n_outputs());
+
+  auto result_node = function_node->get_output(0);
+  ASSERT_TRUE(result_node != nullptr) << "Function output not found.";
+  ASSERT_TRUE(result_node->ready()) << "Result node not ready.";
+
+  // The result should be 15 (sum of 1 + 2 + 3 + 4 + 5)
+  unsigned int result = result_node->get<unsigned int>();
+  slog_debug("Function output is: %u.", result);
+  ASSERT_EQ(15u, result) << "Expected sum to be 15, got " << result;
+}
+
 // Void function test
 TEST(dealiiExamples, step01)
 {
@@ -321,8 +395,64 @@ TEST(dealiiExamples, PoissonSolver)
 
   ASSERT_TRUE((*poisson)());
   ASSERT_TRUE(poisson->ready());
+
+  // Create a method node for solve() and invoke it using coral machinery
+  auto solve_method = make_node("PoissonSolver::solve<2>");
+  solve_method->set_arguments({poisson});
+  (*solve_method)();
+
   // check that the output file was created
   std::ifstream file(output_dir.path() / "solution.vtu");
   ASSERT_TRUE(file.good());
   file.close();
+}
+
+TEST(dealiiExamples, NetworkFromJsonPoissonSolverSolution)
+{
+  ScopedTestOutputDir output_dir(
+    "dealiiExamples_NetworkFromJsonPoissonSolverSolution");
+
+  register_non_dimensional_types();
+  register_dimensional_types<2, 2>();
+
+  Network network;
+  network.set_touch_file_base_path(output_dir);
+  network.clear_network();
+
+  std::ifstream file(SOURCE_DIR "/test_files/PoissonSolverSolution.json");
+  ASSERT_TRUE(file.is_open())
+    << "Failed to open PoissonSolverSolution.json file.";
+
+  nlohmann::json json_data;
+  file >> json_data;
+  file.close();
+
+  ASSERT_FALSE(json_data.empty()) << "JSON data is empty.";
+
+  // Update the output file path to use the test output directory
+  // Node 9 contains the output filename
+  if (json_data["workflow"]["nodes"].contains("9") &&
+      json_data["workflow"]["nodes"]["9"].contains("value"))
+    {
+      std::string output_filename =
+        json_data["workflow"]["nodes"]["9"]["value"];
+      json_data["workflow"]["nodes"]["9"]["value"] =
+        (output_dir.path() / output_filename).string();
+    }
+
+  network.from_json(json_data);
+
+  // Print some debugging information
+  slog_debug("Network has %u nodes and %u connections",
+             network.n_nodes(),
+             network.n_connections());
+
+  // Run the network
+  network.run();
+
+  // Check that the output file was created (assuming the JSON specifies
+  // solution.vtu)
+  std::ifstream solution_file(output_dir.path() / "solution.vtu");
+  ASSERT_TRUE(solution_file.good()) << "Solution VTU file was not created.";
+  solution_file.close();
 }

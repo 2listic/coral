@@ -14,9 +14,11 @@ if(CORAL_BUILD_BACKEND_DEALII AND NOT CORAL_BUILD_SHARED_CORE)
 endif()
 
 if(CORAL_BUILD_TESTS)
-  # We intentionally run GoogleTest executables directly (faster than ctest).
-  # Do not call enable_testing() so CMake doesn't generate its own `test` target.
-  add_custom_target(test)
+  # Enable CTest for comprehensive test discovery
+  enable_testing()
+  # Custom target for running all tests via custom targets (faster than ctest)
+  # Note: "test" is reserved by CTest, so we use "run_all_tests"
+  add_custom_target(run_all_tests)
 endif()
 
 add_subdirectory(core)
@@ -31,7 +33,7 @@ endif()
 
 if(CORAL_BUILD_TESTS)
   add_subdirectory(core/tests)
-  if(TARGET test AND TARGET run_coral_core_tests)
-    add_dependencies(test run_coral_core_tests)
+  if(TARGET run_all_tests AND TARGET run_coral_core_tests)
+    add_dependencies(run_all_tests run_coral_core_tests)
   endif()
 endif()

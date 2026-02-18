@@ -1,0 +1,240 @@
+{
+  "workflow": {
+    "nodes": {
+      "0": {
+        "type": "GridGenerator::generate_from_name_and_arguments<2>",
+        "position": {
+          "x": 349,
+          "y": 285
+        },
+        "qualified_id": "0"
+      },
+      "1": {
+        "type": "dealii::Triangulation<2, 2>",
+        "position": {
+          "x": -138.6244238453006,
+          "y": 235.70695519035294
+        },
+        "qualified_id": "1"
+      },
+      "2": {
+        "type": "std::string",
+        "position": {
+          "x": -162.44546446968224,
+          "y": 335.4437074273444
+        },
+        "value": "hyper_cube",
+        "qualified_id": "2"
+      },
+      "3": {
+        "type": "std::string",
+        "position": {
+          "x": -165.59970909934447,
+          "y": 453.72788103967997
+        },
+        "value": "0 : 1 : false",
+        "qualified_id": "3"
+      },
+      "4": {
+        "type": "Triangulation<2>::refine_global",
+        "position": {
+          "x": 375.353244887737,
+          "y": 559.3950761333665
+        },
+        "qualified_id": "4"
+      },
+      "6": {
+        "type": "unsigned int",
+        "position": {
+          "x": -130.53338013052084,
+          "y": 631.942702615599
+        },
+        "value": "1",
+        "qualified_id": "6"
+      },
+      "7": {
+        "type": "dealii::FE_Q<2, 2>",
+        "position": {
+          "x": 320.5236019111856,
+          "y": 750.2268762279346
+        },
+        "base": "dealii::FiniteElement<2, 2>",
+        "qualified_id": "7"
+      },
+      "8": {
+        "type": "unsigned int",
+        "position": {
+          "x": -53.50389238250847,
+          "y": 808.5804018766869
+        },
+        "value": "1",
+        "qualified_id": "8"
+      },
+      "9": {
+        "type": "std::string",
+        "position": {
+          "x": 77.3972597484763,
+          "y": 969.4468779894634
+        },
+        "value": "solution.vtu",
+        "qualified_id": "9"
+      },
+      "10": {
+        "type": "std::string",
+        "position": {
+          "x": 67.93452585948947,
+          "y": 1094.0395408611234
+        },
+        "value": "1",
+        "qualified_id": "10"
+      },
+      "11": {
+        "type": "std::set<unsigned int>",
+        "position": {
+          "x": 83.70574900780089,
+          "y": 1218.6322037327836
+        },
+        "value": "[0]",
+        "qualified_id": "11"
+      },
+      "12": {
+        "type": "std::set<unsigned int>",
+        "position": {
+          "x": 85.28287132263199,
+          "y": 1429.9665939201566
+        },
+        "value": "[]",
+        "qualified_id": "12"
+      },
+      "13": {
+        "type": "std::string",
+        "position": {
+          "x": 104.20833910060571,
+          "y": 1327.4536434561326
+        },
+        "value": "0",
+        "qualified_id": "13"
+      },
+      "14": {
+        "type": "std::string",
+        "position": {
+          "x": 101.05409447094348,
+          "y": 1538.7880336435053
+        },
+        "value": "0",
+        "qualified_id": "14"
+      },
+      "15": {
+        "type": "PoissonSolver<2, 2>",
+        "position": {
+          "x": 1152.994678463315,
+          "y": 512.0814066884323
+        },
+        "qualified_id": "15"
+      },
+      "16": {
+        "type": "PoissonSolver::solve<2>",
+        "position": {
+          "x": 1800.0768250057545,
+          "y": 782.0812376960318
+        },
+        "qualified_id": "16"
+      }
+    },
+    "edges": {
+      "0": {
+        "source": 1,
+        "target": 0,
+        "source_output": 0,
+        "target_input": 0
+      },
+      "1": {
+        "source": 2,
+        "target": 0,
+        "source_output": 0,
+        "target_input": 1
+      },
+      "2": {
+        "source": 3,
+        "target": 0,
+        "source_output": 0,
+        "target_input": 2
+      },
+      "3": {
+        "source": 0,
+        "target": 4,
+        "source_output": 0,
+        "target_input": 0
+      },
+      "4": {
+        "source": 6,
+        "target": 4,
+        "source_output": 0,
+        "target_input": 1
+      },
+      "5": {
+        "source": 8,
+        "target": 7,
+        "source_output": 0,
+        "target_input": 0
+      },
+      "6": {
+        "source": 4,
+        "target": 15,
+        "source_output": 0,
+        "target_input": 0
+      },
+      "7": {
+        "source": 7,
+        "target": 15,
+        "source_output": 0,
+        "target_input": 1
+      },
+      "8": {
+        "source": 9,
+        "target": 15,
+        "source_output": 0,
+        "target_input": 2
+      },
+      "9": {
+        "source": 10,
+        "target": 15,
+        "source_output": 0,
+        "target_input": 3
+      },
+      "10": {
+        "source": 11,
+        "target": 15,
+        "source_output": 0,
+        "target_input": 4
+      },
+      "11": {
+        "source": 13,
+        "target": 15,
+        "source_output": 0,
+        "target_input": 5
+      },
+      "12": {
+        "source": 12,
+        "target": 15,
+        "source_output": 0,
+        "target_input": 6
+      },
+      "13": {
+        "source": 14,
+        "target": 15,
+        "source_output": 0,
+        "target_input": 7
+      },
+      "14": {
+        "source": 15,
+        "target": 16,
+        "source_output": 0,
+        "target_input": 0
+      }
+    }
+  },
+  "version": 1,
+  "author": "dealiix-platform",
+  "date_time_utc": "2026-02-16T09:15:09.826Z"
+}
