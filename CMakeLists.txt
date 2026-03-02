@@ -37,3 +37,7 @@ if(CORAL_BUILD_TESTS)
     add_dependencies(run_all_tests run_coral_core_tests)
   endif()
 endif()
+
+find_package(Threads REQUIRED)
+target_link_libraries(coral PRIVATE Threads::Threads)
+
