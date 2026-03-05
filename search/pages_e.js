@@ -13,5 +13,9 @@ var searchData=
   ['equation_20solve_20code_20gallery_20program_10',['The &apos;Generalized Swift-Hohenberg Equation Solve&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_Swift_Hohenberg_Solver.html',1,'']]],
   ['equations_20code_20gallery_20program_11',['The &apos;TRBDF2-DG projection solver for the incompressible Navier-Stokes equations&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_NavierStokes_TRBDF2_DG.html',1,'']]],
   ['evolution_20code_20gallery_20program_12',['The &apos;Viscoelastoplastic topography evolution&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_CeresFE.html',1,'']]],
-  ['external_20simulation_20program_20code_20gallery_20program_13',['The &apos;Laplace equation coupled to an external simulation program&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_coupled_laplace_problem.html',1,'']]]
+  ['example_20usage_13',['Example Usage',['../index.html#autotoc_md34',1,'']]],
+  ['execution_14',['Construction, mutation, execution',['../index.html#autotoc_md29',1,'']]],
+  ['execution_20and_20value_20access_15',['Execution and value access',['../index.html#autotoc_md23',1,'']]],
+  ['execution_20model_16',['Execution Model',['../index.html#autotoc_md18',1,'']]],
+  ['external_20simulation_20program_20code_20gallery_20program_17',['The &apos;Laplace equation coupled to an external simulation program&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_coupled_laplace_problem.html',1,'']]]
 ];

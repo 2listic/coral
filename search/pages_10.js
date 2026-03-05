@@ -6,5 +6,6 @@ var searchData=
   ['glossary_3',['Glossary',['http://www.dealii.org/developer/doxygen/deal.II/DEALGlossary.html',1,'']]],
   ['goal_20oriented_20hp_20adaptivity_20for_20the_20maxwell_20eigenvalue_20problem_20code_20gallery_20program_4',['The &apos;Goal-Oriented hp-Adaptivity for the Maxwell Eigenvalue Problem&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_Maxwell_Eigenvalue_hp_Refinement.html',1,'']]],
   ['goal_20oriented_20mesh_20adaptivity_20in_20elastoplasticity_20problems_20code_20gallery_20program_5',['The &apos;Goal-oriented mesh adaptivity in elastoplasticity problems&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_goal_oriented_elastoplasticity.html',1,'']]],
-  ['growth_20problem_20using_20phase_20field_20modeling_20code_20gallery_20program_6',['The &apos;Crystal growth problem using phase field modeling&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_Crystal_Growth_Phase_Field_Model.html',1,'']]]
+  ['graph_20api_6',['Network (graph API)',['../index.html#autotoc_md28',1,'']]],
+  ['growth_20problem_20using_20phase_20field_20modeling_20code_20gallery_20program_7',['The &apos;Crystal growth problem using phase field modeling&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_Crystal_Growth_Phase_Field_Model.html',1,'']]]
 ];
