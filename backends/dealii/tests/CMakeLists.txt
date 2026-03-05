@@ -48,7 +48,7 @@ gtest_discover_tests(dealii_backend_tests
   PROPERTIES LABELS "dealii;backend")
 
 add_executable(dealii_plugin_tests ${_plugin_test_file})
-target_link_libraries(dealii_plugin_tests coral_core ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
+target_link_libraries(dealii_plugin_tests coral_core dl ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
 if(GTEST_INCLUDE_DIRS)
   target_include_directories(dealii_plugin_tests SYSTEM PRIVATE ${GTEST_INCLUDE_DIRS})
 endif()
