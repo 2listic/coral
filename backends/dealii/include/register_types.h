@@ -18,6 +18,7 @@
 
 #include "coral.h"
 #include "coral_network.h"
+#include "laplace.h"
 #include "poisson.h"
 
 /** \cond INTERNAL */
@@ -92,15 +93,16 @@ namespace coral
     if constexpr (dim == spacedim)
       {
         const std::string dims_short = std::to_string(dim);
-        const std::string dims_full = dims_short + ", " + std::to_string(spacedim);
+        const std::string dims_full =
+          dims_short + ", " + std::to_string(spacedim);
 
         // Alias for all dimensional types
         coral::detail::set_type_alias<Triangulation<dim, spacedim>>(
           "dealii::Triangulation<" + dims_full + ">");
         coral::detail::set_type_alias<FiniteElement<dim, spacedim>>(
           "dealii::FiniteElement<" + dims_full + ">");
-        coral::detail::set_type_alias<FE_Q<dim, spacedim>>(
-          "dealii::FE_Q<" + dims_full + ">");
+        coral::detail::set_type_alias<FE_Q<dim, spacedim>>("dealii::FE_Q<" +
+                                                           dims_full + ">");
         coral::detail::set_type_alias<DoFHandler<dim, spacedim>>(
           "dealii::DoFHandler<" + dims_full + ">");
         coral::detail::set_type_alias<PoissonSolver<dim, spacedim>>(
@@ -163,6 +165,13 @@ namespace coral
       &PoissonSolver<dim, spacedim>::solve,
       {"PoissonSolver::solve<" + Utilities::dim_string(dim, spacedim) + ">",
        "poisson_solver"});
+
+    NodeObject::register_type<LaplaceProblem<dim>>();
+    NodeObject::register_method<LaplaceProblem<dim>, void, const std::string &>(
+      &LaplaceProblem<dim>::run,
+      {"LaplaceProblem::run<" + Utilities::dim_string(dim, spacedim) + ">",
+       "laplace_problem",
+       "output_dir"});
   }
 
 
