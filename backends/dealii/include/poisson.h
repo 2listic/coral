@@ -80,11 +80,17 @@ public:
 
     VectorTools::create_right_hand_side(
       dof_handler, QGauss<dim>(fe.degree + 1), rhs, system_rhs, constraints);
-    VectorTools::create_boundary_right_hand_side(dof_handler,
-                                                 QGauss<dim - 1>(fe.degree + 1),
-                                                 neumann_bc,
-                                                 system_rhs,
-                                                 neumann_boundary_ids);
+    if constexpr (dim > 1 && dim == spacedim)
+      VectorTools::create_boundary_right_hand_side(dof_handler,
+                                                   QGauss<dim - 1>(fe.degree +
+                                                                   1),
+                                                   neumann_bc,
+                                                   system_rhs,
+                                                   neumann_boundary_ids);
+    else
+      {
+        AssertThrow(false, ExcNotImplemented());
+      }
 
     MatrixTools::create_laplace_matrix(dof_handler,
                                        QGauss<dim>(fe.degree + 1),
