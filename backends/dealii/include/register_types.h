@@ -92,15 +92,16 @@ namespace coral
     if constexpr (dim == spacedim)
       {
         const std::string dims_short = std::to_string(dim);
-        const std::string dims_full = dims_short + ", " + std::to_string(spacedim);
+        const std::string dims_full =
+          dims_short + ", " + std::to_string(spacedim);
 
         // Alias for all dimensional types
         coral::detail::set_type_alias<Triangulation<dim, spacedim>>(
           "dealii::Triangulation<" + dims_full + ">");
         coral::detail::set_type_alias<FiniteElement<dim, spacedim>>(
           "dealii::FiniteElement<" + dims_full + ">");
-        coral::detail::set_type_alias<FE_Q<dim, spacedim>>(
-          "dealii::FE_Q<" + dims_full + ">");
+        coral::detail::set_type_alias<FE_Q<dim, spacedim>>("dealii::FE_Q<" +
+                                                           dims_full + ">");
         coral::detail::set_type_alias<DoFHandler<dim, spacedim>>(
           "dealii::DoFHandler<" + dims_full + ">");
         coral::detail::set_type_alias<PoissonSolver<dim, spacedim>>(
@@ -171,9 +172,12 @@ namespace coral
   register_all_types()
   {
     register_non_dimensional_types();
+    register_dimensional_types<1, 1>();
+    register_dimensional_types<1, 2>();
+    register_dimensional_types<1, 3>();
     register_dimensional_types<2, 2>();
-    // register_dimensional_types<3, 3>();
-    // register_dimensional_types<2, 3>();
+    register_dimensional_types<2, 3>();
+    register_dimensional_types<3, 3>();
   };
 
 } // namespace coral
