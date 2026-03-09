@@ -180,9 +180,12 @@ namespace coral
   register_all_types()
   {
     register_non_dimensional_types();
+    register_dimensional_types<1, 1>();
+    register_dimensional_types<1, 2>();
+    register_dimensional_types<1, 3>();
     register_dimensional_types<2, 2>();
-    // register_dimensional_types<3, 3>();
-    // register_dimensional_types<2, 3>();
+    register_dimensional_types<2, 3>();
+    register_dimensional_types<3, 3>();
   };
 
 } // namespace coral
