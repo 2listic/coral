@@ -459,7 +459,7 @@ TEST(dealiiExamples, NetworkFromJsonPoissonSolverSolution)
 
 TEST(dealiiExamples, LaplaceProblem)
 {
-  mark_long_test();
+  MARK_LONG_TEST();
 
   ScopedTestOutputDir output_dir("dealiiExamples_PoissonSolver");
 
