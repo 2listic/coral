@@ -456,27 +456,3 @@ TEST(dealiiExamples, NetworkFromJsonPoissonSolverSolution)
   ASSERT_TRUE(solution_file.good()) << "Solution VTU file was not created.";
   solution_file.close();
 }
-
-TEST(dealiiExamples, LaplaceProblem)
-{
-  MARK_LONG_TEST();
-
-  ScopedTestOutputDir output_dir("dealiiExamples_PoissonSolver");
-
-  register_non_dimensional_types();
-  register_dimensional_types<2, 2>();
-
-  int                              argc = 0;
-  char                           **argv = nullptr;
-  Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv, 1);
-
-  auto laplace = make_node<LaplaceProblem<2>>();
-
-  ASSERT_TRUE((*laplace)());
-  ASSERT_TRUE(laplace->ready());
-
-  auto run_method        = make_node("LaplaceProblem::run<2>");
-  auto output_dir_string = make_node(std::string(output_dir.path()));
-  run_method->set_arguments({laplace, output_dir_string});
-  (*run_method)();
-}

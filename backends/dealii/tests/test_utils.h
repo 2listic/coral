@@ -166,7 +166,7 @@ namespace coral_test
         {                                                               \
           std::cout << "Skip On" << std::endl;                          \
           GTEST_SKIP()                                                  \
-            << "Long test and CORAL_SKIP_LONG_TEST enabled. Skipping."; \
+            << "Long test and CORAL_KEEP_LONG_TEST disable. Skipping."; \
         }                                                               \
     }                                                                   \
   while (0)
