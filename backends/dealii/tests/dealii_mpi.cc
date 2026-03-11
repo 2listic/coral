@@ -72,10 +72,7 @@ protected:
     char **argv   = nullptr;
     m_mpi_session = std::make_unique<MPI_Session>(argc, argv, 1);
 
-    int size;
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-    if (size == 1)
+    if (Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) == 1)
       GTEST_SKIP() << "Please run MPI test with non trivial world size.";
   }
 
@@ -100,7 +97,7 @@ TEST_F(DealiiMPITest, LaplaceProblem)
 {
   MARK_LONG_TEST();
 
-  MPIScopedTestOutputDir output_dir("dealiiExamplesMPI_PoissonSolver");
+  MPIScopedTestOutputDir output_dir("DealiiMPITest_PoissonSolver");
 
   register_non_dimensional_types();
   register_dimensional_types<2, 2>();
@@ -115,4 +112,51 @@ TEST_F(DealiiMPITest, LaplaceProblem)
   auto output_dir_string = make_node(std::string(output_dir.path()));
   run_method->set_arguments({laplace, output_dir_string});
   (*run_method)();
+}
+
+TEST_F(DealiiMPITest, LaplaceProblemNetwork)
+{
+  MARK_LONG_TEST();
+
+  MPIScopedTestOutputDir output_dir("dealiiMPITest_LaplaceTransformNetwork");
+
+  register_non_dimensional_types();
+  register_dimensional_types<2, 2>();
+
+  Network network;
+  network.set_touch_file_base_path(output_dir);
+  network.clear_network();
+
+  std::ifstream file(SOURCE_DIR "/test_files/laplace.json");
+  ASSERT_TRUE(file.is_open()) << "Failed to open laplace.json file.";
+
+  nlohmann::json json_data;
+  file >> json_data;
+  file.close();
+
+  ASSERT_FALSE(json_data.empty()) << "JSON data is empty.";
+
+  // Update the initialize constant
+  // Node 5 contains the bool value
+  if (json_data["workflow"]["nodes"].contains("5") &&
+      json_data["workflow"]["nodes"]["5"].contains("value"))
+    {
+      json_data["workflow"]["nodes"]["5"]["value"] = "false";
+    }
+
+  // Update the output file path to use the test output directory
+  // Node 2 contains the output filename
+  if (json_data["workflow"]["nodes"].contains("2") &&
+      json_data["workflow"]["nodes"]["2"].contains("value"))
+    {
+      json_data["workflow"]["nodes"]["2"]["value"] = output_dir.path().string();
+    }
+
+  network.from_json(json_data);
+
+  slog_debug("Network has %u nodes and %u connections",
+             network.n_nodes(),
+             network.n_connections());
+
+  network.run();
 }

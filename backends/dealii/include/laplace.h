@@ -130,6 +130,7 @@ namespace LA
 #include <memory>
 
 using namespace dealii;
+using MPIHandle = Utilities::MPI::MPI_InitFinalize;
 
 // @sect3{The <code>LaplaceProblem</code> class template}
 
@@ -177,7 +178,6 @@ private:
   void
   output_results(const unsigned int cycle, std::filesystem::path dir);
 
-  using MPIHandle = Utilities::MPI::MPI_InitFinalize;
   std::unique_ptr<MPIHandle> mpi_handle{};
 
   MPI_Comm mpi_communicator;
@@ -204,6 +204,21 @@ private:
 
 // @sect4{Constructor}
 
+inline std::unique_ptr<MPIHandle>
+init_mpi(bool mpi_handle_init)
+{
+  if (mpi_handle_init)
+    {
+      int    argc = 0;
+      char **argv = nullptr;
+      return std::move(std::make_unique<MPIHandle>(argc, argv, 1));
+    }
+  else
+    {
+      return std::move(std::unique_ptr<MPIHandle>(nullptr));
+    }
+}
+
 // Constructors and destructors are rather trivial. In addition to what we
 // do in step-6, we set the set of processors we want to work on to all
 // machines available (MPI_COMM_WORLD); ask the triangulation to ensure that
@@ -214,7 +229,7 @@ private:
 // take:
 template <int dim>
 LaplaceProblem<dim>::LaplaceProblem(bool mpi_handle_init)
-  : mpi_handle()
+  : mpi_handle(init_mpi(mpi_handle_init))
   , mpi_communicator(MPI_COMM_WORLD)
   , triangulation(mpi_communicator,
                   typename Triangulation<dim>::MeshSmoothing(
@@ -227,14 +242,7 @@ LaplaceProblem<dim>::LaplaceProblem(bool mpi_handle_init)
                     pcout,
                     TimerOutput::never,
                     TimerOutput::wall_times)
-{
-  if (mpi_handle_init)
-    {
-      int    argc = 0;
-      char **argv = nullptr;
-      mpi_handle  = std::make_unique<MPIHandle>(argc, argv, 1);
-    }
-}
+{}
 
 // @sect4{LaplaceProblem::setup_system}
 

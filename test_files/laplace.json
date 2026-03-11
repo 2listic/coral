@@ -1,0 +1,36 @@
+{
+  "workflow": {
+    "nodes": {
+      "0": {
+        "type": "LaplaceProblem::run<2>",
+        "position": { "x": 293.7562932408905, "y": 327.37380674085716 },
+        "qualified_id": "0"
+      },
+      "1": {
+        "type": "LaplaceProblem<2>",
+        "position": { "x": -183.0478681433714, "y": 226.5708997085626 },
+        "qualified_id": "1"
+      },
+      "2": {
+        "type": "std::string",
+        "position": { "x": -164.89097078018403, "y": 417.02495316403406 },
+        "value": "/app/build/output/",
+        "qualified_id": "2"
+      },
+      "5": {
+        "type": "bool",
+        "position": { "x": -515.9703517123914, "y": 221.60561502104412 },
+        "value": "true",
+        "qualified_id": "5"
+      }
+    },
+    "edges": {
+      "0": { "source": 1, "target": 0, "source_output": 0, "target_input": 0 },
+      "1": { "source": 2, "target": 0, "source_output": 0, "target_input": 1 },
+      "2": { "source": 5, "target": 1, "source_output": 0, "target_input": 0 }
+    }
+  },
+  "version": 1,
+  "author": "dealiix-platform",
+  "date_time_utc": "2026-03-11T11:35:34.762Z"
+}
