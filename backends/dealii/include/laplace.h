@@ -127,6 +127,7 @@ namespace LA
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <memory>
 
 using namespace dealii;
 
@@ -159,7 +160,7 @@ template <int dim>
 class LaplaceProblem
 {
 public:
-  LaplaceProblem();
+  LaplaceProblem(bool mpi_initialize = true);
 
   void
   run(const std::string &dir);
@@ -175,6 +176,9 @@ private:
   refine_grid();
   void
   output_results(const unsigned int cycle, std::filesystem::path dir);
+
+  using MPIHandle = Utilities::MPI::MPI_InitFinalize;
+  std::unique_ptr<MPIHandle> mpi_handle{};
 
   MPI_Comm mpi_communicator;
 
@@ -209,8 +213,9 @@ private:
 // use to determine how much compute time the different parts of the program
 // take:
 template <int dim>
-LaplaceProblem<dim>::LaplaceProblem()
-  : mpi_communicator(MPI_COMM_WORLD)
+LaplaceProblem<dim>::LaplaceProblem(bool mpi_handle_init)
+  : mpi_handle()
+  , mpi_communicator(MPI_COMM_WORLD)
   , triangulation(mpi_communicator,
                   typename Triangulation<dim>::MeshSmoothing(
                     Triangulation<dim>::smoothing_on_refinement |
@@ -222,7 +227,14 @@ LaplaceProblem<dim>::LaplaceProblem()
                     pcout,
                     TimerOutput::never,
                     TimerOutput::wall_times)
-{}
+{
+  if (mpi_handle_init)
+    {
+      int    argc = 0;
+      char **argv = nullptr;
+      mpi_handle  = std::make_unique<MPIHandle>(argc, argv, 1);
+    }
+}
 
 // @sect4{LaplaceProblem::setup_system}
 

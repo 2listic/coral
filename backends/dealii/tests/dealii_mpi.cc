@@ -54,7 +54,7 @@ public:
   }
 
 private:
-  std::filesystem::path              path_;
+  std::filesystem::path                path_;
   std::unique_ptr<ScopedTestOutputDir> scoped_dir_;
 };
 
@@ -105,8 +105,9 @@ TEST_F(DealiiMPITest, LaplaceProblem)
   register_non_dimensional_types();
   register_dimensional_types<2, 2>();
 
-  auto laplace = make_node<LaplaceProblem<2>>();
-
+  auto laplace  = make_node<LaplaceProblem<2>>();
+  auto mpi_init = make_node(false);
+  laplace->set_arguments({mpi_init});
   ASSERT_TRUE((*laplace)());
   ASSERT_TRUE(laplace->ready());
 
