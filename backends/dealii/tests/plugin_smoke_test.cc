@@ -79,5 +79,7 @@ TEST(Plugin, DealiiRegistersTypes)
   const auto after = coral::NodeObject::get_registry().size();
   EXPECT_GT(after, before);
   EXPECT_GT(after, 10u);
+
+  unload();
 #endif
 }
