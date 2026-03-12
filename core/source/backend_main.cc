@@ -44,7 +44,7 @@ dump_registry(const fs::path &outpath, const std::string &backend_name)
 
 namespace
 {
-  using LoadFn   = void (*)(const char *);
+  using LoadFn   = int (*)(const char *);
   using UnloadFn = void (*)();
   using NameFn   = const char *(*)();
 
@@ -99,7 +99,11 @@ namespace
       m_name      = name_fn();
       m_unload_fn = unload_fn;
 
-      load_fn(subjson.dump().c_str());
+      if (load_fn(subjson.dump().c_str()))
+        {
+          close_library();
+          throw std::runtime_error("Plugin failed to initialize");
+        }
     }
 
     BackendPlugin() = default;

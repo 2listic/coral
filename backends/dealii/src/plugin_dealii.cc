@@ -7,7 +7,7 @@
 
 using json = nlohmann::json;
 
-CORAL_PLUGIN_EXPORT void
+CORAL_PLUGIN_EXPORT int
 coral_load_plugin(const char *subjson)
 {
   std::cout << "LOADING DEALII PLUGIN" << std::endl;
@@ -19,6 +19,8 @@ coral_load_plugin(const char *subjson)
     }
 
   coral::register_all_types();
+
+  return 0;
 }
 
 CORAL_PLUGIN_EXPORT void

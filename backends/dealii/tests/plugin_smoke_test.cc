@@ -11,7 +11,7 @@
 
 namespace
 {
-  using LoadFn   = void (*)(const char *);
+  using LoadFn   = int (*)(const char *);
   using UnloadFn = void (*)();
   using NameFn   = const char *(*)();
 
@@ -74,7 +74,7 @@ TEST(Plugin, DealiiRegistersTypes)
   auto         name   = load_symbol<NameFn>(plugin, "coral_backend_name");
 
   ASSERT_STREQ(name(), "dealii");
-  load(nullptr);
+  ASSERT_EQ(load(nullptr), 0);
 
   const auto after = coral::NodeObject::get_registry().size();
   EXPECT_GT(after, before);
