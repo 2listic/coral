@@ -71,7 +71,7 @@ TEST(Plugin, DealiiRegistersTypes)
   PluginHandle plugin = load_plugin(CORAL_TEST_PLUGIN_PATH);
   auto         load   = load_symbol<LoadFn>(plugin, "coral_load_plugin");
   auto         unload = load_symbol<UnloadFn>(plugin, "coral_unload_plugin");
-  auto         name   = load_symbol<NameFn>(plugin, "coral_backend_name");
+  auto         name   = load_symbol<NameFn>(plugin, "coral_plugin_name");
 
   ASSERT_STREQ(name(), "dealii");
   ASSERT_EQ(load(nullptr), 0);

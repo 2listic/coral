@@ -13,8 +13,11 @@
 #  define CORAL_PLUGIN_EXPORT extern "C" __attribute__((visibility("default")))
 #endif
 
+CORAL_PLUGIN_EXPORT int
+coral_load_plugin(const char *subjson);
+
 CORAL_PLUGIN_EXPORT void
-coral_backend_register_types();
+coral_unload_plugin();
 
 CORAL_PLUGIN_EXPORT const char *
-coral_backend_name();
+coral_plugin_name();

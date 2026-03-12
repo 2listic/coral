@@ -74,7 +74,7 @@ coral_unload_plugin()
 }
 
 CORAL_PLUGIN_EXPORT const char *
-coral_backend_name()
+coral_plugin_name()
 {
   return "dealii";
 }

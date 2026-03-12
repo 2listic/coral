@@ -94,7 +94,7 @@ namespace
 
       auto load_fn   = load_symbol<LoadFn>(m_handle, "coral_load_plugin");
       auto unload_fn = load_symbol<UnloadFn>(m_handle, "coral_unload_plugin");
-      auto name_fn   = load_symbol<NameFn>(m_handle, "coral_backend_name");
+      auto name_fn   = load_symbol<NameFn>(m_handle, "coral_plugin_name");
 
       m_name      = name_fn();
       m_unload_fn = unload_fn;
