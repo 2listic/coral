@@ -186,9 +186,16 @@ Minimal plugin entry points (`backends/my_backend/src/plugin_my_backend.cc`):
 #include "register_types.h"
 
 CORAL_PLUGIN_EXPORT void
-coral_backend_register_types()
+coral_load_plugin(const char *json)
 {
+  init_plugin(json);
   register_types();
+}
+
+CORAL_PLUGIN_EXPORT void
+coral_unload_plugin()
+{
+  finalize_plugin();
 }
 
 CORAL_PLUGIN_EXPORT const char *
@@ -197,6 +204,8 @@ coral_backend_name()
   return "my_backend";
 }
 ```
+
+A plugin can be initialized passing a json to it.
 
 CMake should build a shared library and link it against `coral_core` plus any
 backend dependencies:
@@ -210,8 +219,10 @@ Use `coral register` (built under `core/`) to load a plugin and write the
 registry JSON:
 
 ```bash
-./build/core/coral --plugin ./build/backends/dealii/libcoral_backend_dealii.(dylib|so|dll) register registry.json
+./build/core/coral --plugin ./build/backends/dealii/libcoral_backend_dealii.(dylib|so|dll) register plugin_init.json --registry-path registry.json
 ```
+
+Here in `plugin_init.json` the field `plugin`, if present, is passed as json to plugin for initialization. Coral is transparent to this initialization.
 
 ## Tests
 
