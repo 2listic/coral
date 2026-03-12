@@ -11,8 +11,9 @@
 
 namespace
 {
-  using RegisterFn = void (*)();
-  using NameFn     = const char *(*)();
+  using LoadFn   = void (*)(const char *);
+  using UnloadFn = void (*)();
+  using NameFn   = const char *(*)();
 
   struct PluginHandle
   {
@@ -32,7 +33,7 @@ namespace
     if (!h.handle)
       throw std::runtime_error("LoadLibrary failed.");
 #else
-    h.handle     = dlopen(path, RTLD_NOW | RTLD_LOCAL);
+    h.handle = dlopen(path, RTLD_NOW | RTLD_LOCAL);
     if (!h.handle)
       throw std::runtime_error(std::string("dlopen failed: ") + dlerror());
 #endif
@@ -68,11 +69,12 @@ TEST(Plugin, DealiiRegistersTypes)
   const auto before = coral::NodeObject::get_registry().size();
 
   PluginHandle plugin = load_plugin(CORAL_TEST_PLUGIN_PATH);
-  auto reg  = load_symbol<RegisterFn>(plugin, "coral_backend_register_types");
-  auto name = load_symbol<NameFn>(plugin, "coral_backend_name");
+  auto         load   = load_symbol<LoadFn>(plugin, "coral_load_plugin");
+  auto         unload = load_symbol<UnloadFn>(plugin, "coral_unload_plugin");
+  auto         name   = load_symbol<NameFn>(plugin, "coral_backend_name");
 
   ASSERT_STREQ(name(), "dealii");
-  reg();
+  load(nullptr);
 
   const auto after = coral::NodeObject::get_registry().size();
   EXPECT_GT(after, before);

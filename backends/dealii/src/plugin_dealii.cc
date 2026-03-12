@@ -12,8 +12,11 @@ coral_load_plugin(const char *subjson)
 {
   std::cout << "LOADING DEALII PLUGIN" << std::endl;
 
-  json init_json{subjson};
-  std::cout << init_json.dump() << std::endl;
+  if (subjson)
+    {
+      json init_json{subjson};
+      std::cout << init_json.dump() << std::endl;
+    }
 
   coral::register_all_types();
 }
