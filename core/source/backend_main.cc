@@ -111,9 +111,9 @@ namespace
     BackendPlugin(const BackendPlugin &) = delete;
     BackendPlugin &
     operator=(const BackendPlugin &) = delete;
-    BackendPlugin(BackendPlugin &&)  = default;
+    BackendPlugin(BackendPlugin &&)  = delete;
     BackendPlugin &
-    operator=(BackendPlugin &&) = default;
+    operator=(BackendPlugin &&) = delete;
 
     const std::string &
     name() const
@@ -558,10 +558,10 @@ main(int argc, char *argv[])
   if (data.contains("plugin"))
     subjson = data["plugin"];
 
-  BackendPlugin backend;
+  std::unique_ptr<BackendPlugin> backend{nullptr};
   try
     {
-      backend = BackendPlugin(plugin_path, subjson);
+      backend = std::make_unique<BackendPlugin>(plugin_path, subjson);
     }
   catch (const std::exception &e)
     {
@@ -570,7 +570,7 @@ main(int argc, char *argv[])
                  e.what());
       return EXIT_FAILURE;
     }
-  slog_info("Loaded backend plugin '%s'.", backend.name().c_str());
+  slog_info("Loaded backend plugin '%s'.", backend->name().c_str());
 
   if (dump_reg)
     {

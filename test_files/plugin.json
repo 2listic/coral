@@ -1,7 +1,8 @@
 {
   "plugin": {
     "MPI": {
-      "enabled": true
+      "enabled": true,
+      "max_num_threads": 1
     }
   }
 }

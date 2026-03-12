@@ -11,7 +11,7 @@
 using json      = nlohmann::json;
 using MPIHandle = dealii::Utilities::MPI::MPI_InitFinalize;
 
-static std::unique_ptr<MPIHandle> mpi_session{};
+static std::unique_ptr<MPIHandle> mpi_session{nullptr};
 
 CORAL_PLUGIN_EXPORT int
 coral_load_plugin(const char *subjson)
@@ -57,9 +57,20 @@ coral_load_plugin(const char *subjson)
   char **argv = argv_storage.data();
 
   std::cout << "MPI ENABLED: " << std::boolalpha << mpi_enabled << std::endl;
+  std::cout << "\tARGS: [ ";
+  for (size_t i = 0; i < args.size(); ++i)
+    {
+      std::cout << args[i];
+      if (i + 1 < args.size())
+        {
+          std::cout << ", ";
+        }
+    }
+  std::cout << "]" << std::endl;
+  std::cout << "\tMAX_NUM_THREADS: " << max_num_threads << std::endl;
 
   if (mpi_enabled)
-    mpi_session = std::make_unique<MPIHandle>(argc, argv, max_num_threads);
+    mpi_session.reset(new MPIHandle(argc, argv, max_num_threads));
 
   coral::register_all_types();
 

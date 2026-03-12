@@ -53,7 +53,8 @@ gtest_discover_tests(dealii_backend_tests
 
 # MPI TESTS
 
-add_executable(dealii_mpi_tests ${_mpi_test_file})
+set(_plugin_file ${CMAKE_CURRENT_LIST_DIR}/../src/plugin_dealii.cc)
+add_executable(dealii_mpi_tests ${_mpi_test_file} ${_plugin_file})
 
 target_include_directories(dealii_mpi_tests
   PRIVATE

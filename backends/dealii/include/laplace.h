@@ -646,6 +646,12 @@ template <int dim>
 void
 LaplaceProblem<dim>::run(const std::string &dir)
 {
+  if (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
+    {
+      if (!std::filesystem::exists(dir))
+        std::filesystem::create_directory(dir);
+    }
+
   pcout << "Running with "
 #ifdef USE_PETSC_LA
         << "PETSc"
