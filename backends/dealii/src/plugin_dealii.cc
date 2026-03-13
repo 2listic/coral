@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 
+#include "coral_log.h"
 #include "coral_plugin.h"
 #include "register_types.h"
 
@@ -14,21 +15,27 @@ using MPIHandle = dealii::Utilities::MPI::MPI_InitFinalize;
 static std::unique_ptr<MPIHandle> mpi_session{nullptr};
 
 CORAL_PLUGIN_EXPORT int
-coral_load_plugin(const char *subjson)
+coral_load_plugin(const char *subjson, const CoralLogger *logger)
 {
-  std::cout << "LOADING DEALII PLUGIN" << std::endl;
+  coral_active_logger      = logger;
+  coral_active_plugin_name = coral_plugin_name();
+
+  std::cout << "\tcoral_active_logger " << coral_active_logger
+            << ", coral_active_plugin_name " << coral_active_plugin_name
+            << std::endl;
+  coral_log_info("Loading plugin.");
 
   bool                     mpi_enabled = false;
   std::vector<std::string> args;
   unsigned int max_num_threads = dealii::numbers::invalid_unsigned_int;
 
-
   if (subjson)
     {
+      coral_log_info("Found initialization file.");
+
       try
         {
           json init_json = json::parse(subjson);
-          std::cout << init_json.dump() << std::endl;
           if (init_json.contains("MPI"))
             {
               if (init_json["MPI"].contains("enabled"))
@@ -44,6 +51,8 @@ coral_load_plugin(const char *subjson)
         }
       catch (json::parse_error &)
         {
+          coral_log_error("Initialization file is not correct.");
+
           return 1;
         }
     }
@@ -56,21 +65,15 @@ coral_load_plugin(const char *subjson)
   int    argc = static_cast<int>(argv_storage.size());
   char **argv = argv_storage.data();
 
-  std::cout << "MPI ENABLED: " << std::boolalpha << mpi_enabled << std::endl;
-  std::cout << "\tARGS: [ ";
-  for (size_t i = 0; i < args.size(); ++i)
-    {
-      std::cout << args[i];
-      if (i + 1 < args.size())
-        {
-          std::cout << ", ";
-        }
-    }
-  std::cout << "]" << std::endl;
-  std::cout << "\tMAX_NUM_THREADS: " << max_num_threads << std::endl;
-
   if (mpi_enabled)
-    mpi_session.reset(new MPIHandle(argc, argv, max_num_threads));
+    {
+      coral_log_info("MPI enabled with %u max threads.", max_num_threads);
+      mpi_session.reset(new MPIHandle(argc, argv, max_num_threads));
+    }
+  else
+    {
+      coral_log_info("MPI not enabled.");
+    }
 
   coral::register_all_types();
 
@@ -80,7 +83,7 @@ coral_load_plugin(const char *subjson)
 CORAL_PLUGIN_EXPORT void
 coral_unload_plugin()
 {
-  std::cout << "UNLOADING DEALII PLUGIN" << std::endl;
+  coral_log_info("Unloading plugin.");
   mpi_session.reset();
 }
 
@@ -88,4 +91,10 @@ CORAL_PLUGIN_EXPORT const char *
 coral_plugin_name()
 {
   return "dealii";
+}
+
+CORAL_PLUGIN_EXPORT void
+coral_set_logger(const CoralLogger *logger)
+{
+  coral_log_info("Plugin loaded");
 }

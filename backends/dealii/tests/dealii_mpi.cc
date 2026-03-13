@@ -73,7 +73,8 @@ protected:
     json plugin_json;
     plugin_json_raw >> plugin_json;
     ASSERT_TRUE(plugin_json.contains("plugin"));
-    ASSERT_EQ(coral_load_plugin(plugin_json["plugin"].dump().c_str()), 0);
+    ASSERT_EQ(coral_load_plugin(plugin_json["plugin"].dump().c_str(), nullptr),
+              0);
   }
 
   void static TearDownTestSuite()

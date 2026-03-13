@@ -13,8 +13,10 @@
 #  define CORAL_PLUGIN_EXPORT extern "C" __attribute__((visibility("default")))
 #endif
 
+#include "coral_logger.h"
+
 CORAL_PLUGIN_EXPORT int
-coral_load_plugin(const char *subjson);
+coral_load_plugin(const char *subjson, const CoralLogger *logger);
 
 CORAL_PLUGIN_EXPORT void
 coral_unload_plugin();

@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "coral.h"
+#include "coral_logger.h"
 #include "coral_network.h"
 #include "magic_enum/magic_enum_all.hpp"
 #include "slog.h"
@@ -84,7 +85,7 @@ dump_registry(const fs::path &outpath, const std::string &backend_name)
 
 namespace
 {
-  using LoadFn   = int (*)(const char *);
+  using LoadFn   = int (*)(const char *, const CoralLogger *);
   using UnloadFn = void (*)();
   using NameFn   = const char *(*)();
 
@@ -120,7 +121,9 @@ namespace
   class BackendPlugin
   {
   public:
-    explicit BackendPlugin(const fs::path &path, json subjson)
+    explicit BackendPlugin(const fs::path    &path,
+                           json               subjson,
+                           const CoralLogger *logger = nullptr)
     {
 #if defined(_WIN32)
       m_handle.handle = LoadLibraryA(path.string().c_str());
@@ -139,7 +142,12 @@ namespace
       m_name      = name_fn();
       m_unload_fn = unload_fn;
 
-      if (load_fn(subjson.dump().c_str()))
+      if (!logger)
+        {
+          slog_warn("Impossible to set logger to plugin.");
+        }
+
+      if (load_fn(subjson.dump().c_str(), logger))
         {
           close_library();
           throw std::runtime_error("Plugin failed to initialize");
@@ -576,6 +584,9 @@ main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
 
+  CoralLogger logger;
+  logger.display = &slog_display;
+
   bool run        = run_sub->parsed();
   bool dump_reg   = register_sub->parsed() || run_sub->count("--register");
   bool dump_graph = run_sub->count("--graph");
@@ -602,7 +613,7 @@ main(int argc, char *argv[])
   std::unique_ptr<BackendPlugin> backend{nullptr};
   try
     {
-      backend = std::make_unique<BackendPlugin>(plugin_path, subjson);
+      backend = std::make_unique<BackendPlugin>(plugin_path, subjson, &logger);
     }
   catch (const std::exception &e)
     {
