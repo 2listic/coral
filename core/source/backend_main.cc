@@ -32,6 +32,46 @@
 using json   = nlohmann::json;
 namespace fs = std::filesystem;
 
+template <typename T>
+T
+get_env_or(const std::string &name, T default_val)
+{
+  const char *val = std::getenv(name.c_str());
+  if (!val)
+    return default_val;
+
+  std::stringstream ss{val};
+  T                 result;
+  if (ss >> result)
+    return result;
+
+  return default_val;
+}
+
+bool
+is_master_process()
+{
+  int rank = 0;
+
+  std::string custom_var{};
+  custom_var = get_env_or("CORAL_MPI_RANK_VARIABLE", custom_var);
+
+  if (custom_var.empty())
+    {
+      // Common variable set in major MPI implementations
+      rank = get_env_or("SLURM_PROC_ID", rank);
+      rank = get_env_or("OMPI_COMM_WORLD_RANK", rank);
+      rank = get_env_or("PMI_RANK", rank);
+      rank = get_env_or("PMIX_RANK", rank);
+    }
+  else
+    {
+      rank = get_env_or(custom_var, rank);
+    }
+
+  return rank == 0;
+}
+
 void
 dump_registry(const fs::path &outpath, const std::string &backend_name)
 {
@@ -290,7 +330,8 @@ namespace
       if (active)
         slog_destroy();
 
-      const uint16_t flags = parse_slog_flags(cli.flags);
+      const uint16_t flags =
+        is_master_process() ? parse_slog_flags(cli.flags) : 0;
       slog_init(cli.name.c_str(),
                 flags,
                 static_cast<uint8_t>(cli.thread_safe != 0));
@@ -584,9 +625,8 @@ main(int argc, char *argv[])
   if (!run)
     return EXIT_SUCCESS;
 
-  const char  *env_th    = std::getenv("THREADS");
-  const size_t n_threads = env_th ? static_cast<size_t>(std::stoull(env_th)) :
-                                    std::thread::hardware_concurrency();
+  const size_t n_threads =
+    get_env_or("THREADS", std::thread::hardware_concurrency());
   slog_info("Thread pool size of %zu.", n_threads);
 
   coral::Network network;
