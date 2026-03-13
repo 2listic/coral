@@ -2,9 +2,10 @@
 
 // C ABI logger interface for coral plugins.
 //
-// The host fills a CoralLogger and passes it to the plugin via
-// coral_set_logger(). The plugin should include coral_log.h to get
-// logging macros that route through this struct.
+// The host fills a CoralLogger with a pointer to its slog_display() instance
+// and passes it to the plugin as the second argument of coral_load_plugin().
+// The plugin stores it in coral_active_logger (declared in coral_log.h) so
+// that all coral_log_XXX macros route through the host's logging instance.
 
 #include "slog/slog.h"
 

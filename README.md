@@ -182,36 +182,70 @@ Suggested layout:
 Minimal plugin entry points (`backends/my_backend/src/plugin_my_backend.cc`):
 
 ```cpp
+#include "coral_log.h"    // instead of slog.h — do NOT link slog
 #include "coral_plugin.h"
 #include "register_types.h"
 
-CORAL_PLUGIN_EXPORT void
-coral_load_plugin(const char *json)
+CORAL_PLUGIN_EXPORT const char *
+coral_plugin_name()
 {
-  init_plugin(json);
+  return "my_backend";
+}
+
+CORAL_PLUGIN_EXPORT int
+coral_load_plugin(const char *subjson, const CoralLogger *logger)
+{
+  // Store the host logger so that coral_log_XXX macros become active.
+  coral_active_logger      = logger;
+  coral_active_plugin_name = coral_plugin_name();
+
+  coral_log_info("Loading plugin.");
   register_types();
+  return 0; // non-zero signals failure to the host
 }
 
 CORAL_PLUGIN_EXPORT void
 coral_unload_plugin()
 {
-  finalize_plugin();
-}
-
-CORAL_PLUGIN_EXPORT const char *
-coral_backend_name()
-{
-  return "my_backend";
+  coral_log_info("Unloading plugin.");
 }
 ```
 
-A plugin can be initialized passing a json to it.
+The host passes the optional JSON initialisation string and its own
+`CoralLogger` to `coral_load_plugin()`. A non-zero return value is treated as
+a load failure by the host.
 
 CMake should build a shared library and link it against `coral_core` plus any
-backend dependencies:
+backend dependencies. The plugin must **not** link against slog directly:
 
-- `add_library(coral_backend_my_backend SHARED ...)`
-- `target_link_libraries(coral_backend_my_backend PRIVATE coral_core ...)`
+```cmake
+add_library(coral_backend_my_backend SHARED ...)
+target_link_libraries(coral_backend_my_backend PRIVATE coral_core ...)
+```
+
+### Logging inside a plugin
+
+Plugins must not initialise or link slog themselves. Instead they use
+`core/include/coral_log.h`, which provides macros that forward log calls to
+the host's slog instance through the `CoralLogger` pointer received in
+`coral_load_plugin()`.
+
+Available macros (mirror the slog levels):
+
+| Macro | slog level |
+|---|---|
+| `coral_log(fmt, ...)` | `SLOG_NOTAG` |
+| `coral_log_note(fmt, ...)` | `SLOG_NOTE` |
+| `coral_log_info(fmt, ...)` | `SLOG_INFO` |
+| `coral_log_warn(fmt, ...)` | `SLOG_WARN` |
+| `coral_log_debug(fmt, ...)` | `SLOG_DEBUG` |
+| `coral_log_error(fmt, ...)` | `SLOG_ERROR` |
+| `coral_log_trace(fmt, ...)` | `SLOG_TRACE` (includes `[file:line]`) |
+| `coral_log_fatal(fmt, ...)` | `SLOG_FATAL` (includes `[file:line]`) |
+
+Every message is automatically prefixed with `[<plugin_name>]` using the value
+returned by `coral_plugin_name()`. All macros are safe no-ops if
+`coral_active_logger` is null (i.e. before `coral_load_plugin()` is called).
 
 ### Dump a registry from a plugin
 
