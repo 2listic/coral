@@ -99,9 +99,7 @@ TEST_F(DealiiMPITest, LaplaceProblem)
 
   MPIScopedTestOutputDir output_dir("DealiiMPITest_PoissonSolver");
 
-  auto laplace  = make_node<LaplaceProblem<2>>();
-  auto mpi_init = make_node(false);
-  laplace->set_arguments({mpi_init});
+  auto laplace = make_node<LaplaceProblem<2>>();
   ASSERT_TRUE((*laplace)());
   ASSERT_TRUE(laplace->ready());
 

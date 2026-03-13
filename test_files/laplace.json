@@ -22,18 +22,11 @@
         "position": { "x": -164.89097078018403, "y": 417.02495316403406 },
         "value": "/app/build/output/",
         "qualified_id": "2"
-      },
-      "5": {
-        "type": "bool",
-        "position": { "x": -515.9703517123914, "y": 221.60561502104412 },
-        "value": "false",
-        "qualified_id": "5"
       }
     },
     "edges": {
       "0": { "source": 1, "target": 0, "source_output": 0, "target_input": 0 },
-      "1": { "source": 2, "target": 0, "source_output": 0, "target_input": 1 },
-      "2": { "source": 5, "target": 1, "source_output": 0, "target_input": 0 }
+      "1": { "source": 2, "target": 0, "source_output": 0, "target_input": 1 }
     }
   },
   "version": 1,
