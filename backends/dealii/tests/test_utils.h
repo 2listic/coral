@@ -158,4 +158,17 @@ namespace coral_test
 
 } // namespace coral_test
 
+
+#define MARK_LONG_TEST()                                                \
+  do                                                                    \
+    {                                                                   \
+      if (std::getenv("CORAL_KEEP_LONG_TESTS") == nullptr)              \
+        {                                                               \
+          std::cout << "Skip On" << std::endl;                          \
+          GTEST_SKIP()                                                  \
+            << "Long test and CORAL_KEEP_LONG_TEST disable. Skipping."; \
+        }                                                               \
+    }                                                                   \
+  while (0)
+
 #endif // GTESTS_TEST_UTILS_H

@@ -18,6 +18,7 @@
 
 #include "coral.h"
 #include "coral_network.h"
+#include "laplace.h"
 #include "poisson.h"
 
 /** \cond INTERNAL */
@@ -164,6 +165,13 @@ namespace coral
       &PoissonSolver<dim, spacedim>::solve,
       {"PoissonSolver::solve<" + Utilities::dim_string(dim, spacedim) + ">",
        "poisson_solver"});
+
+    NodeObject::register_type<LaplaceProblem<dim>, bool>("mpi_initialize");
+    NodeObject::register_method<LaplaceProblem<dim>, void, const std::string &>(
+      &LaplaceProblem<dim>::run,
+      {"LaplaceProblem::run<" + Utilities::dim_string(dim, spacedim) + ">",
+       "laplace_problem",
+       "output_dir"});
   }
 
 
