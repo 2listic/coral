@@ -180,7 +180,7 @@ var searchData=
   ['refine_5fparam_177',['refine_param',['http://www.dealii.org/developer/doxygen/deal.II/classTimeStepping_1_1EmbeddedExplicitRungeKutta.html#af72f45511d0ecb1588d3551aa7616e0e',1,'TimeStepping::EmbeddedExplicitRungeKutta']]],
   ['refine_5ftol_178',['refine_tol',['http://www.dealii.org/developer/doxygen/deal.II/classTimeStepping_1_1EmbeddedExplicitRungeKutta.html#a076f9882653c75c803b37e1bb32a474a',1,'TimeStepping::EmbeddedExplicitRungeKutta']]],
   ['refined_5fcells_5factive_5findex_179',['refined_cells_active_index',['http://www.dealii.org/developer/doxygen/deal.II/classCellDataTransfer.html#a6f22ac38bad36a6b487d193eaac321cc',1,'CellDataTransfer']]],
-  ['refined_5fcells_5ffe_5findex_180',['refined_cells_fe_index',['http://www.dealii.org/developer/doxygen/deal.II/structDoFHandler_1_1ActiveFEIndexTransfer.html#a0c4a6dcb32693c0dd2e89e01c8b764cf',1,'DoFHandler::ActiveFEIndexTransfer']]],
+  ['refined_5fcells_5ffe_5findex_180',['refined_cells_fe_index',['http://www.dealii.org/developer/doxygen/deal.II/structDoFHandler_1_1ActiveFEIndexTransfer.html#a17df1973f209d8fd0bfabf441afebd1d',1,'DoFHandler::ActiveFEIndexTransfer']]],
   ['refinement_20code_20gallery_20program_181',['The &apos;Information density-based mesh refinement&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_information_based_mesh_refinement.html',1,'']]],
   ['refinement_2ecc_182',['refinement.cc',['http://www.dealii.org/developer/doxygen/deal.II/refinement_8cc.html',1,'']]],
   ['refinement_2eh_183',['refinement.h',['http://www.dealii.org/developer/doxygen/deal.II/refinement_8h.html',1,'']]],
