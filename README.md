@@ -8,6 +8,12 @@ workflows as directed graphs where nodes represent data or operations, and
 edges represent dependencies. The library is designed with parallel
 scientific computing in mind.
 
+## Getting CORAL
+
+```
+  git clone --recurse-submodules https://github.com/2listic/coral.git
+```
+
 ## Design Philosophy
 
 ### Functional approach
