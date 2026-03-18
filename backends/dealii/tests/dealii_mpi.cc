@@ -12,7 +12,6 @@
 using namespace dealii;
 using namespace coral;
 using coral_test::ScopedTestOutputDir;
-using MPI_Session = Utilities::MPI::MPI_InitFinalize;
 
 /**
  * MPI-aware wrapper around ScopedTestOutputDir.
