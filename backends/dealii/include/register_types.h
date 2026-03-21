@@ -20,6 +20,7 @@
 #include "coral_network.h"
 #include "laplace.h"
 #include "poisson.h"
+#include "utilities.h"
 
 /** \cond INTERNAL */
 namespace nlohmann
@@ -120,6 +121,12 @@ namespace coral
        "triangulation",
        "grid_generator_function_name",
        "grid_generator_function_arguments"});
+
+    NodeObject::register_function(read_grid<dim, spacedim>,
+                                  {"dealii::read_grid<" +
+                                     Utilities::dim_string(dim, spacedim) + ">",
+                                   "file_name",
+                                   "triangulation"});
 
     NodeObject::
       register_method<Triangulation<dim, spacedim>, void, unsigned int>(
