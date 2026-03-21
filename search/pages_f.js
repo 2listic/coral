@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['facing_0',['API Reference (User-Facing)',['../index.html#autotoc_md20',1,'']]],
-  ['features_1',['Key Features',['../index.html#autotoc_md4',1,'']]],
+  ['facing_0',['API Reference (User-Facing)',['../index.html#autotoc_md22',1,'']]],
+  ['features_1',['Key Features',['../index.html#autotoc_md5',1,'']]],
   ['field_20fracture_20model_20in_203d_20code_20gallery_20program_2',['The &apos;Phase-field fracture model in 3D&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_Phase_field_fracture_model_in_3D.html',1,'']]],
   ['field_20modeling_20code_20gallery_20program_3',['The &apos;Crystal growth problem using phase field modeling&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_Crystal_Growth_Phase_Field_Model.html',1,'']]],
   ['finite_20element_20mfmfe_20methods_20code_20gallery_20program_4',['The &apos;Higher Order Multipoint Flux Mixed Finite Element (MFMFE) methods&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_MultipointFluxMixedFiniteElementMethods.html',1,'']]],
@@ -14,7 +14,7 @@ var searchData=
   ['for_20the_20laplace_20equation_20code_20gallery_20program_11',['The &apos;MCMC for the Laplace equation&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_MCMC_Laplace.html',1,'']]],
   ['for_20the_20maxwell_20eigenvalue_20problem_20code_20gallery_20program_12',['The &apos;Goal-Oriented hp-Adaptivity for the Maxwell Eigenvalue Problem&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_Maxwell_Eigenvalue_hp_Refinement.html',1,'']]],
   ['fracture_20model_20in_203d_20code_20gallery_20program_13',['The &apos;Phase-field fracture model in 3D&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_Phase_field_fracture_model_in_3D.html',1,'']]],
-  ['free_20builds_14',['Warning-free builds',['../index.html#autotoc_md13',1,'']]],
-  ['from_20a_20plugin_15',['Dump a registry from a plugin',['../index.html#autotoc_md16',1,'']]],
-  ['functional_20approach_16',['Functional approach',['../index.html#autotoc_md3',1,'']]]
+  ['free_20builds_14',['Warning-free builds',['../index.html#autotoc_md14',1,'']]],
+  ['from_20a_20plugin_15',['Dump a registry from a plugin',['../index.html#autotoc_md18',1,'']]],
+  ['functional_20approach_16',['Functional approach',['../index.html#autotoc_md4',1,'']]]
 ];

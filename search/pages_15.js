@@ -4,9 +4,10 @@ var searchData=
   ['laplace_20equation_20coupled_20to_20an_20external_20simulation_20program_20code_20gallery_20program_1',['The &apos;Laplace equation coupled to an external simulation program&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_coupled_laplace_problem.html',1,'']]],
   ['laser_20heating_20code_20gallery_20program_2',['The &apos;Distributed moving laser heating&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_Distributed_Moving_Laser_Heating.html',1,'']]],
   ['last_20release_3',['Changes since the last release',['http://www.dealii.org/developer/doxygen/deal.II/recent_changes.html',1,'']]],
-  ['layout_4',['Repository Layout',['../index.html#autotoc_md9',1,'']]],
+  ['layout_4',['Repository Layout',['../index.html#autotoc_md10',1,'']]],
   ['ldg_20method_20code_20gallery_20program_5',['The &apos;Distributed LDG Method&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_Distributed_LDG_Method.html',1,'']]],
-  ['level_20directories_6',['Top-level directories',['../index.html#autotoc_md10',1,'']]],
+  ['level_20directories_6',['Top-level directories',['../index.html#autotoc_md11',1,'']]],
   ['library_7',['CORAL - Computational Object-oriented Representation And Library',['../index.html',1,'']]],
-  ['linear_20elastic_20active_20skeletal_20muscle_20model_20code_20gallery_20program_8',['The &apos;Linear Elastic Active Skeletal Muscle Model&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_Linear_Elastic_Active_Skeletal_Muscle_Model.html',1,'']]]
+  ['linear_20elastic_20active_20skeletal_20muscle_20model_20code_20gallery_20program_8',['The &apos;Linear Elastic Active Skeletal Muscle Model&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_Linear_Elastic_Active_Skeletal_Muscle_Model.html',1,'']]],
+  ['logging_20inside_20a_20plugin_9',['Logging inside a plugin',['../index.html#autotoc_md17',1,'']]]
 ];

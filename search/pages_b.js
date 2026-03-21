@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['backend_20plugins_20and_20registries_0',['Backend Plugins and Registries',['../index.html#autotoc_md14',1,'']]],
+  ['backend_20plugins_20and_20registries_0',['Backend Plugins and Registries',['../index.html#autotoc_md15',1,'']]],
   ['based_20mesh_20refinement_20code_20gallery_20program_1',['The &apos;Information density-based mesh refinement&apos; code gallery program',['http://www.dealii.org/developer/doxygen/deal.II/code_gallery_information_based_mesh_refinement.html',1,'']]],
   ['between_20version_201_200_20and_202_200_2',['Changes between Version 1.0 and 2.0',['http://www.dealii.org/developer/doxygen/deal.II/changes_between_1_0_and_2_0.html',1,'']]],
   ['between_20version_202_200_20and_203_200_3',['Changes between Version 2.0 and 3.0',['http://www.dealii.org/developer/doxygen/deal.II/changes_between_2_0_and_3_0.html',1,'']]],
@@ -51,8 +51,8 @@ var searchData=
   ['between_20version_209_205_202_20and_209_206_200_48',['Changes between Version 9.5.2 and 9.6.0',['http://www.dealii.org/developer/doxygen/deal.II/changes_between_9_5_2_and_9_6_0.html',1,'']]],
   ['between_20version_209_206_200_20and_209_207_200_49',['Changes between Version 9.6.0 and 9.7.0',['http://www.dealii.org/developer/doxygen/deal.II/changes_between_9_6_0_and_9_7_0.html',1,'']]],
   ['between_20version_209_207_200_20and_209_207_201_50',['Changes between Version 9.7.0 and 9.7.1',['http://www.dealii.org/developer/doxygen/deal.II/changes_between_9_7_0_and_9_7_1.html',1,'']]],
-  ['binding_20state_20and_20topology_20queries_51',['Binding state and topology queries',['../index.html#autotoc_md25',1,'']]],
-  ['build_20system_20cmake_52',['Build System (CMake)',['../index.html#autotoc_md11',1,'']]],
-  ['builds_53',['Warning-free builds',['../index.html#autotoc_md13',1,'']]],
-  ['bundles_54',['Register* helpers (type bundles)',['../index.html#autotoc_md33',1,'']]]
+  ['binding_20state_20and_20topology_20queries_51',['Binding state and topology queries',['../index.html#autotoc_md27',1,'']]],
+  ['build_20system_20cmake_52',['Build System (CMake)',['../index.html#autotoc_md12',1,'']]],
+  ['builds_53',['Warning-free builds',['../index.html#autotoc_md14',1,'']]],
+  ['bundles_54',['Register* helpers (type bundles)',['../index.html#autotoc_md35',1,'']]]
 ];

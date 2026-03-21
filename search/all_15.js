@@ -9,7 +9,7 @@ var searchData=
   ['kellyerrorestimator_6',['KellyErrorEstimator',['http://www.dealii.org/developer/doxygen/deal.II/classKellyErrorEstimator.html',1,'']]],
   ['kellyerrorestimator_3c_201_2c_20spacedim_20_3e_7',['KellyErrorEstimator&lt; 1, spacedim &gt;',['http://www.dealii.org/developer/doxygen/deal.II/classKellyErrorEstimator_3_011_00_01spacedim_01_4.html',1,'']]],
   ['kernel_5fsize_8',['kernel_size',['http://www.dealii.org/developer/doxygen/deal.II/classRelaxationBlock_1_1AdditionalData.html#aff8aa50b0eabb26191b96be6ac009efc',1,'RelaxationBlock::AdditionalData']]],
-  ['key_20features_9',['Key Features',['../index.html#autotoc_md4',1,'']]],
+  ['key_20features_9',['Key Features',['../index.html#autotoc_md5',1,'']]],
   ['key_5fpattern_10',['key_pattern',['http://www.dealii.org/developer/doxygen/deal.II/classPatterns_1_1Map.html#ac0966371bda728fb35c1f07f3dc17ad0',1,'Patterns::Map']]],
   ['key_5fvalue_5fseparator_11',['key_value_separator',['http://www.dealii.org/developer/doxygen/deal.II/classPatterns_1_1Map.html#af7e1e7fcf27e14abef21b138750f5b7d',1,'Patterns::Map']]],
   ['kind_12',['kind',['http://www.dealii.org/developer/doxygen/deal.II/classReferenceCell.html#aa6de517a09acfe6431c25e10f69e8e88',1,'ReferenceCell']]],

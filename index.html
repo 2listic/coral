@@ -109,8 +109,11 @@ $(function(){initNavTree('index.html','',''); });
 Introduction</h1>
 <p>CORAL is a C++ library for building, connecting, and executing computational graphs. It provides a flexible framework for representing computational workflows as directed graphs where nodes represent data or operations, and edges represent dependencies. The library is designed with parallel scientific computing in mind.</p>
 <h1 class="doxsection"><a class="anchor" id="autotoc_md2"></a>
+Getting CORAL</h1>
+<div class="fragment"><div class="line">git clone --recurse-submodules https://github.com/2listic/coral.git</div>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md3"></a>
 Design Philosophy</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md3"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md4"></a>
 Functional approach</h2>
 <p>In CORAL, every node is designed to be interpreted as a function, represented by its <span class="tt">operator()</span>. This functional philosophy ensures that nodes are not merely containers of data or operations but are active participants in the computational graph. The execution of a node's function is determined by its type, which defines its behavior and role within the graph.</p>
 <ul>
@@ -126,7 +129,7 @@ Functional approach</h2>
 <li><b>Input and Output Management</b>: Each node manages its inputs and outputs through a type-safe system. Inputs are connected to other nodes' outputs, and the execution of the node ensures that the outputs are updated accordingly.</li>
 </ul>
 <p>This functional approach ensures that nodes in CORAL are versatile and adaptable, capable of representing a wide range of computational tasks. By interpreting nodes as functions, CORAL provides a consistent and intuitive framework for building and executing complex computational workflows.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md4"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md5"></a>
 Key Features</h2>
 <p>The core design principles of CORAL are:</p>
 <ul>
@@ -136,9 +139,9 @@ Key Features</h2>
 <li><b><a class="elRef" href="http://www.dealii.org/developer/doxygen/deal.II/classLazy.html">Lazy</a> Evaluation</b>: Computation nodes are only executed when explicitly requested or when their outputs are needed by other nodes, allowing for efficient execution.</li>
 <li><b>Serialization</b>: All nodes can be serialized to and from JSON, enabling workflow persistence and reconstruction, and interfacing with graphical node editors and libraries.</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md5"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md6"></a>
 Core Architecture</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md6"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md7"></a>
 NodeObject Class</h2>
 <p>The <span class="tt">NodeObject</span> class is the central component of CORAL. Each NodeObject:</p>
 <ul>
@@ -147,7 +150,7 @@ NodeObject Class</h2>
 <li>Provides inputs and outputs for connecting to other nodes</li>
 <li>Can execute computation through its operator() method</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md7"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md8"></a>
 Connections and Networks</h2>
 <p>Nodes are connected through a system of typed inputs and outputs:</p>
 <ul>
@@ -157,7 +160,7 @@ Connections and Networks</h2>
 <li><b>ConnectionType::self</b>: The node itself can be used as input and is returned as an output</li>
 </ul>
 <p>The <span class="tt">Network</span> class manages collections of nodes and their connections, allowing for the construction and execution of complex computational workflows.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md8"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md9"></a>
 Type Registration System</h1>
 <p>CORAL requires types to be registered before use. Registration functions include:</p>
 <ul>
@@ -168,10 +171,10 @@ Type Registration System</h1>
 <li><b>register_method</b>: For member functions (void/non-void, const/non-const)</li>
 <li><b>register_function</b>: For free functions</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md9"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md10"></a>
 Repository Layout</h1>
 <p>The codebase is intentionally split so the <b>core graph library</b> can be built without any particular “backend” (e.g. deal.II), and UIs can be built without linking backend types. Backends provide types at runtime via a small plugin ABI and/or by dumping a <span class="tt">registry.json</span> for UI authoring.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md10"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md11"></a>
 Top-level directories</h2>
 <ul>
 <li><span class="tt">core/</span><ul>
@@ -191,7 +194,7 @@ Top-level directories</h2>
 </ul>
 </li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md11"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md12"></a>
 Build System (CMake)</h1>
 <p>The top-level <span class="tt">CMakeLists.txt</span> composes independent subprojects:</p>
 <ul>
@@ -199,7 +202,7 @@ Build System (CMake)</h1>
 <li><span class="tt">coral_backend_dealii</span>: deal.II backend plugin under <span class="tt">backends/dealii/</span></li>
 <li><span class="tt">coral</span>: main CLI under <span class="tt">core/</span></li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md12"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md13"></a>
 Options</h2>
 <p>These options are enabled by default:</p>
 <ul>
@@ -209,13 +212,13 @@ Options</h2>
 <p>Example:</p>
 <div class="fragment"><div class="line">cmake -S . -B build -DCMAKE_BUILD_TYPE=Release</div>
 <div class="line">cmake --build build -j 8</div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md13"></a>
+</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md14"></a>
 Warning-free builds</h2>
 <p>External libraries (and translation units that include a lot of external headers, such as deal.II-heavy code) are built with warnings disabled to keep output clean by default.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md14"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md15"></a>
 Backend Plugins and Registries</h1>
 <p>CORAL “registration” is backend-specific: a backend is responsible for calling <span class="tt">coral::NodeObject::register_*</span> for its own node types.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md15"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md16"></a>
 Creating a new plugin</h2>
 <p>To add a new backend plugin (e.g. <span class="tt">my_backend</span>), create a new subdirectory and provide two pieces: (1) a normal C++ registration function that calls <span class="tt">coral::NodeObject::register_*</span>, and (2) a shared library that exports the CORAL plugin ABI from <span class="tt">core/include/coral_plugin.h</span>.</p>
 <p>Suggested layout:</p>
@@ -226,30 +229,68 @@ Creating a new plugin</h2>
 <li><span class="tt">backends/my_backend/CMakeLists.txt</span> (builds the shared library target)</li>
 </ul>
 <p>Minimal plugin entry points (<span class="tt">backends/my_backend/src/plugin_my_backend.cc</span>):</p>
-<div class="fragment"><div class="line"><span class="preprocessor">#include &quot;coral_plugin.h&quot;</span></div>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &quot;coral_log.h&quot;</span>    <span class="comment">// instead of slog.h — do NOT link slog</span></div>
+<div class="line"><span class="preprocessor">#include &quot;coral_plugin.h&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;register_types.h&quot;</span></div>
 <div class="line"> </div>
-<div class="line">CORAL_PLUGIN_EXPORT <span class="keywordtype">void</span></div>
-<div class="line">coral_backend_register_types()</div>
-<div class="line">{</div>
-<div class="line">  register_types();</div>
-<div class="line">}</div>
-<div class="line"> </div>
 <div class="line">CORAL_PLUGIN_EXPORT <span class="keyword">const</span> <span class="keywordtype">char</span> *</div>
-<div class="line">coral_backend_name()</div>
+<div class="line">coral_plugin_name()</div>
 <div class="line">{</div>
 <div class="line">  <span class="keywordflow">return</span> <span class="stringliteral">&quot;my_backend&quot;</span>;</div>
 <div class="line">}</div>
-</div><!-- fragment --><p>CMake should build a shared library and link it against <span class="tt">coral_core</span> plus any backend dependencies:</p>
-<ul>
-<li><span class="tt">add_library(coral_backend_my_backend SHARED ...)</span></li>
-<li><span class="tt">target_link_libraries(coral_backend_my_backend PRIVATE coral_core ...)</span></li>
-</ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md16"></a>
+<div class="line"> </div>
+<div class="line">CORAL_PLUGIN_EXPORT <span class="keywordtype">int</span></div>
+<div class="line">coral_load_plugin(<span class="keyword">const</span> <span class="keywordtype">char</span> *subjson, <span class="keyword">const</span> CoralLogger *logger)</div>
+<div class="line">{</div>
+<div class="line">  <span class="comment">// Store the host logger so that coral_log_XXX macros become active.</span></div>
+<div class="line">  coral_active_logger      = logger;</div>
+<div class="line">  coral_active_plugin_name = coral_plugin_name();</div>
+<div class="line"> </div>
+<div class="line">  coral_log_info(<span class="stringliteral">&quot;Loading plugin.&quot;</span>);</div>
+<div class="line">  register_types();</div>
+<div class="line">  <span class="keywordflow">return</span> 0; <span class="comment">// non-zero signals failure to the host</span></div>
+<div class="line">}</div>
+<div class="line"> </div>
+<div class="line">CORAL_PLUGIN_EXPORT <span class="keywordtype">void</span></div>
+<div class="line">coral_unload_plugin()</div>
+<div class="line">{</div>
+<div class="line">  coral_log_info(<span class="stringliteral">&quot;Unloading plugin.&quot;</span>);</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>The host passes the optional JSON initialisation string and its own <span class="tt">CoralLogger</span> to <span class="tt">coral_load_plugin()</span>. A non-zero return value is treated as a load failure by the host.</p>
+<p>CMake should build a shared library and link it against <span class="tt">coral_core</span> plus any backend dependencies. The plugin must <b>not</b> link against slog directly:</p>
+<div class="fragment"><div class="line">add_library(coral_backend_my_backend SHARED ...)</div>
+<div class="line">target_link_libraries(coral_backend_my_backend PRIVATE coral_core ...)</div>
+</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md17"></a>
+Logging inside a plugin</h2>
+<p>Plugins must not initialise or link slog themselves. Instead they use <span class="tt">core/include/coral_log.h</span>, which provides macros that forward log calls to the host's slog instance through the <span class="tt">CoralLogger</span> pointer received in <span class="tt">coral_load_plugin()</span>.</p>
+<p>Available macros (mirror the slog levels):</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Macro  </th><th class="markdownTableHeadNone">slog level  </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">coral_log(fmt, ...)</span>  </td><td class="markdownTableBodyNone"><span class="tt">SLOG_NOTAG</span>  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">coral_log_note(fmt, ...)</span>  </td><td class="markdownTableBodyNone"><span class="tt">SLOG_NOTE</span>  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">coral_log_info(fmt, ...)</span>  </td><td class="markdownTableBodyNone"><span class="tt">SLOG_INFO</span>  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">coral_log_warn(fmt, ...)</span>  </td><td class="markdownTableBodyNone"><span class="tt">SLOG_WARN</span>  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">coral_log_debug(fmt, ...)</span>  </td><td class="markdownTableBodyNone"><span class="tt">SLOG_DEBUG</span>  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">coral_log_error(fmt, ...)</span>  </td><td class="markdownTableBodyNone"><span class="tt">SLOG_ERROR</span>  </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">coral_log_trace(fmt, ...)</span>  </td><td class="markdownTableBodyNone"><span class="tt">SLOG_TRACE</span> (includes <span class="tt">[<a href="file:line">file:line</a>]</span>)  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">coral_log_fatal(fmt, ...)</span>  </td><td class="markdownTableBodyNone"><span class="tt">SLOG_FATAL</span> (includes <span class="tt">[<a href="file:line">file:line</a>]</span>)  </td></tr>
+</table>
+<p>Every message is automatically prefixed with <span class="tt">[&lt;plugin_name&gt;]</span> using the value returned by <span class="tt">coral_plugin_name()</span>. All macros are safe no-ops if <span class="tt">coral_active_logger</span> is null (i.e. before <span class="tt">coral_load_plugin()</span> is called).</p>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md18"></a>
 Dump a registry from a plugin</h2>
 <p>Use <span class="tt">coral register</span> (built under <span class="tt">core/</span>) to load a plugin and write the registry JSON:</p>
-<div class="fragment"><div class="line">./build/core/coral --plugin ./build/backends/dealii/libcoral_backend_dealii.(dylib|so|dll) register registry.json</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md17"></a>
+<div class="fragment"><div class="line">./build/core/coral --plugin ./build/backends/dealii/libcoral_backend_dealii.(dylib|so|dll) register plugin_init.json --registry-path registry.json</div>
+</div><!-- fragment --><p>Here in <span class="tt">plugin_init.json</span> the field <span class="tt">plugin</span>, if present, is passed as json to plugin for initialization. Coral is transparent to this initialization.</p>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md19"></a>
 Tests</h1>
 <p>Core tests live in <span class="tt">core/tests/</span>. Backend-specific tests live next to the backend (<span class="tt">backends/dealii/tests/</span>). Instead of using <span class="tt">ctest</span>, the build provides a fast path to run the gtest executable directly:</p>
 <div class="fragment"><div class="line">cmake --build build --target run_dealii_backend_tests</div>
@@ -258,7 +299,7 @@ Tests</h1>
 </div><!-- fragment --><p>Or run the binary yourself:</p>
 <div class="fragment"><div class="line">./build/backends/dealii/tests/dealii_backend_tests</div>
 </div><!-- fragment --><div class="fragment"><div class="line">./build/core/tests/coral_core_tests</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md18"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md20"></a>
 Execution Model</h1>
 <p>The execution model is based on the Taskflow library:</p>
 <ol type="1">
@@ -267,7 +308,7 @@ Execution Model</h1>
 <li>When execution is requested, tasks are run in the correct order (potentially in parallel)</li>
 <li>Results flow through the network as tasks complete</li>
 </ol>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md19"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md21"></a>
 JSON Serialization</h1>
 <p>The library provides comprehensive JSON serialization for:</p>
 <ul>
@@ -277,12 +318,12 @@ JSON Serialization</h1>
 <li>Method and function registrations</li>
 </ul>
 <p>This enables workflows to be saved, loaded, and shared between applications.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md20"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md22"></a>
 API Reference (User-Facing)</h1>
 <p>This section lists the public entry points, grouped by class and purpose. Each entry is shown with a short example. All symbols are referenced with their fully qualified names for Doxygen navigation.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md21"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md23"></a>
 NodeObject (core node API)</h2>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md22"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md24"></a>
 Construction and helpers</h3>
 <ul>
 <li>coral::make_node (value or type)</li>
@@ -293,7 +334,7 @@ Construction and helpers</h3>
 <div class="line"><span class="keyword">auto</span> sum = [](<span class="keywordtype">int</span> x, <span class="keywordtype">int</span> y) { <span class="keywordflow">return</span> x + y; };</div>
 <div class="line">coral::NodeObjectPtr f = coral::make_method_node(<span class="stringliteral">&quot;sum_ints&quot;</span>, sum);</div>
 <div class="ttc" id="anamespacePhysics_1_1Elasticity_1_1Kinematics_html_a85ec995f892fbfa61268d84cbe2fefea"><div class="ttname"><a href="http://www.dealii.org/developer/doxygen/deal.II/namespacePhysics_1_1Elasticity_1_1Kinematics.html#a85ec995f892fbfa61268d84cbe2fefea">b</a></div><div class="ttdeci">SymmetricTensor&lt; 2, dim, Number &gt; b(const Tensor&lt; 2, dim, Number &gt; &amp;F)</div></div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md23"></a>
+</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md25"></a>
 Execution and value access</h3>
 <ul>
 <li>coral::NodeObject::operator()()</li>
@@ -311,7 +352,7 @@ Execution and value access</h3>
 <div class="line"><span class="keyword">auto</span> ptr = n-&gt;get_shared&lt;<span class="keywordtype">int</span>&gt;();</div>
 <div class="line">std::string as_text = n-&gt;to_string();</div>
 <div class="line">n-&gt;parse_string(<span class="stringliteral">&quot;8&quot;</span>);</div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md24"></a>
+</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md26"></a>
 Wiring: inputs and outputs</h3>
 <ul>
 <li>coral::NodeObject::get_input</li>
@@ -331,7 +372,7 @@ Wiring: inputs and outputs</h3>
 <div class="line">add_node-&gt;bind_input(1, <a class="code hl_functionRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespacePhysics_1_1Elasticity_1_1Kinematics.html#a85ec995f892fbfa61268d84cbe2fefea">b</a>);</div>
 <div class="line">add_node-&gt;bind_output(0, out);</div>
 <div class="line">coral::connect(add_node, {{a, 0}, {<a class="code hl_functionRef" href="http://www.dealii.org/developer/doxygen/deal.II/namespacePhysics_1_1Elasticity_1_1Kinematics.html#a85ec995f892fbfa61268d84cbe2fefea">b</a>, 0}});</div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md25"></a>
+</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md27"></a>
 Binding state and topology queries</h3>
 <ul>
 <li>coral::NodeObject::is_bindable</li>
@@ -347,7 +388,7 @@ Binding state and topology queries</h3>
 <div class="line"><span class="keywordtype">bool</span> pass0 = add_node-&gt;is_passthrough_input(0);</div>
 <div class="line"><span class="keywordtype">bool</span> any_in = add_node-&gt;has_unbound_inputs();</div>
 <div class="line"><span class="keywordtype">bool</span> any_out = add_node-&gt;has_unbound_outputs();</div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md26"></a>
+</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md28"></a>
 Introspection and serialization</h3>
 <ul>
 <li>coral::NodeObject::hash</li>
@@ -367,7 +408,7 @@ Introspection and serialization</h3>
 <div class="line"><span class="keywordtype">size_t</span> outs = n-&gt;n_outputs();</div>
 <div class="line">nlohmann::json info = n-&gt;get_info();</div>
 <div class="line">nlohmann::json registry = coral::NodeObject::get_registry();</div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md27"></a>
+</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md29"></a>
 Type registration</h3>
 <ul>
 <li>coral::NodeObject::register_elementary_type</li>
@@ -393,9 +434,9 @@ Type registration</h3>
 <div class="line">coral::NodeObject::register_method(&amp;Example::set_value,</div>
 <div class="line">                                   {<span class="stringliteral">&quot;set_value&quot;</span>, <span class="stringliteral">&quot;obj&quot;</span>, <span class="stringliteral">&quot;value&quot;</span>});</div>
 <div class="line">coral::NodeObject::register_json_header&lt;int&gt;(<span class="stringliteral">&quot;custom_int&quot;</span>);</div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md28"></a>
+</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md30"></a>
 Network (graph API)</h2>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md29"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md31"></a>
 Construction, mutation, execution</h3>
 <ul>
 <li>coral::Network::add_node</li>
@@ -411,7 +452,7 @@ Construction, mutation, execution</h3>
 <div class="line">net.add_connection(id_a, id_sum, 0, 0);</div>
 <div class="line">net.add_connection(id_b, id_sum, 0, 1);</div>
 <div class="line">net.run();</div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md30"></a>
+</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md32"></a>
 Inputs/outputs and inspection</h3>
 <ul>
 <li>coral::Network::get_inputs</li>
@@ -438,7 +479,7 @@ Inputs/outputs and inspection</h3>
 <div class="line"><span class="keyword">auto</span> targets = net.get_connected_nodes(id_a);</div>
 <div class="line"><span class="keyword">auto</span> conns = net.get_node_connections(id_a);</div>
 <div class="line">nlohmann::json reg = net.get_registry();</div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md31"></a>
+</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md33"></a>
 Serialization and debug helpers</h3>
 <ul>
 <li>coral::Network::from_json</li>
@@ -449,13 +490,13 @@ Serialization and debug helpers</h3>
 <div class="line">coral::Network copy;</div>
 <div class="line">copy.from_json(serialized);</div>
 <div class="line">net.output_dot(<span class="stringliteral">&quot;network.dot&quot;</span>);</div>
-</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md32"></a>
+</div><!-- fragment --><h3 class="doxsection"><a class="anchor" id="autotoc_md34"></a>
 Network node registration</h3>
 <ul>
 <li>coral::Network::register_node</li>
 </ul>
 <div class="fragment"><div class="line">coral::Network::register_node();</div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md33"></a>
+</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md35"></a>
 Register* helpers (type bundles)</h2>
 <ul>
 <li>coral::register_non_dimensional_types</li>
@@ -465,7 +506,7 @@ Register* helpers (type bundles)</h2>
 <div class="fragment"><div class="line">coral::register_non_dimensional_types();</div>
 <div class="line">coral::register_dimensional_types&lt;2, 2&gt;();</div>
 <div class="line">coral::register_all_types();</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md34"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md36"></a>
 Example Usage</h1>
 <p>A typical workflow using CORAL involves:</p>
 <ol type="1">
@@ -475,7 +516,7 @@ Example Usage</h1>
 <li>Send the resulting json to the backend for execution</li>
 <li>Executing the graph to perform the computation</li>
 </ol>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md35"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md37"></a>
 Prectical Usage</h1>
 <p>The program <span class="tt">coral</span> has two subcommands (both require <span class="tt">--plugin &lt;path&gt;</span>):</p>
 <ul>
@@ -488,7 +529,7 @@ Prectical Usage</h1>
 </li>
 </ul>
 <p>Of course <span class="tt">-h</span> or <span class="tt">--help</span> to get a usage guide.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md36"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md38"></a>
 Author</h1>
 <p>Luca Heltai <a href="#" onclick="location.href='mai'+'lto:'+'luc'+'a.'+'hel'+'ta'+'i@u'+'ni'+'pi.'+'it'; return false;">luca.<span class="obfuscator">.nosp@m.</span>helt<span class="obfuscator">.nosp@m.</span>ai@un<span class="obfuscator">.nosp@m.</span>ipi.<span class="obfuscator">.nosp@m.</span>it</a> </p>
 </div></div><!-- PageDoc -->
