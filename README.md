@@ -8,6 +8,12 @@ workflows as directed graphs where nodes represent data or operations, and
 edges represent dependencies. The library is designed with parallel
 scientific computing in mind.
 
+## Getting CORAL
+
+```
+  git clone --recurse-submodules https://github.com/2listic/coral.git
+```
+
 ## Design Philosophy
 
 ### Functional approach
@@ -182,27 +188,70 @@ Suggested layout:
 Minimal plugin entry points (`backends/my_backend/src/plugin_my_backend.cc`):
 
 ```cpp
+#include "coral_log.h"    // instead of slog.h — do NOT link slog
 #include "coral_plugin.h"
 #include "register_types.h"
 
-CORAL_PLUGIN_EXPORT void
-coral_backend_register_types()
-{
-  register_types();
-}
-
 CORAL_PLUGIN_EXPORT const char *
-coral_backend_name()
+coral_plugin_name()
 {
   return "my_backend";
 }
+
+CORAL_PLUGIN_EXPORT int
+coral_load_plugin(const char *subjson, const CoralLogger *logger)
+{
+  // Store the host logger so that coral_log_XXX macros become active.
+  coral_active_logger      = logger;
+  coral_active_plugin_name = coral_plugin_name();
+
+  coral_log_info("Loading plugin.");
+  register_types();
+  return 0; // non-zero signals failure to the host
+}
+
+CORAL_PLUGIN_EXPORT void
+coral_unload_plugin()
+{
+  coral_log_info("Unloading plugin.");
+}
 ```
 
-CMake should build a shared library and link it against `coral_core` plus any
-backend dependencies:
+The host passes the optional JSON initialisation string and its own
+`CoralLogger` to `coral_load_plugin()`. A non-zero return value is treated as
+a load failure by the host.
 
-- `add_library(coral_backend_my_backend SHARED ...)`
-- `target_link_libraries(coral_backend_my_backend PRIVATE coral_core ...)`
+CMake should build a shared library and link it against `coral_core` plus any
+backend dependencies. The plugin must **not** link against slog directly:
+
+```cmake
+add_library(coral_backend_my_backend SHARED ...)
+target_link_libraries(coral_backend_my_backend PRIVATE coral_core ...)
+```
+
+### Logging inside a plugin
+
+Plugins must not initialise or link slog themselves. Instead they use
+`core/include/coral_log.h`, which provides macros that forward log calls to
+the host's slog instance through the `CoralLogger` pointer received in
+`coral_load_plugin()`.
+
+Available macros (mirror the slog levels):
+
+| Macro | slog level |
+|---|---|
+| `coral_log(fmt, ...)` | `SLOG_NOTAG` |
+| `coral_log_note(fmt, ...)` | `SLOG_NOTE` |
+| `coral_log_info(fmt, ...)` | `SLOG_INFO` |
+| `coral_log_warn(fmt, ...)` | `SLOG_WARN` |
+| `coral_log_debug(fmt, ...)` | `SLOG_DEBUG` |
+| `coral_log_error(fmt, ...)` | `SLOG_ERROR` |
+| `coral_log_trace(fmt, ...)` | `SLOG_TRACE` (includes `[file:line]`) |
+| `coral_log_fatal(fmt, ...)` | `SLOG_FATAL` (includes `[file:line]`) |
+
+Every message is automatically prefixed with `[<plugin_name>]` using the value
+returned by `coral_plugin_name()`. All macros are safe no-ops if
+`coral_active_logger` is null (i.e. before `coral_load_plugin()` is called).
 
 ### Dump a registry from a plugin
 
@@ -210,8 +259,10 @@ Use `coral register` (built under `core/`) to load a plugin and write the
 registry JSON:
 
 ```bash
-./build/core/coral --plugin ./build/backends/dealii/libcoral_backend_dealii.(dylib|so|dll) register registry.json
+./build/core/coral --plugin ./build/backends/dealii/libcoral_backend_dealii.(dylib|so|dll) register plugin_init.json --registry-path registry.json
 ```
+
+Here in `plugin_init.json` the field `plugin`, if present, is passed as json to plugin for initialization. Coral is transparent to this initialization.
 
 ## Tests
 

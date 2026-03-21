@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "coral.h"
+#include "coral_logger.h"
 #include "coral_network.h"
 #include "magic_enum/magic_enum_all.hpp"
 #include "slog.h"
@@ -32,6 +33,46 @@
 using json   = nlohmann::json;
 namespace fs = std::filesystem;
 
+template <typename T>
+T
+get_env_or(const std::string &name, T default_val)
+{
+  const char *val = std::getenv(name.c_str());
+  if (!val)
+    return default_val;
+
+  std::stringstream ss{val};
+  T                 result;
+  if (ss >> result)
+    return result;
+
+  return default_val;
+}
+
+bool
+is_master_process()
+{
+  int rank = 0;
+
+  std::string custom_var{};
+  custom_var = get_env_or("CORAL_MPI_RANK_VARIABLE", custom_var);
+
+  if (custom_var.empty())
+    {
+      // Common variable set in major MPI implementations
+      rank = get_env_or("SLURM_PROC_ID", rank);
+      rank = get_env_or("OMPI_COMM_WORLD_RANK", rank);
+      rank = get_env_or("PMI_RANK", rank);
+      rank = get_env_or("PMIX_RANK", rank);
+    }
+  else
+    {
+      rank = get_env_or(custom_var, rank);
+    }
+
+  return rank == 0;
+}
+
 void
 dump_registry(const fs::path &outpath, const std::string &backend_name)
 {
@@ -44,8 +85,9 @@ dump_registry(const fs::path &outpath, const std::string &backend_name)
 
 namespace
 {
-  using RegisterFn = void (*)();
-  using NameFn     = const char *(*)();
+  using LoadFn   = int (*)(const char *, const CoralLogger *);
+  using UnloadFn = void (*)();
+  using NameFn   = const char *(*)();
 
   struct PluginHandle
   {
@@ -76,28 +118,40 @@ namespace
 #endif
   }
 
-  struct BackendPlugin
+  class BackendPlugin
   {
-    PluginHandle handle;
-    std::string  name;
-
-    explicit BackendPlugin(const fs::path &path)
+  public:
+    explicit BackendPlugin(const fs::path    &path,
+                           json               subjson,
+                           const CoralLogger *logger = nullptr)
     {
 #if defined(_WIN32)
-      handle.handle = LoadLibraryA(path.string().c_str());
-      if (!handle.handle)
+      m_handle.handle = LoadLibraryA(path.string().c_str());
+      if (!m_handle.handle)
         throw std::runtime_error("LoadLibrary failed for: " + path.string());
 #else
-      handle.handle = dlopen(path.string().c_str(), RTLD_NOW | RTLD_LOCAL);
-      if (!handle.handle)
+      m_handle.handle = dlopen(path.string().c_str(), RTLD_NOW | RTLD_LOCAL);
+      if (!m_handle.handle)
         throw std::runtime_error(std::string("dlopen failed: ") + dlerror());
 #endif
 
-      auto reg =
-        load_symbol<RegisterFn>(handle, "coral_backend_register_types");
-      auto name_fn = load_symbol<NameFn>(handle, "coral_backend_name");
-      reg();
-      name = name_fn();
+      auto load_fn   = load_symbol<LoadFn>(m_handle, "coral_load_plugin");
+      auto unload_fn = load_symbol<UnloadFn>(m_handle, "coral_unload_plugin");
+      auto name_fn   = load_symbol<NameFn>(m_handle, "coral_plugin_name");
+
+      m_name      = name_fn();
+      m_unload_fn = unload_fn;
+
+      if (!logger)
+        {
+          slog_warn("Impossible to set logger to plugin.");
+        }
+
+      if (load_fn(subjson.dump().c_str(), logger))
+        {
+          close_library();
+          throw std::runtime_error("Plugin failed to initialize");
+        }
     }
 
     BackendPlugin() = default;
@@ -105,43 +159,38 @@ namespace
     BackendPlugin(const BackendPlugin &) = delete;
     BackendPlugin &
     operator=(const BackendPlugin &) = delete;
-
-    BackendPlugin(BackendPlugin &&other) noexcept
-    {
-      handle       = other.handle;
-      name         = std::move(other.name);
-      other.handle = {};
-    }
-
+    BackendPlugin(BackendPlugin &&)  = delete;
     BackendPlugin &
-    operator=(BackendPlugin &&other) noexcept
+    operator=(BackendPlugin &&) = delete;
+
+    const std::string &
+    name() const
     {
-      if (this != &other)
-        {
-          unload();
-          handle       = other.handle;
-          name         = std::move(other.name);
-          other.handle = {};
-        }
-      return *this;
+      return m_name;
     }
 
     ~BackendPlugin()
     {
-      unload();
+      m_unload_fn();
+      close_library();
     }
 
+  private:
+    PluginHandle m_handle;
+    UnloadFn     m_unload_fn;
+    std::string  m_name;
+
     void
-    unload()
+    close_library()
     {
 #if defined(_WIN32)
-      if (handle.handle)
-        FreeLibrary(handle.handle);
+      if (m_handle.handle)
+        FreeLibrary(m_handle.handle);
 #else
-      if (handle.handle)
-        dlclose(handle.handle);
+      if (m_handle.handle)
+        dlclose(m_handle.handle);
 #endif
-      handle.handle = nullptr;
+      m_handle.handle = nullptr;
     }
   };
 
@@ -289,7 +338,8 @@ namespace
       if (active)
         slog_destroy();
 
-      const uint16_t flags = parse_slog_flags(cli.flags);
+      const uint16_t flags =
+        is_master_process() ? parse_slog_flags(cli.flags) : 0;
       slog_init(cli.name.c_str(),
                 flags,
                 static_cast<uint8_t>(cli.thread_safe != 0));
@@ -473,20 +523,27 @@ main(int argc, char *argv[])
   CLI::App *register_sub = app.add_subcommand("register", "Register node type");
 
   fs::path register_path{"node_types.json"};
+  fs::path input_json{};
   register_sub
-    ->add_option("register_path",
+    ->add_option("input_json", input_json, "Input json to initialize plugin")
+    ->check(CLI::ExistingPath.description(""))
+    ->type_name("PATH");
+
+  register_sub
+    ->add_option("--registry-path",
                  register_path,
                  "Output path of node registry json")
     ->capture_default_str()
     ->type_name("PATH");
 
   CLI::App *run_sub = app.add_subcommand("run", "Run a certain graph");
-  fs::path  input_json;
   fs::path  graph_path{"network.dot"};
   fs::path  touch_file_path{"./"};
 
   run_sub
-    ->add_option("input_json", input_json, "Input json of the graph to run")
+    ->add_option("input_json",
+                 input_json,
+                 "Input json to initialize plugin nad run the graph.")
     ->required()
     ->check(CLI::ExistingPath.description(""))
     ->type_name("PATH");
@@ -527,17 +584,36 @@ main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
 
+  CoralLogger logger;
+  logger.display = &slog_display;
+
   bool run        = run_sub->parsed();
   bool dump_reg   = register_sub->parsed() || run_sub->count("--register");
   bool dump_graph = run_sub->count("--graph");
 
+  json data{};
+  if (run || (register_sub->parsed() && register_sub->count("input_json")))
+    {
+      std::ifstream input{input_json};
+      if (!input.good())
+        {
+          slog_error("Could not open %s.", input_json.c_str());
+          return EXIT_FAILURE;
+        }
+      slog_info("File %s opened.", input_json.c_str());
 
-  // do the job
+      input >> data;
+      slog_info("File %s read.", input_json.c_str());
+    }
 
-  BackendPlugin backend;
+  json subjson{};
+  if (data.contains("plugin"))
+    subjson = data["plugin"];
+
+  std::unique_ptr<BackendPlugin> backend{nullptr};
   try
     {
-      backend = BackendPlugin(plugin_path);
+      backend = std::make_unique<BackendPlugin>(plugin_path, subjson, &logger);
     }
   catch (const std::exception &e)
     {
@@ -546,7 +622,7 @@ main(int argc, char *argv[])
                  e.what());
       return EXIT_FAILURE;
     }
-  slog_info("Loaded backend plugin '%s'.", backend.name.c_str());
+  slog_info("Loaded backend plugin '%s'.", backend->name().c_str());
 
   if (dump_reg)
     {
@@ -560,22 +636,8 @@ main(int argc, char *argv[])
   if (!run)
     return EXIT_SUCCESS;
 
-  std::ifstream input{input_json};
-  if (!input.good())
-    {
-      slog_error("Could not open %s.", input_json.c_str());
-      return EXIT_FAILURE;
-    }
-  slog_info("File %s opened.", input_json.c_str());
-
-  json data;
-  input >> data;
-  slog_info("File %s read.", input_json.c_str());
-
-
-  const char  *env_th    = std::getenv("THREADS");
-  const size_t n_threads = env_th ? static_cast<size_t>(std::stoull(env_th)) :
-                                    std::thread::hardware_concurrency();
+  const size_t n_threads =
+    get_env_or("THREADS", std::thread::hardware_concurrency());
   slog_info("Thread pool size of %zu.", n_threads);
 
   coral::Network network;

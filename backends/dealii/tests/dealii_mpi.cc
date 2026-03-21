@@ -5,6 +5,7 @@
 
 #include "coral.h"
 #include "coral_network.h"
+#include "coral_plugin.h"
 #include "register_types.h"
 #include "test_utils.h"
 
@@ -60,25 +61,24 @@ private:
 
 class DealiiMPITest : public ::testing::Test
 {
-private:
-  using MPI_Session = Utilities::MPI::MPI_InitFinalize;
-
-  inline static std::unique_ptr<MPI_Session> m_mpi_session = nullptr;
-
 protected:
   void static SetUpTestSuite()
   {
-    int    argc   = 0;
-    char **argv   = nullptr;
-    m_mpi_session = std::make_unique<MPI_Session>(argc, argv, 1);
+    // if (Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) == 1)
+    //   GTEST_SKIP() << "Please run MPI test with non trivial world size.";
 
-    if (Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) == 1)
-      GTEST_SKIP() << "Please run MPI test with non trivial world size.";
+    std::ifstream plugin_json_raw{SOURCE_DIR "/test_files/plugin.json"};
+    ASSERT_TRUE(plugin_json_raw.good());
+    json plugin_json;
+    plugin_json_raw >> plugin_json;
+    ASSERT_TRUE(plugin_json.contains("plugin"));
+    ASSERT_EQ(coral_load_plugin(plugin_json["plugin"].dump().c_str(), nullptr),
+              0);
   }
 
   void static TearDownTestSuite()
   {
-    m_mpi_session.reset();
+    coral_unload_plugin();
   }
 };
 
@@ -99,12 +99,7 @@ TEST_F(DealiiMPITest, LaplaceProblem)
 
   MPIScopedTestOutputDir output_dir("DealiiMPITest_PoissonSolver");
 
-  register_non_dimensional_types();
-  register_dimensional_types<2, 2>();
-
-  auto laplace  = make_node<LaplaceProblem<2>>();
-  auto mpi_init = make_node(false);
-  laplace->set_arguments({mpi_init});
+  auto laplace = make_node<LaplaceProblem<2>>();
   ASSERT_TRUE((*laplace)());
   ASSERT_TRUE(laplace->ready());
 
@@ -119,9 +114,6 @@ TEST_F(DealiiMPITest, LaplaceProblemNetwork)
   MARK_LONG_TEST();
 
   MPIScopedTestOutputDir output_dir("dealiiMPITest_LaplaceTransformNetwork");
-
-  register_non_dimensional_types();
-  register_dimensional_types<2, 2>();
 
   Network network;
   network.set_touch_file_base_path(output_dir);

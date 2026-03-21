@@ -166,7 +166,7 @@ namespace coral
       {"PoissonSolver::solve<" + Utilities::dim_string(dim, spacedim) + ">",
        "poisson_solver"});
 
-    NodeObject::register_type<LaplaceProblem<dim>, bool>("mpi_initialize");
+    NodeObject::register_type<LaplaceProblem<dim>>();
     NodeObject::register_method<LaplaceProblem<dim>, void, const std::string &>(
       &LaplaceProblem<dim>::run,
       {"LaplaceProblem::run<" + Utilities::dim_string(dim, spacedim) + ">",
