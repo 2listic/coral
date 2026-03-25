@@ -54,12 +54,12 @@ namespace dealii
 
 
 
-    inline unsigned int
+    inline long long
     get_vtk_id(vtkDataArray *array, const vtkIdType cell_index)
     {
       return array != nullptr ?
-               static_cast<unsigned int>(array->GetComponent(cell_index, 0)) :
-               0U;
+               static_cast<long long>(array->GetComponent(cell_index, 0)) :
+               0LL;
     }
 
 
@@ -289,8 +289,7 @@ namespace dealii
     AssertThrow(file.good(), ExcMessage("VTK file not found: " + file_name));
 
     vtkSmartPointer<vtkUnstructuredGrid> grid;
-    const auto                          extension =
-      internal::lowercase_extension(file_name);
+    const auto extension = internal::lowercase_extension(file_name);
 
     if (extension == ".vtk")
       {
@@ -336,7 +335,7 @@ namespace dealii
 
     vtkCellData  *vtk_cell_data = grid->GetCellData();
     vtkDataArray *boundary_or_material_ids =
-      internal::get_optional_vtk_array(vtk_cell_data, "BoundaryOrMaterialID");
+      internal::get_optional_vtk_array(vtk_cell_data, "MaterialID");
     if (boundary_or_material_ids == nullptr)
       boundary_or_material_ids =
         internal::get_optional_vtk_array(vtk_cell_data, "MaterialID");
