@@ -407,6 +407,51 @@ TEST(dealiiExamples, PoissonSolver)
   file.close();
 }
 
+TEST(dealiiExamples, ReadGridVtu)
+{
+  Triangulation<2> triangulation;
+
+  read_grid<2>((std::filesystem::path(SOURCE_DIR) / "test_files" /
+                "test_grid.vtu")
+                 .string(),
+               triangulation);
+
+  EXPECT_EQ(triangulation.n_active_cells(), 16);
+  EXPECT_EQ(triangulation.n_used_vertices(), 25);
+
+  std::set<types::manifold_id> cell_manifold_ids;
+  std::set<types::manifold_id> face_manifold_ids;
+  std::set<types::material_id> material_ids;
+  std::set<types::boundary_id> boundary_ids;
+  for (const auto &cell : triangulation.active_cell_iterators())
+    {
+      material_ids.insert(cell->material_id());
+      cell_manifold_ids.insert(cell->manifold_id());
+      for (const auto &f : cell->face_iterators())
+        {
+          if (f->at_boundary())
+            boundary_ids.insert(f->boundary_id());
+          face_manifold_ids.insert(f->manifold_id());
+        }
+    }
+
+
+  EXPECT_EQ(material_ids.size(), 1u);
+  EXPECT_TRUE(material_ids.find(types::material_id{0}) != material_ids.end());
+
+  EXPECT_EQ(boundary_ids.size(), 2u);
+  EXPECT_TRUE(boundary_ids.find(types::boundary_id{0}) != boundary_ids.end());
+  EXPECT_TRUE(boundary_ids.find(types::boundary_id{1}) != boundary_ids.end());
+
+  EXPECT_EQ(cell_manifold_ids.size(), 1u);
+  EXPECT_TRUE(cell_manifold_ids.find(numbers::flat_manifold_id) !=
+              cell_manifold_ids.end());
+
+  EXPECT_EQ(face_manifold_ids.size(), 1u);
+  EXPECT_TRUE(face_manifold_ids.find(numbers::flat_manifold_id) !=
+              face_manifold_ids.end());
+}
+
 TEST(dealiiExamples, NetworkFromJsonPoissonSolverSolution)
 {
   ScopedTestOutputDir output_dir(
