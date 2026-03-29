@@ -113,6 +113,35 @@ TEST(Modules, SingleNodeNetwork)
   EXPECT_EQ(network.get_outputs().size(), 1u);
 }
 
+TEST(Modules, NetworkNodeExposesDanglingSelfOutput)
+{
+  coral::register_all_types();
+
+  coral::Network inner_network;
+  inner_network.add_node(coral::make_node<dealii::Triangulation<2>>(),
+                         "triangulation");
+
+  nlohmann::json node_json = {
+    {"type", "coral::Network"},
+    {"value", nlohmann::json(inner_network)}
+  };
+
+  coral::NodeObjectPtr network_node;
+  coral::from_json(node_json, network_node);
+
+  const auto info = network_node->get_info();
+  ASSERT_TRUE(info.contains("arguments"));
+  ASSERT_TRUE(info.contains("inputs"));
+  ASSERT_TRUE(info.contains("outputs"));
+
+  ASSERT_EQ(info["arguments"].size(), 1u);
+  EXPECT_EQ(info["inputs"], nlohmann::json::array());
+  EXPECT_EQ(info["outputs"], nlohmann::json::array({0}));
+  EXPECT_EQ(info["arguments"][0]["name"], "triangulation");
+  EXPECT_EQ(info["arguments"][0]["connection_type"], "output");
+  EXPECT_EQ(info["arguments"][0]["type"], "dealii::Triangulation<2, 2>");
+}
+
 TEST(Modules, CompleteNetworkNoIO)
 {
   coral::register_all_types();

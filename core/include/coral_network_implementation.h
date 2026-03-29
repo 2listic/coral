@@ -882,22 +882,42 @@ namespace coral
           throw std::runtime_error("Network interface node not found.");
 
         const auto info = node_it->second->get_info();
-        if (!info.contains("arguments"))
-          throw std::runtime_error("Node is missing argument metadata.");
-
-        if (entry.argument_index < 0 ||
-            entry.argument_index >= static_cast<int>(info["arguments"].size()))
-          throw std::runtime_error("Dangling argument index out of range.");
-
-        const auto &arg_info = info["arguments"][entry.argument_index];
-        if (!arg_info.contains("type"))
-          throw std::runtime_error("Argument metadata missing type.");
-
         nlohmann::json arg_json;
-        arg_json["type"]            = arg_info["type"];
+        if (entry.argument_index < 0)
+          {
+            if ((entry.type & ConnectionType::output) == ConnectionType::none)
+              throw std::runtime_error(
+                "Self ports can only contribute network outputs.");
+
+            if (!info.contains("type"))
+              throw std::runtime_error("Node metadata missing type.");
+
+            // SELF outputs are exposed using the node's externally connectable
+            // type. Derived nodes advertise their base type on SELF ports.
+            arg_json["type"] = info.contains("base") ? info["base"] :
+                                                       info["type"];
+            const auto node_name = get_node_name(entry.node_id);
+            arg_json["name"]     = node_name.empty() ? "self" : node_name;
+          }
+        else
+          {
+            if (!info.contains("arguments"))
+              throw std::runtime_error("Node is missing argument metadata.");
+
+            if (entry.argument_index >=
+                static_cast<int>(info["arguments"].size()))
+              throw std::runtime_error("Dangling argument index out of range.");
+
+            const auto &arg_info = info["arguments"][entry.argument_index];
+            if (!arg_info.contains("type"))
+              throw std::runtime_error("Argument metadata missing type.");
+
+            arg_json["type"] = arg_info["type"];
+            if (arg_info.contains("name"))
+              arg_json["name"] = arg_info["name"];
+          }
+
         arg_json["connection_type"] = magic_enum::enum_name(entry.type);
-        if (arg_info.contains("name"))
-          arg_json["name"] = arg_info["name"];
 
         const auto arg_index =
           static_cast<unsigned int>(interface.arguments.size());
@@ -973,8 +993,6 @@ namespace coral
             for (unsigned int i = 0; i < outputs.size(); ++i)
               {
                 const int arg_index = outputs[i].get<int>();
-                if (arg_index < 0)
-                  continue;
                 bool connected = false;
                 for (const auto &[conn_id, conn] : connections)
                   {
