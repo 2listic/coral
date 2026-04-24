@@ -59,6 +59,14 @@ public:
   LaplaceProblem();
 
   void
+  make_grid_from_generator(const std::string &name,
+                           const std::string &arguments,
+                           unsigned int       n_refinements);
+
+  void
+  make_grid_from_file(const std::string &filename, unsigned int n_refinements);
+
+  void
   run(unsigned int n_cycles, const std::string &dir);
 
 private:
@@ -291,8 +299,38 @@ LaplaceProblem<dim>::output_results(const unsigned int    cycle,
 
 template <int dim>
 void
+LaplaceProblem<dim>::make_grid_from_generator(const std::string &name,
+                                              const std::string &arguments,
+                                              unsigned int       n_refinements)
+{
+  GridGenerator::generate_from_name_and_arguments(triangulation,
+                                                  name,
+                                                  arguments);
+
+  triangulation.refine_global(n_refinements);
+}
+
+template <int dim>
+void
+LaplaceProblem<dim>::make_grid_from_file(const std::string &filename,
+                                         unsigned int       n_refinements)
+{
+  GridIn<dim> gridin;
+  gridin.attach_triangulation(triangulation);
+  std::ifstream f(filename);
+  AssertThrow(f, ExcMessage("Could not open mesh file " + filename));
+  gridin.read(f);
+
+  triangulation.refine_global(n_refinements);
+}
+
+template <int dim>
+void
 LaplaceProblem<dim>::run(unsigned int n_cycles, const std::string &dir)
 {
+  // Temporary
+  make_grid_from_generator("hyper_cube", "0.0 : 1.0 : false", 5);
+
   if (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
     {
       if (!std::filesystem::exists(dir))
@@ -312,12 +350,7 @@ LaplaceProblem<dim>::run(unsigned int n_cycles, const std::string &dir)
     {
       pcout << "Cycle " << cycle << ':' << std::endl;
 
-      if (cycle == 0)
-        {
-          GridGenerator::hyper_cube(triangulation);
-          triangulation.refine_global(5);
-        }
-      else
+      if (cycle > 0)
         refine_grid();
 
       setup_system();

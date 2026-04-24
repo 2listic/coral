@@ -176,6 +176,28 @@ namespace coral
     NodeObject::register_type<LaplaceProblem<dim>>();
     NodeObject::register_method<LaplaceProblem<dim>,
                                 void,
+                                const std::string &,
+                                const std::string &,
+                                unsigned int>(
+      &LaplaceProblem<dim>::make_grid_from_generator,
+      {"LaplaceProblem::make_grid_from_generator<" +
+         Utilities::dim_string(dim, spacedim) + ">",
+       "laplace_problem",
+       "generator_name",
+       "generator_arguments",
+       "n_refinements"});
+    NodeObject::register_method<LaplaceProblem<dim>,
+                                void,
+                                const std::string &,
+                                unsigned int>(
+      &LaplaceProblem<dim>::make_grid_from_file,
+      {"LaplaceProblem::make_grid_from_file<" +
+         Utilities::dim_string(dim, spacedim) + ">",
+       "laplace_problem",
+       "file_name",
+       "n_refinements"});
+    NodeObject::register_method<LaplaceProblem<dim>,
+                                void,
                                 unsigned int,
                                 const std::string &>(
       &LaplaceProblem<dim>::run,
