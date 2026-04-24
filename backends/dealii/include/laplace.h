@@ -20,6 +20,7 @@ namespace LA
 } // namespace LA
 
 #include <deal.II/base/conditional_ostream.h>
+#include <deal.II/base/function_parser.h>
 #include <deal.II/base/index_set.h>
 #include <deal.II/base/utilities.h>
 
@@ -67,13 +68,13 @@ public:
   make_grid_from_file(const std::string &filename, unsigned int n_refinements);
 
   void
-  run(unsigned int n_cycles, const std::string &dir);
+  run(unsigned int n_cycles, const std::string &rhs, const std::string &dir);
 
 private:
   void
   setup_system();
   void
-  assemble_system();
+  assemble_system(const std::string &rhs);
   void
   solve();
   void
@@ -163,9 +164,14 @@ LaplaceProblem<dim>::setup_system()
 
 template <int dim>
 void
-LaplaceProblem<dim>::assemble_system()
+LaplaceProblem<dim>::assemble_system(const std::string &rhs)
 {
   TimerOutput::Scope t(computing_timer, "assembly");
+
+  FunctionParser<dim> rhs_function;
+  rhs_function.initialize(FunctionParser<dim>::default_variable_names(),
+                          rhs,
+                          {{"pi", numbers::PI}});
 
   const QGauss<dim> quadrature_formula(fe.degree + 1);
 
@@ -174,8 +180,9 @@ LaplaceProblem<dim>::assemble_system()
                           update_values | update_gradients |
                             update_quadrature_points | update_JxW_values);
 
-  const unsigned int dofs_per_cell = fe.n_dofs_per_cell();
-  const unsigned int n_q_points    = quadrature_formula.size();
+  const unsigned int  dofs_per_cell = fe.n_dofs_per_cell();
+  const unsigned int  n_q_points    = quadrature_formula.size();
+  std::vector<double> rhs_values(n_q_points);
 
   FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
   Vector<double>     cell_rhs(dofs_per_cell);
@@ -189,16 +196,11 @@ LaplaceProblem<dim>::assemble_system()
 
         cell_matrix = 0.;
         cell_rhs    = 0.;
+        rhs_function.value_list(fe_values.get_quadrature_points(), rhs_values);
 
         for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
           {
-            const double rhs_value =
-              (fe_values.quadrature_point(q_point)[1] >
-                   0.5 +
-                     0.25 * std::sin(4.0 * numbers::PI *
-                                     fe_values.quadrature_point(q_point)[0]) ?
-                 1. :
-                 -1.);
+            const double rhs_value = rhs_values[q_point];
 
             for (unsigned int i = 0; i < dofs_per_cell; ++i)
               {
@@ -326,7 +328,9 @@ LaplaceProblem<dim>::make_grid_from_file(const std::string &filename,
 
 template <int dim>
 void
-LaplaceProblem<dim>::run(unsigned int n_cycles, const std::string &dir)
+LaplaceProblem<dim>::run(unsigned int       n_cycles,
+                         const std::string &rhs,
+                         const std::string &dir)
 {
   if (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
     {
@@ -351,7 +355,7 @@ LaplaceProblem<dim>::run(unsigned int n_cycles, const std::string &dir)
         refine_grid();
 
       setup_system();
-      assemble_system();
+      assemble_system(rhs);
       solve();
       output_results(cycle, dir);
 
