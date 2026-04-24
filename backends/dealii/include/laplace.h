@@ -59,7 +59,7 @@ public:
   LaplaceProblem();
 
   void
-  run(const std::string &dir);
+  run(unsigned int n_cycles, const std::string &dir);
 
 private:
   void
@@ -291,7 +291,7 @@ LaplaceProblem<dim>::output_results(const unsigned int    cycle,
 
 template <int dim>
 void
-LaplaceProblem<dim>::run(const std::string &dir)
+LaplaceProblem<dim>::run(unsigned int n_cycles, const std::string &dir)
 {
   if (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
     {
@@ -308,7 +308,6 @@ LaplaceProblem<dim>::run(const std::string &dir)
         << " on " << Utilities::MPI::n_mpi_processes(mpi_communicator)
         << " MPI rank(s)..." << std::endl;
 
-  const unsigned int n_cycles = 8;
   for (unsigned int cycle = 0; cycle < n_cycles; ++cycle)
     {
       pcout << "Cycle " << cycle << ':' << std::endl;

@@ -174,10 +174,14 @@ namespace coral
        "poisson_solver"});
 
     NodeObject::register_type<LaplaceProblem<dim>>();
-    NodeObject::register_method<LaplaceProblem<dim>, void, const std::string &>(
+    NodeObject::register_method<LaplaceProblem<dim>,
+                                void,
+                                unsigned int,
+                                const std::string &>(
       &LaplaceProblem<dim>::run,
       {"LaplaceProblem::run<" + Utilities::dim_string(dim, spacedim) + ">",
        "laplace_problem",
+       "n_cycles",
        "output_dir"});
   }
 

@@ -9,27 +9,61 @@
     "nodes": {
       "0": {
         "type": "LaplaceProblem::run<2>",
-        "position": { "x": 293.7562932408905, "y": 327.37380674085716 },
+        "position": {
+          "x": 435.17307500000004,
+          "y": 203.75759999999997
+        },
         "qualified_id": "0"
       },
       "1": {
         "type": "LaplaceProblem<2>",
-        "position": { "x": -183.0478681433714, "y": 226.5708997085626 },
+        "position": {
+          "x": 56.196875000000105,
+          "y": 24.791200000000146
+        },
         "qualified_id": "1"
       },
       "2": {
-        "type": "std::string",
-        "position": { "x": -164.89097078018403, "y": 417.02495316403406 },
-        "value": "/app/build/output/",
+        "type": "unsigned int",
+        "position": {
+          "x": 44.79207500000011,
+          "y": 230.07760000000005
+        },
+        "value": "4",
         "qualified_id": "2"
+      },
+      "3": {
+        "type": "std::string",
+        "position": {
+          "x": 10.577675000000127,
+          "y": 367.97200000000004
+        },
+        "value": "/app/build/output",
+        "qualified_id": "3"
       }
     },
     "edges": {
-      "0": { "source": 1, "target": 0, "source_output": 0, "target_input": 0 },
-      "1": { "source": 2, "target": 0, "source_output": 0, "target_input": 1 }
+      "0": {
+        "source": 1,
+        "target": 0,
+        "source_output": 0,
+        "target_input": 0
+      },
+      "1": {
+        "source": 2,
+        "target": 0,
+        "source_output": 0,
+        "target_input": 1
+      },
+      "2": {
+        "source": 3,
+        "target": 0,
+        "source_output": 0,
+        "target_input": 2
+      }
     }
   },
   "version": 1,
   "author": "dealiix-platform",
-  "date_time_utc": "2026-03-11T11:35:34.762Z"
+  "date_time_utc": "2026-04-24T08:34:58.352Z"
 }

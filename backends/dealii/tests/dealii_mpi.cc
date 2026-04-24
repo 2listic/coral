@@ -105,7 +105,8 @@ TEST_F(DealiiMPITest, LaplaceProblem)
 
   auto run_method        = make_node("LaplaceProblem::run<2>");
   auto output_dir_string = make_node(std::string(output_dir.path()));
-  run_method->set_arguments({laplace, output_dir_string});
+  auto n_cycles          = make_node(static_cast<unsigned int>(4));
+  run_method->set_arguments({laplace, n_cycles, output_dir_string});
   (*run_method)();
 }
 
@@ -128,21 +129,17 @@ TEST_F(DealiiMPITest, LaplaceProblemNetwork)
 
   ASSERT_FALSE(json_data.empty()) << "JSON data is empty.";
 
-  // Update the initialize constant
-  // Node 5 contains the bool value
-  if (json_data["workflow"]["nodes"].contains("5") &&
-      json_data["workflow"]["nodes"]["5"].contains("value"))
+  // Update the output file path to use the test output directory
+  // Node 3 contains the output filename
+  const std::string path_node_no = "3";
+  if (json_data["workflow"]["nodes"].contains(path_node_no) &&
+      json_data["workflow"]["nodes"][path_node_no].contains("value"))
     {
-      json_data["workflow"]["nodes"]["5"]["value"] = "false";
+      json_data["workflow"]["nodes"][path_node_no]["value"] =
+        output_dir.path().string();
     }
 
-  // Update the output file path to use the test output directory
-  // Node 2 contains the output filename
-  if (json_data["workflow"]["nodes"].contains("2") &&
-      json_data["workflow"]["nodes"]["2"].contains("value"))
-    {
-      json_data["workflow"]["nodes"]["2"]["value"] = output_dir.path().string();
-    }
+  std::cout << json_data.dump(4) << std::endl;
 
   network.from_json(json_data);
 
