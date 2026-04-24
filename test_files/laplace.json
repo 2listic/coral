@@ -1,63 +1,116 @@
 {
-  "plugin": {
-    "MPI": {
-      "enabled": true,
-      "max_num_threads": 1
-    }
-  },
   "workflow": {
     "nodes": {
       "0": {
-        "type": "LaplaceProblem::run<2>",
+        "type": "LaplaceProblem<2>",
         "position": {
-          "x": 435.17307500000004,
-          "y": 203.75759999999997
+          "x": 79.69387500000005,
+          "y": -85.76799999999994
         },
         "qualified_id": "0"
       },
       "1": {
-        "type": "LaplaceProblem<2>",
+        "type": "LaplaceProblem::make_grid_from_generator<2>",
         "position": {
-          "x": 56.196875000000105,
-          "y": 24.791200000000146
+          "x": 510.76237499999996,
+          "y": 25.85600000000001
         },
         "qualified_id": "1"
       },
       "2": {
-        "type": "unsigned int",
+        "type": "std::string",
         "position": {
-          "x": 44.79207500000011,
-          "y": 230.07760000000005
+          "x": 48.52237500000004,
+          "y": 68.19199999999996
         },
-        "value": "4",
+        "value": "hyper_cube",
         "qualified_id": "2"
       },
       "3": {
         "type": "std::string",
         "position": {
-          "x": 10.577675000000127,
-          "y": 367.97200000000004
+          "x": 51.97837500000003,
+          "y": 196.92799999999997
+        },
+        "value": "0.0 : 1.0 : false",
+        "qualified_id": "3"
+      },
+      "4": {
+        "type": "unsigned int",
+        "position": {
+          "x": 47.65837500000005,
+          "y": 310.112
+        },
+        "value": "5",
+        "qualified_id": "4"
+      },
+      "5": {
+        "type": "LaplaceProblem::run<2>",
+        "position": {
+          "x": 520.0293149999998,
+          "y": 363.50719999999984
+        },
+        "qualified_id": "5"
+      },
+      "6": {
+        "type": "unsigned int",
+        "position": {
+          "x": 43.5160350000001,
+          "y": 425.71519999999987
+        },
+        "value": "4",
+        "qualified_id": "6"
+      },
+      "7": {
+        "type": "std::string",
+        "position": {
+          "x": 46.004355000000075,
+          "y": 538.9337599999999
         },
         "value": "/app/build/output",
-        "qualified_id": "3"
+        "qualified_id": "7"
       }
     },
     "edges": {
       "0": {
-        "source": 1,
-        "target": 0,
+        "source": 0,
+        "target": 1,
         "source_output": 0,
         "target_input": 0
       },
       "1": {
         "source": 2,
-        "target": 0,
+        "target": 1,
         "source_output": 0,
         "target_input": 1
       },
       "2": {
         "source": 3,
-        "target": 0,
+        "target": 1,
+        "source_output": 0,
+        "target_input": 2
+      },
+      "3": {
+        "source": 4,
+        "target": 1,
+        "source_output": 0,
+        "target_input": 3
+      },
+      "4": {
+        "source": 1,
+        "target": 5,
+        "source_output": 0,
+        "target_input": 0
+      },
+      "5": {
+        "source": 6,
+        "target": 5,
+        "source_output": 0,
+        "target_input": 1
+      },
+      "6": {
+        "source": 7,
+        "target": 5,
         "source_output": 0,
         "target_input": 2
       }
@@ -65,5 +118,5 @@
   },
   "version": 1,
   "author": "dealiix-platform",
-  "date_time_utc": "2026-04-24T08:34:58.352Z"
+  "date_time_utc": "2026-04-24T15:31:31.223Z"
 }

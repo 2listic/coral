@@ -134,9 +134,18 @@ TEST_F(DealiiMPITest, LaplaceProblem)
   ASSERT_TRUE((*laplace)());
   ASSERT_TRUE(laplace->ready());
 
-  auto run_method        = make_node("LaplaceProblem::run<2>");
+  auto run_method  = make_node("LaplaceProblem::run<2>");
+  auto grid_method = make_node("LaplaceProblem::make_grid_from_generator<2>");
   auto output_dir_string = make_node(std::string(output_dir.path()));
+  auto generator_name    = make_node(std::string("hyper_cube"));
+  auto generator_args    = make_node(std::string("0.0 : 1.0 : false"));
   auto n_cycles          = make_node(static_cast<unsigned int>(4));
+  auto n_refinements     = make_node(static_cast<unsigned int>(5));
+
+  grid_method->set_arguments(
+    {laplace, generator_name, generator_args, n_refinements});
+  (*grid_method)();
+
   run_method->set_arguments({laplace, n_cycles, output_dir_string});
   (*run_method)();
 }

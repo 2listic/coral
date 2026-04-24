@@ -328,9 +328,6 @@ template <int dim>
 void
 LaplaceProblem<dim>::run(unsigned int n_cycles, const std::string &dir)
 {
-  // Temporary
-  make_grid_from_generator("hyper_cube", "0.0 : 1.0 : false", 5);
-
   if (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
     {
       if (!std::filesystem::exists(dir))
