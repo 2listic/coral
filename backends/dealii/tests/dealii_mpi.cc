@@ -13,6 +13,37 @@ using namespace dealii;
 using namespace coral;
 using coral_test::ScopedTestOutputDir;
 
+/*
+ * Find a node with certain value in json and replace it.
+ */
+void
+replace_value(nlohmann::json    &j,
+              const std::string &target,
+              const std::string &replacement)
+{
+  if (j.is_string())
+    {
+      if (j == target)
+        {
+          j = replacement; // modify in place
+        }
+    }
+  else if (j.is_object())
+    {
+      for (auto &[key, value] : j.items())
+        {
+          replace_value(value, target, replacement);
+        }
+    }
+  else if (j.is_array())
+    {
+      for (auto &item : j)
+        {
+          replace_value(item, target, replacement);
+        }
+    }
+}
+
 /**
  * MPI-aware wrapper around ScopedTestOutputDir.
  *
@@ -129,17 +160,8 @@ TEST_F(DealiiMPITest, LaplaceProblemNetwork)
 
   ASSERT_FALSE(json_data.empty()) << "JSON data is empty.";
 
-  // Update the output file path to use the test output directory
-  // Node 3 contains the output filename
-  const std::string path_node_no = "3";
-  if (json_data["workflow"]["nodes"].contains(path_node_no) &&
-      json_data["workflow"]["nodes"][path_node_no].contains("value"))
-    {
-      json_data["workflow"]["nodes"][path_node_no]["value"] =
-        output_dir.path().string();
-    }
-
-  std::cout << json_data.dump(4) << std::endl;
+  // Replace output value according to `output_dir`
+  replace_value(json_data, "/app/build/output", output_dir.path().string());
 
   network.from_json(json_data);
 
