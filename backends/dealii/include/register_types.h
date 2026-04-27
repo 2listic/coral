@@ -200,12 +200,14 @@ namespace coral
                                 void,
                                 unsigned int,
                                 const std::string &,
+                                const std::string &,
                                 const std::string &>(
       &LaplaceProblem<dim>::run,
       {"LaplaceProblem::run<" + Utilities::dim_string(dim, spacedim) + ">",
        "laplace_problem",
        "n_cycles",
        "rhs",
+       "preconditioner_name",
        "output_dir"});
   }
 

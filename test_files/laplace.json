@@ -7,27 +7,28 @@
   },
   "workflow": {
     "nodes": {
-      "0": {
+      "1": {
         "type": "LaplaceProblem<2>",
         "position": {
-          "x": -321.3456749999997,
-          "y": -191.9663999999999
+          "x": 50.38064200000011,
+          "y": -47.119423999999924
         },
-        "qualified_id": "0"
+        "qualified_id": "1"
       },
       "2": {
-        "type": "LaplaceProblem::make_grid_from_generator<2>",
+        "type": "unsigned int",
         "position": {
-          "x": 201.41212500000017,
-          "y": -98.31359999999991
+          "x": 17.534818000000172,
+          "y": 294.775744
         },
+        "value": "5",
         "qualified_id": "2"
       },
       "3": {
         "type": "std::string",
         "position": {
-          "x": -361.5702749999997,
-          "y": -86.9087999999999
+          "x": 24.99977800000015,
+          "y": 52.91104000000003
         },
         "value": "hyper_cube",
         "qualified_id": "3"
@@ -35,109 +36,123 @@
       "4": {
         "type": "std::string",
         "position": {
-          "x": 318.5705250000001,
-          "y": 263.52959999999996
+          "x": 20.520802000000145,
+          "y": 175.33638400000004
         },
-        "value": "if(y > 0.5 + 0.25 * sin(4 * pi * x), 1.0, -1.0)",
+        "value": "0.0 : 1.0 : false",
         "qualified_id": "4"
       },
       "5": {
         "type": "std::string",
         "position": {
-          "x": -360.5334749999997,
-          "y": 46.838400000000036
+          "x": 747.607906,
+          "y": 472.441792
         },
-        "value": "0.0 : 1.0 : false",
+        "value": "if(y > 0.5 + 0.25 * sin(4 * pi * x), 1.0, -1.0)",
         "qualified_id": "5"
       },
-      "6": {
-        "type": "unsigned int",
-        "position": {
-          "x": -368.82787499999966,
-          "y": 168.144
-        },
-        "value": "5",
-        "qualified_id": "6"
-      },
       "7": {
-        "type": "LaplaceProblem::run<2>",
+        "type": "LaplaceProblem::make_grid_from_generator<2>",
         "position": {
-          "x": 738.474525,
-          "y": 56.16960000000006
+          "x": 611.745634,
+          "y": 58.88300800000006
         },
         "qualified_id": "7"
       },
       "8": {
-        "type": "std::string",
+        "type": "LaplaceProblem::run<2>",
         "position": {
-          "x": 320.64412500000003,
-          "y": 368.24639999999994
+          "x": 1213.4214099999997,
+          "y": 227.59110400000003
         },
-        "value": "/app/build/output",
         "qualified_id": "8"
       },
       "9": {
+        "type": "std::string",
+        "position": {
+          "x": 749.1008979999999,
+          "y": 588.895168
+        },
+        "value": "amg",
+        "qualified_id": "9"
+      },
+      "10": {
         "type": "unsigned int",
         "position": {
-          "x": 324.7913250000001,
-          "y": 160.8864
+          "x": 747.6079059999998,
+          "y": 354.49542399999996
         },
         "value": "4",
-        "qualified_id": "9"
+        "qualified_id": "10"
+      },
+      "11": {
+        "type": "std::string",
+        "position": {
+          "x": 752.086882,
+          "y": 706.8415359999999
+        },
+        "value": "/app/build/output",
+        "qualified_id": "11"
       }
     },
     "edges": {
       "0": {
-        "source": 0,
-        "target": 2,
+        "source": 1,
+        "target": 7,
         "source_output": 0,
         "target_input": 0
       },
       "1": {
         "source": 3,
-        "target": 2,
+        "target": 7,
         "source_output": 0,
         "target_input": 1
       },
       "2": {
-        "source": 5,
-        "target": 2,
-        "source_output": 0,
-        "target_input": 2
-      },
-      "3": {
-        "source": 6,
-        "target": 2,
-        "source_output": 0,
-        "target_input": 3
-      },
-      "4": {
-        "source": 2,
-        "target": 7,
-        "source_output": 0,
-        "target_input": 0
-      },
-      "5": {
         "source": 4,
         "target": 7,
         "source_output": 0,
         "target_input": 2
       },
-      "6": {
-        "source": 8,
+      "3": {
+        "source": 2,
         "target": 7,
         "source_output": 0,
         "target_input": 3
       },
-      "7": {
-        "source": 9,
-        "target": 7,
+      "4": {
+        "source": 7,
+        "target": 8,
+        "source_output": 0,
+        "target_input": 0
+      },
+      "5": {
+        "source": 10,
+        "target": 8,
         "source_output": 0,
         "target_input": 1
+      },
+      "6": {
+        "source": 5,
+        "target": 8,
+        "source_output": 0,
+        "target_input": 2
+      },
+      "7": {
+        "source": 9,
+        "target": 8,
+        "source_output": 0,
+        "target_input": 3
+      },
+      "8": {
+        "source": 11,
+        "target": 8,
+        "source_output": 0,
+        "target_input": 4
       }
     }
   },
   "version": 1,
   "author": "dealiix-platform",
-  "date_time_utc": "2026-04-24T17:15:50.256Z"
+  "date_time_utc": "2026-04-27T09:17:09.753Z"
 }

@@ -138,6 +138,7 @@ TEST_F(DealiiMPITest, LaplaceProblem)
   auto grid_method = make_node("LaplaceProblem::make_grid_from_generator<2>");
   auto output_dir_string = make_node(std::string(output_dir.path()));
   auto generator_name    = make_node(std::string("hyper_cube"));
+  auto prec_name         = make_node(std::string("amg"));
   auto generator_args    = make_node(std::string("0.0 : 1.0 : false"));
   auto rhs_expression =
     make_node(std::string("if(y > 0.5 + 0.25 * sin(4 * pi * x), 1.0, -1.0)"));
@@ -149,7 +150,7 @@ TEST_F(DealiiMPITest, LaplaceProblem)
   (*grid_method)();
 
   run_method->set_arguments(
-    {laplace, n_cycles, rhs_expression, output_dir_string});
+    {laplace, n_cycles, rhs_expression, prec_name, output_dir_string});
   (*run_method)();
 }
 

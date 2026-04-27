@@ -68,7 +68,10 @@ public:
   make_grid_from_file(const std::string &filename, unsigned int n_refinements);
 
   void
-  run(unsigned int n_cycles, const std::string &rhs, const std::string &dir);
+  run(unsigned int       n_cycles,
+      const std::string &rhs,
+      const std::string &preconditioner_name,
+      const std::string &dir);
 
 private:
   void
@@ -76,7 +79,7 @@ private:
   void
   assemble_system(const std::string &rhs);
   void
-  solve();
+  solve(const std::string &preconditioner_name);
   void
   refine_grid();
   void
@@ -226,7 +229,7 @@ LaplaceProblem<dim>::assemble_system(const std::string &rhs)
 
 template <int dim>
 void
-LaplaceProblem<dim>::solve()
+LaplaceProblem<dim>::solve(const std::string &preconditioner_name)
 {
   TimerOutput::Scope t(computing_timer, "solve");
 
@@ -237,19 +240,47 @@ LaplaceProblem<dim>::solve()
                                1e-6 * system_rhs.l2_norm());
   LA::SolverCG  solver(solver_control);
 
-  LA::MPI::PreconditionAMG::AdditionalData data;
+  if (preconditioner_name == "amg")
+    {
+      LA::MPI::PreconditionAMG::AdditionalData data;
 #ifdef USE_PETSC_LA
-  data.symmetric_operator = true;
+      data.symmetric_operator = true;
 #else
-  /* Trilinos defaults are good */
+      /* Trilinos defaults are good */
 #endif
-  LA::MPI::PreconditionAMG preconditioner;
-  preconditioner.initialize(system_matrix, data);
+      LA::MPI::PreconditionAMG prec;
+      prec.initialize(system_matrix, data);
 
-  solver.solve(system_matrix,
-               completely_distributed_solution,
-               system_rhs,
-               preconditioner);
+      solver.solve(system_matrix,
+                   completely_distributed_solution,
+                   system_rhs,
+                   prec);
+    }
+  else if (preconditioner_name == "jacobi")
+    {
+      LA::MPI::PreconditionJacobi prec;
+      prec.initialize(system_matrix);
+      solver.solve(system_matrix,
+                   completely_distributed_solution,
+                   system_rhs,
+                   prec);
+    }
+  else if (preconditioner_name == "ssor")
+    {
+      LA::MPI::PreconditionSSOR prec;
+      prec.initialize(system_matrix);
+      solver.solve(system_matrix,
+                   completely_distributed_solution,
+                   system_rhs,
+                   prec);
+    }
+  else
+    {
+      AssertThrow(false,
+                  ExcMessage("Unknown preconditioner: " + preconditioner_name +
+                             ". Use 'amg', 'jacobi' or 'ssor'."));
+    }
+
 
   pcout << "   Solved in " << solver_control.last_step() << " iterations."
         << std::endl;
@@ -330,6 +361,7 @@ template <int dim>
 void
 LaplaceProblem<dim>::run(unsigned int       n_cycles,
                          const std::string &rhs,
+                         const std::string &preconditioner_name,
                          const std::string &dir)
 {
   if (Utilities::MPI::this_mpi_process(mpi_communicator) == 0)
@@ -356,7 +388,7 @@ LaplaceProblem<dim>::run(unsigned int       n_cycles,
 
       setup_system();
       assemble_system(rhs);
-      solve();
+      solve(preconditioner_name);
       output_results(cycle, dir);
 
       computing_timer.print_summary();
