@@ -33,5 +33,7 @@ var searchData=
   ['loopcontrol_30',['LoopControl',['http://www.dealii.org/developer/doxygen/deal.II/classMeshWorker_1_1LoopControl.html',1,'MeshWorker']]],
   ['lowstoragerungekutta_31',['LowStorageRungeKutta',['http://www.dealii.org/developer/doxygen/deal.II/classTimeStepping_1_1LowStorageRungeKutta.html',1,'TimeStepping']]],
   ['lsingularityfunction_32',['LSingularityFunction',['http://www.dealii.org/developer/doxygen/deal.II/classFunctions_1_1LSingularityFunction.html',1,'Functions']]],
-  ['lsingularitygradfunction_33',['LSingularityGradFunction',['http://www.dealii.org/developer/doxygen/deal.II/classFunctions_1_1LSingularityGradFunction.html',1,'Functions']]]
+  ['lsingularitygradfunction_33',['LSingularityGradFunction',['http://www.dealii.org/developer/doxygen/deal.II/classFunctions_1_1LSingularityGradFunction.html',1,'Functions']]],
+  ['lsrkstepperssp_34',['LSRKStepperSSP',['http://www.dealii.org/developer/doxygen/deal.II/classSUNDIALS_1_1LSRKStepperSSP.html',1,'SUNDIALS']]],
+  ['lsrksteppersts_35',['LSRKStepperSTS',['http://www.dealii.org/developer/doxygen/deal.II/classSUNDIALS_1_1LSRKStepperSTS.html',1,'SUNDIALS']]]
 ];
