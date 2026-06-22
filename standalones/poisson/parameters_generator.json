@@ -1,0 +1,15 @@
+{
+  "output_file_name": "solution.vtu",
+  "finite_element_degree": 1,
+  "n_global_refinements": 4,
+  "mesh": {
+    "source": "generator",
+    "grid_generator_function": "hyper_cube",
+    "grid_generator_arguments": "0 : 1 : true"
+  },
+  "rhs_expression": "1",
+  "dirichlet_boundary_ids": [0, 1, 2, 3],
+  "dirichlet_expression": "0",
+  "neumann_boundary_ids": [],
+  "neumann_expression": "0"
+}

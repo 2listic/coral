@@ -4,6 +4,7 @@ project(coral LANGUAGES C CXX)
 
 option(CORAL_BUILD_BACKEND_DEALII "Build the deal.II backend (plugin + CLI)." ON)
 option(CORAL_BUILD_TESTS "Build tests (backend-specific where applicable)." ON)
+option(CORAL_BUILD_STANDALONES "Build the standalone deal.II programs in standalones/." ON)
 option(CORAL_BUILD_SHARED_CORE "Build coral_core as a shared library (recommended for plugins)." ON)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -29,6 +30,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(CORAL_BUILD_BACKEND_DEALII)
   add_subdirectory(backends/dealii)
+endif()
+
+if(CORAL_BUILD_STANDALONES)
+  add_subdirectory(standalones)
 endif()
 
 if(CORAL_BUILD_TESTS)
