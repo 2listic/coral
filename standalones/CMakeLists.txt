@@ -11,3 +11,4 @@ if(NOT deal.II_FOUND AND NOT DEAL_II_FOUND)
 endif()
 
 add_subdirectory(poisson)
+add_subdirectory(poisson_mpi)

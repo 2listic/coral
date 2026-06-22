@@ -36,6 +36,9 @@
 
 #include <deal.II/lac/affine_constraints.h>
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
+#include <deal.II/lac/precondition.h>
+#include <deal.II/lac/solver_cg.h>
+#include <deal.II/lac/solver_control.h>
 #include <deal.II/lac/sparse_direct.h>
 #include <deal.II/lac/sparse_matrix.h>
 #include <deal.II/lac/vector.h>
@@ -81,7 +84,10 @@ public:
     const std::set<types::boundary_id> &dirichlet_boundary_ids        = {0},
     const std::string                  &dirichlet_function_expression = "0",
     const std::set<types::boundary_id> &neumann_boundary_ids          = {},
-    const std::string                  &neumann_function_expression   = "0")
+    const std::string                  &neumann_function_expression   = "0",
+    const std::string                  &solver_type           = "direct",
+    const double                        solver_tolerance      = 1e-8,
+    const unsigned int                  solver_max_iterations = 0)
     : triangulation(triangulation)
     , fe(fe)
     , output_file_name(output_file_name)
@@ -90,6 +96,9 @@ public:
     , dirichlet_function_expression(dirichlet_function_expression)
     , neumann_boundary_ids(neumann_boundary_ids)
     , neumann_function_expression(neumann_function_expression)
+    , solver_type(solver_type)
+    , solver_tolerance(solver_tolerance)
+    , solver_max_iterations(solver_max_iterations)
     , dof_handler(triangulation)
   {}
 
@@ -97,6 +106,11 @@ public:
   solve()
   {
     dof_handler.distribute_dofs(fe);
+
+    std::cout << "   Number of active cells:       "
+              << triangulation.n_active_cells() << std::endl
+              << "   Number of degrees of freedom: " << dof_handler.n_dofs()
+              << std::endl;
 
     DynamicSparsityPattern dsp(dof_handler.n_dofs(), dof_handler.n_dofs());
 
@@ -140,9 +154,43 @@ public:
                                        {},
                                        constraints);
 
-    SparseDirectUMFPACK solver;
-    solver.initialize(system_matrix);
-    solver.vmult(solution, system_rhs);
+    // Direct solve (UMFPACK) or iterative solve (CG + SSOR). The tolerance /
+    // max_iterations parameters are only meaningful for the iterative path; a
+    // direct solve is exact up to round-off and ignores them. Both produce the
+    // same solution up to the requested tolerance, so the two solver types are
+    // interchangeable for this SPD problem.
+    if (solver_type == "direct")
+      {
+        SparseDirectUMFPACK solver;
+        solver.initialize(system_matrix);
+        solver.vmult(solution, system_rhs);
+        std::cout << "   Solved with direct solver." << std::endl;
+      }
+    else if (solver_type == "iterative")
+      {
+        const double rhs_norm = system_rhs.l2_norm();
+        const double tol =
+          solver_tolerance * (rhs_norm > 0. ? rhs_norm : 1.);
+        const unsigned int max_it = solver_max_iterations > 0 ?
+                                      solver_max_iterations :
+                                      dof_handler.n_dofs();
+
+        SolverControl            solver_control(max_it, tol);
+        SolverCG<Vector<double>> solver(solver_control);
+
+        PreconditionSSOR<SparseMatrix<double>> preconditioner;
+        preconditioner.initialize(system_matrix, 1.2);
+
+        solver.solve(system_matrix, solution, system_rhs, preconditioner);
+        std::cout << "   Solved in " << solver_control.last_step()
+                  << " iterations." << std::endl;
+      }
+    else
+      {
+        AssertThrow(false,
+                    ExcMessage("Unknown linear_solver.type '" + solver_type +
+                               "'; expected 'direct' or 'iterative'."));
+      }
     constraints.distribute(solution);
 
     DataOut<dim, spacedim> data_out;
@@ -156,6 +204,8 @@ public:
 
     std::ofstream output(output_file_name);
     data_out.write_vtu(output);
+
+    std::cout << "   Output written to: " << output_file_name << std::endl;
   }
 
 private:
@@ -167,6 +217,9 @@ private:
   const std::string                  &dirichlet_function_expression;
   const std::set<types::boundary_id> &neumann_boundary_ids;
   const std::string                  &neumann_function_expression;
+  const std::string                   solver_type;
+  const double                        solver_tolerance;
+  const unsigned int                  solver_max_iterations;
 
   DoFHandler<dim, spacedim> dof_handler;
 
@@ -254,6 +307,17 @@ main(int argc, char *argv[])
       const std::string neumann_expression =
         prm.value("neumann_expression", std::string("0"));
 
+      // --- Linear solver parameters ---------------------------------------
+      // Shared schema with poisson_mpi. The serial program defaults to a direct
+      // solve (UMFPACK); "iterative" selects CG. tolerance/max_iterations are
+      // only used by the iterative path.
+      const json        linear_solver = prm.value("linear_solver", json::object());
+      const std::string solver_type =
+        linear_solver.value("type", std::string("direct"));
+      const double solver_tolerance = linear_solver.value("tolerance", 1e-8);
+      const unsigned int solver_max_iterations =
+        linear_solver.value("max_iterations", 0u);
+
       // --- Mesh ------------------------------------------------------------
       // The "mesh.source" selector picks exactly one construction path; only
       // the keys relevant to the chosen source are read.
@@ -291,9 +355,6 @@ main(int argc, char *argv[])
       if (n_global_refinements > 0)
         triangulation.refine_global(n_global_refinements);
 
-      std::cout << "Mesh: " << triangulation.n_active_cells()
-                << " active cells." << std::endl;
-
       // --- Finite element --------------------------------------------------
       FE_Q<dim, spacedim> fe(fe_degree);
 
@@ -307,10 +368,11 @@ main(int argc, char *argv[])
                                            dirichlet_boundary_ids,
                                            dirichlet_expression,
                                            neumann_boundary_ids,
-                                           neumann_expression);
+                                           neumann_expression,
+                                           solver_type,
+                                           solver_tolerance,
+                                           solver_max_iterations);
       poisson.solve();
-
-      std::cout << "Solution written to: " << output_file_name << std::endl;
     }
   catch (const std::exception &exc)
     {
