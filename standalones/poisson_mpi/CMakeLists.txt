@@ -22,8 +22,6 @@ endif()
 
 add_executable(poisson_mpi poisson_mpi.cc)
 
-# Only third-party dependency: the vendored nlohmann/json single header.
-target_include_directories(poisson_mpi PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../core/include)
-
+# No third-party dependencies: parameters are read with deal.II's
+# ParameterAcceptor / ParameterHandler instead of the vendored nlohmann/json.
 deal_ii_setup_target(poisson_mpi)

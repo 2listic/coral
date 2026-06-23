@@ -8,9 +8,9 @@
     "grid_generator_arguments": "0 : 1 : true"
   },
   "rhs_expression": "1",
-  "dirichlet_boundary_ids": [0, 1, 2, 3],
+  "dirichlet_boundary_ids": "0, 1, 2, 3",
   "dirichlet_expression": "0",
-  "neumann_boundary_ids": [],
+  "neumann_boundary_ids": "",
   "neumann_expression": "0",
   "linear_solver": {
     "tolerance": 1e-8,

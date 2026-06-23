@@ -8,10 +8,19 @@
  * here so that this standalone can diverge freely from the backend versions in
  * backends/dealii/include.
  *
- * All parameters are read from a JSON file (nlohmann::json) whose path is passed
- * as the first command line argument:
+ * All parameters are read from a JSON file via deal.II's ParameterAcceptor /
+ * ParameterHandler (no third-party JSON library). The file path is passed as an
+ * optional first command line argument; when omitted it defaults to
+ * "parameters_generator.json":
  *
- *     ./poisson parameters.json
+ *     ./poisson [parameters.json]
+ *
+ * The file is parsed by ParameterHandler, which deduces the format from the
+ * ".json" extension. If the file does not exist, the program writes a
+ * ready-to-run example to that path (identical to the shipped
+ * parameters_generator.json) and exits gracefully, so a missing file is
+ * self-documenting. Unlike the previous nlohmann-based reader, keys that are not
+ * declared below are rejected rather than silently ignored.
  *
  * The mesh is either generated with
  * GridGenerator::generate_from_name_and_arguments() or read from a file,
@@ -23,6 +32,7 @@
  * --------------------------------------------------------------------- */
 
 #include <deal.II/base/function_parser.h>
+#include <deal.II/base/parameter_acceptor.h>
 #include <deal.II/base/quadrature_lib.h>
 
 #include <deal.II/dofs/dof_handler.h>
@@ -54,14 +64,99 @@
 #include <set>
 #include <string>
 
-#include <nlohmann/json.hpp>
-
 using namespace dealii;
-using json = nlohmann::json;
 
 // Fixed dimension for this standalone (see the project discussion: 2D).
 static constexpr int dim      = 2;
 static constexpr int spacedim = 2;
+
+
+// ---------------------------------------------------------------------------
+// PoissonParameters
+//
+// All run-time parameters, declared through ParameterAcceptor. Each member is
+// connected to an entry of the parameter file by add_parameter(); the entry
+// names match the keys of the JSON file 1:1, and "mesh"/"linear_solver" are
+// subsections (nested JSON objects). The top-level section is "/" so that the
+// global parameters live at the root of the JSON object rather than under a
+// section named after this class.
+//
+// Every entry is optional in the file: a key that is absent keeps the default
+// value assigned below. The two mesh sources are mutually exclusive and are
+// selected by "mesh.source"; only the keys relevant to the chosen source are
+// read in main(). ParameterHandler has no notion of conditionally-required
+// keys, so this mutual exclusivity is expressed by the Patterns::Selection on
+// "source" plus the branch in main(), not by the schema itself.
+// ---------------------------------------------------------------------------
+class PoissonParameters : public ParameterAcceptor
+{
+public:
+  PoissonParameters()
+    : ParameterAcceptor("/")
+  {
+    add_parameter("output_file_name", output_file_name);
+    add_parameter("finite_element_degree",
+                  finite_element_degree,
+                  "FE_Q polynomial degree",
+                  this->prm,
+                  Patterns::Integer(1));
+    add_parameter("n_global_refinements", n_global_refinements);
+
+    add_parameter("rhs_expression", rhs_expression);
+    add_parameter("dirichlet_boundary_ids", dirichlet_boundary_ids);
+    add_parameter("dirichlet_expression", dirichlet_expression);
+    add_parameter("neumann_boundary_ids", neumann_boundary_ids);
+    add_parameter("neumann_expression", neumann_expression);
+
+    enter_subsection("mesh");
+    {
+      add_parameter("source",
+                    mesh_source,
+                    "Mesh construction path: 'generator' or 'file'",
+                    this->prm,
+                    Patterns::Selection("generator|file"));
+      add_parameter("file_name", mesh_file_name);
+      add_parameter("grid_generator_function", grid_generator_function);
+      add_parameter("grid_generator_arguments", grid_generator_arguments);
+    }
+    leave_subsection();
+
+    enter_subsection("linear_solver");
+    {
+      add_parameter("type",
+                    solver_type,
+                    "Linear solver: 'direct' (UMFPACK) or 'iterative' (CG)",
+                    this->prm,
+                    Patterns::Selection("direct|iterative"));
+      add_parameter("tolerance", solver_tolerance);
+      add_parameter("max_iterations", solver_max_iterations);
+    }
+    leave_subsection();
+  }
+
+  // --- General / output ---
+  std::string  output_file_name      = "solution.vtu";
+  unsigned int finite_element_degree = 1;
+  unsigned int n_global_refinements  = 0;
+
+  // --- Physics / boundary ---
+  std::string                  rhs_expression = "1";
+  std::set<types::boundary_id> dirichlet_boundary_ids = {types::boundary_id(0)};
+  std::string                  dirichlet_expression   = "0";
+  std::set<types::boundary_id> neumann_boundary_ids   = {};
+  std::string                  neumann_expression     = "0";
+
+  // --- Mesh ---
+  std::string mesh_source              = "generator";
+  std::string mesh_file_name           = "";
+  std::string grid_generator_function  = "hyper_cube";
+  std::string grid_generator_arguments = "0 : 1 : true";
+
+  // --- Linear solver (serial program defaults to a direct UMFPACK solve) ---
+  std::string  solver_type           = "direct";
+  double       solver_tolerance      = 1e-8;
+  unsigned int solver_max_iterations = 0;
+};
 
 
 // ---------------------------------------------------------------------------
@@ -244,15 +339,31 @@ read_grid(const std::string &file_name, Triangulation<dim, spacedim> &tria)
 }
 
 
-// Read a JSON array of non-negative integers into a set of boundary ids.
-static std::set<types::boundary_id>
-read_boundary_ids(const json &j)
-{
-  std::set<types::boundary_id> ids;
-  for (const auto &id : j)
-    ids.insert(types::boundary_id(id.get<unsigned int>()));
-  return ids;
+// Example parameter file written for the user when no parameter file is found
+// (see main()). Kept identical to the shipped
+// standalones/poisson/parameters_generator.json so that the generated file is a
+// ready-to-run, self-documenting example rather than a bare dump of defaults.
+// Keep the two in sync when editing either.
+static const char *const default_parameters_json = R"json({
+  "output_file_name": "solution.vtu",
+  "finite_element_degree": 2,
+  "n_global_refinements": 8,
+  "mesh": {
+    "source": "generator",
+    "grid_generator_function": "hyper_cube",
+    "grid_generator_arguments": "0 : 1 : true"
+  },
+  "rhs_expression": "1",
+  "dirichlet_boundary_ids": "0, 1, 2, 3",
+  "dirichlet_expression": "0",
+  "neumann_boundary_ids": "",
+  "neumann_expression": "0",
+  "linear_solver": {
+    "tolerance": 1e-8,
+    "max_iterations": 0
+  }
 }
+)json";
 
 
 int
@@ -260,118 +371,96 @@ main(int argc, char *argv[])
 {
   try
     {
-      if (argc != 2)
+      if (argc > 2)
         {
-          std::cerr << "Usage: " << argv[0] << " <parameters.json>"
+          std::cerr << "Usage: " << argv[0] << " [parameters.json]" << std::endl
+                    << "  (defaults to \"parameters_generator.json\" when no "
+                       "file is given)"
                     << std::endl;
           return EXIT_FAILURE;
         }
 
-      const std::string parameter_file_name = argv[1];
+      // With no argument we fall back to a default file name.
+      const std::string parameter_file_name =
+        (argc == 2) ? argv[1] : "parameters_generator.json";
 
-      std::ifstream parameter_file(parameter_file_name);
-      AssertThrow(parameter_file.good(),
-                  ExcMessage("Could not open parameter file: " +
-                             parameter_file_name));
+      // If the parameter file does not exist, write a ready-to-run example to
+      // that path and exit gracefully -- rather than aborting with an exception
+      // -- so the user has a self-documenting file to start from.
+      {
+        std::ifstream parameter_file(parameter_file_name);
+        if (!parameter_file.good())
+          {
+            parameter_file.close();
+            std::ofstream out(parameter_file_name);
+            AssertThrow(out.good(),
+                        ExcMessage("Could not create parameter file: " +
+                                   parameter_file_name));
+            out << default_parameters_json;
+            out.close();
 
-      json prm;
-      parameter_file >> prm;
-      parameter_file.close();
+            std::cout << "No parameter file <" << parameter_file_name
+                      << "> was found, so an example one was written with "
+                         "default settings.\n"
+                         "Edit it if needed, then run again:\n    "
+                      << argv[0] << ' ' << parameter_file_name << std::endl;
+            return EXIT_SUCCESS;
+          }
+      }
 
-      // --- General / output parameters ------------------------------------
-      const std::string output_file_name =
-        prm.value("output_file_name", std::string("solution.vtu"));
-
-      const unsigned int fe_degree = prm.value("finite_element_degree", 1u);
-
-      const unsigned int n_global_refinements =
-        prm.value("n_global_refinements", 0u);
-
-      // --- Physics / boundary parameters ----------------------------------
-      const std::string rhs_expression =
-        prm.value("rhs_expression", std::string("1"));
-
-      const std::set<types::boundary_id> dirichlet_boundary_ids =
-        prm.contains("dirichlet_boundary_ids") ?
-          read_boundary_ids(prm.at("dirichlet_boundary_ids")) :
-          std::set<types::boundary_id>{types::boundary_id(0)};
-
-      const std::string dirichlet_expression =
-        prm.value("dirichlet_expression", std::string("0"));
-
-      const std::set<types::boundary_id> neumann_boundary_ids =
-        prm.contains("neumann_boundary_ids") ?
-          read_boundary_ids(prm.at("neumann_boundary_ids")) :
-          std::set<types::boundary_id>{};
-
-      const std::string neumann_expression =
-        prm.value("neumann_expression", std::string("0"));
-
-      // --- Linear solver parameters ---------------------------------------
-      // Shared schema with poisson_mpi. The serial program defaults to a direct
-      // solve (UMFPACK); "iterative" selects CG. tolerance/max_iterations are
-      // only used by the iterative path.
-      const json        linear_solver = prm.value("linear_solver", json::object());
-      const std::string solver_type =
-        linear_solver.value("type", std::string("direct"));
-      const double solver_tolerance = linear_solver.value("tolerance", 1e-8);
-      const unsigned int solver_max_iterations =
-        linear_solver.value("max_iterations", 0u);
+      // Declare and parse all parameters. ParameterHandler deduces the JSON
+      // format from the ".json" extension.
+      PoissonParameters par;
+      ParameterAcceptor::initialize(parameter_file_name);
 
       // --- Mesh ------------------------------------------------------------
       // The "mesh.source" selector picks exactly one construction path; only
-      // the keys relevant to the chosen source are read.
+      // the keys relevant to the chosen source are read. ParameterHandler
+      // cannot make "file_name" conditionally mandatory, so we check it here.
       Triangulation<dim, spacedim> triangulation;
 
-      const json        mesh = prm.value("mesh", json::object());
-      const std::string mesh_source =
-        mesh.value("source", std::string("generator"));
-
-      if (mesh_source == "file")
+      if (par.mesh_source == "file")
         {
-          AssertThrow(mesh.contains("file_name"),
+          AssertThrow(!par.mesh_file_name.empty(),
                       ExcMessage("mesh.source is 'file' but 'file_name' is "
-                                 "missing."));
-          const std::string mesh_file_name = mesh.at("file_name");
-          read_grid(mesh_file_name, triangulation);
+                                 "missing or empty."));
+          read_grid(par.mesh_file_name, triangulation);
         }
-      else if (mesh_source == "generator")
+      else if (par.mesh_source == "generator")
         {
-          const std::string grid_generator_function =
-            mesh.value("grid_generator_function", std::string("hyper_cube"));
-          const std::string grid_generator_arguments =
-            mesh.value("grid_generator_arguments", std::string("0 : 1 : true"));
-
           GridGenerator::generate_from_name_and_arguments(
-            triangulation, grid_generator_function, grid_generator_arguments);
+            triangulation,
+            par.grid_generator_function,
+            par.grid_generator_arguments);
         }
       else
         {
           AssertThrow(false,
-                      ExcMessage("Unknown mesh.source '" + mesh_source +
+                      ExcMessage("Unknown mesh.source '" + par.mesh_source +
                                  "'; expected 'generator' or 'file'."));
         }
 
-      if (n_global_refinements > 0)
-        triangulation.refine_global(n_global_refinements);
+      if (par.n_global_refinements > 0)
+        triangulation.refine_global(par.n_global_refinements);
 
       // --- Finite element --------------------------------------------------
-      FE_Q<dim, spacedim> fe(fe_degree);
+      FE_Q<dim, spacedim> fe(par.finite_element_degree);
 
       // --- Solve -----------------------------------------------------------
       // Note: PoissonSolver stores const references to the arguments below, so
-      // they must outlive the call to solve(). They all live in this scope.
+      // they must outlive the call to solve(). They all live in `par`, which
+      // outlives this call.
       PoissonSolver<dim, spacedim> poisson(triangulation,
                                            fe,
-                                           output_file_name,
-                                           rhs_expression,
-                                           dirichlet_boundary_ids,
-                                           dirichlet_expression,
-                                           neumann_boundary_ids,
-                                           neumann_expression,
-                                           solver_type,
-                                           solver_tolerance,
-                                           solver_max_iterations);
+                                           par.output_file_name,
+                                           par.rhs_expression,
+                                           par.dirichlet_boundary_ids,
+                                           par.dirichlet_expression,
+                                           par.neumann_boundary_ids,
+                                           par.neumann_expression,
+                                           par.solver_type,
+                                           par.solver_tolerance,
+                                           par.solver_max_iterations);
       poisson.solve();
     }
   catch (const std::exception &exc)
