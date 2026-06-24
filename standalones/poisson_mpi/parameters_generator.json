@@ -1,19 +1,126 @@
 {
-  "output_file_name": "solution.vtu",
-  "finite_element_degree": 2,
-  "n_global_refinements": 8,
-  "mesh": {
-    "source": "generator",
-    "grid_generator_function": "hyper_cube",
-    "grid_generator_arguments": "0 : 1 : true"
-  },
-  "rhs_expression": "1",
-  "dirichlet_boundary_ids": "0, 1, 2, 3",
-  "dirichlet_expression": "0",
-  "neumann_boundary_ids": "",
-  "neumann_expression": "0",
-  "linear_solver": {
-    "tolerance": 1e-8,
-    "max_iterations": 0
-  }
+    "dirichlet_boundary_ids": {
+        "value": "0, 1, 2, 3",
+        "default_value": "0",
+        "documentation": "",
+        "pattern": "4",
+        "pattern_description": "[List of <[Integer]> of length 0...4294967295 (inclusive)]",
+        "actions": "4"
+    },
+    "dirichlet_expression": {
+        "value": "0",
+        "default_value": "0",
+        "documentation": "",
+        "pattern": "5",
+        "pattern_description": "[Anything]",
+        "actions": "5"
+    },
+    "finite_element_degree": {
+        "value": "2",
+        "default_value": "1",
+        "documentation": "FE_Q polynomial degree",
+        "pattern": "1",
+        "pattern_description": "[Integer range 1...2147483647 (inclusive)]",
+        "actions": "1"
+    },
+    "n_global_refinements": {
+        "value": "8",
+        "default_value": "0",
+        "documentation": "",
+        "pattern": "2",
+        "pattern_description": "[Integer]",
+        "actions": "2"
+    },
+    "neumann_boundary_ids": {
+        "value": "",
+        "default_value": "",
+        "documentation": "",
+        "pattern": "6",
+        "pattern_description": "[List of <[Integer]> of length 0...4294967295 (inclusive)]",
+        "actions": "6"
+    },
+    "neumann_expression": {
+        "value": "0",
+        "default_value": "0",
+        "documentation": "",
+        "pattern": "7",
+        "pattern_description": "[Anything]",
+        "actions": "7"
+    },
+    "output_file_name": {
+        "value": "solution.vtu",
+        "default_value": "solution.vtu",
+        "documentation": "",
+        "pattern": "0",
+        "pattern_description": "[Anything]",
+        "actions": "0"
+    },
+    "rhs_expression": {
+        "value": "1",
+        "default_value": "1",
+        "documentation": "",
+        "pattern": "3",
+        "pattern_description": "[Anything]",
+        "actions": "3"
+    },
+    "linear_solver": {
+        "max_iterations": {
+            "value": "0",
+            "default_value": "0",
+            "documentation": "",
+            "pattern": "14",
+            "pattern_description": "[Integer]",
+            "actions": "14"
+        },
+        "tolerance": {
+            "value": "1e-8",
+            "default_value": "1e-08",
+            "documentation": "",
+            "pattern": "13",
+            "pattern_description": "[Double -MAX_DOUBLE...MAX_DOUBLE (inclusive)]",
+            "actions": "13"
+        },
+        "type": {
+            "value": "iterative",
+            "default_value": "iterative",
+            "documentation": "Linear solver: 'iterative' (CG + AMG) or 'direct' (parallel MUMPS\/Amesos)",
+            "pattern": "12",
+            "pattern_description": "[Selection direct|iterative ]",
+            "actions": "12"
+        }
+    },
+    "mesh": {
+        "file_name": {
+            "value": "",
+            "default_value": "",
+            "documentation": "",
+            "pattern": "9",
+            "pattern_description": "[Anything]",
+            "actions": "9"
+        },
+        "grid_generator_arguments": {
+            "value": "0 : 1 : true",
+            "default_value": "0 : 1 : true",
+            "documentation": "",
+            "pattern": "11",
+            "pattern_description": "[Anything]",
+            "actions": "11"
+        },
+        "grid_generator_function": {
+            "value": "hyper_cube",
+            "default_value": "hyper_cube",
+            "documentation": "",
+            "pattern": "10",
+            "pattern_description": "[Anything]",
+            "actions": "10"
+        },
+        "source": {
+            "value": "generator",
+            "default_value": "generator",
+            "documentation": "Mesh construction path: 'generator' or 'file'",
+            "pattern": "8",
+            "pattern_description": "[Selection generator|file ]",
+            "actions": "8"
+        }
+    }
 }

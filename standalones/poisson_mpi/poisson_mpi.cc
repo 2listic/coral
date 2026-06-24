@@ -19,9 +19,12 @@
  * format from the ".json" extension. The schema matches standalones/poisson,
  * except that the "linear_solver" section defaults to an iterative solve since
  * the serial UMFPACK direct solve is replaced by an iterative solver here. If
- * the file does not exist, the program writes a ready-to-run example to that
- * path (identical to the shipped parameters_generator.json) and exits
- * gracefully, so a missing file is self-documenting.
+ * the file does not exist, the program writes a ready-to-run template to that
+ * path -- in deal.II's full JSON schema, as produced by
+ * ParameterHandler::print_parameters() (each entry annotated with its default
+ * value, documentation and pattern) -- and exits gracefully, so a missing file
+ * is self-documenting. A terse value-only JSON object is equally accepted on
+ * input.
  *
  * --------------------------------------------------------------------- */
 
@@ -471,33 +474,6 @@ private:
 };
 
 
-// Example parameter file written for the user when no parameter file is found
-// (see main()). Kept identical to the shipped
-// standalones/poisson_mpi/parameters_generator.json so that the generated file
-// is a ready-to-run, self-documenting example rather than a bare dump of
-// defaults. Keep the two in sync when editing either.
-static const char *const default_parameters_json = R"json({
-  "output_file_name": "solution.vtu",
-  "finite_element_degree": 2,
-  "n_global_refinements": 8,
-  "mesh": {
-    "source": "generator",
-    "grid_generator_function": "hyper_cube",
-    "grid_generator_arguments": "0 : 1 : true"
-  },
-  "rhs_expression": "1",
-  "dirichlet_boundary_ids": "0, 1, 2, 3",
-  "dirichlet_expression": "0",
-  "neumann_boundary_ids": "",
-  "neumann_expression": "0",
-  "linear_solver": {
-    "tolerance": 1e-8,
-    "max_iterations": 0
-  }
-}
-)json";
-
-
 int
 main(int argc, char *argv[])
 {
@@ -528,8 +504,17 @@ main(int argc, char *argv[])
       const std::string parameter_file_name =
         (argc == 2) ? argv[1] : "parameters_generator.json";
 
-      // If the parameter file does not exist, write a ready-to-run example to
+      // Declare all parameters up front so we can emit a complete template if
+      // the file is missing (see below) and parse into the same object if it
+      // exists.
+      PoissonParameters par;
+
+      // If the parameter file does not exist, write a ready-to-run template to
       // that path and exit gracefully -- rather than aborting with an exception.
+      // The template is produced by ParameterHandler in its full JSON form (the
+      // same schema deal.II's print_parameters() emits: each entry carries its
+      // value, default_value, documentation, pattern and pattern_description),
+      // so it is fully self-describing; the values are the program defaults.
       // Only rank 0 writes the file (file I/O is not rank-aware and every rank
       // would otherwise race on the same path); all ranks then exit. All ranks
       // see the same (shared) filesystem, so they agree on whether it exists.
@@ -541,12 +526,8 @@ main(int argc, char *argv[])
           {
             if (is_root)
               {
-                std::ofstream out(parameter_file_name);
-                AssertThrow(out.good(),
-                            ExcMessage("Could not create parameter file: " +
-                                       parameter_file_name));
-                out << default_parameters_json;
-                out.close();
+                par.prm.print_parameters(parameter_file_name,
+                                         ParameterHandler::JSON);
 
                 std::cout << "No parameter file <" << parameter_file_name
                           << "> was found, so an example one was written with "
@@ -560,8 +541,8 @@ main(int argc, char *argv[])
       }
 
       // The file exists: ParameterHandler deduces the JSON format from the
-      // ".json" extension and all ranks parse it independently.
-      PoissonParameters par;
+      // ".json" extension and all ranks parse it independently. Both the full
+      // schema above and a terse value-only JSON object are accepted on input.
       ParameterAcceptor::initialize(parameter_file_name);
 
       // --- Mesh ------------------------------------------------------------

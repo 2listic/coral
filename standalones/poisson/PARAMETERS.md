@@ -5,14 +5,29 @@ Run with: `./poisson parameters.json`
 The parameter file is a single JSON object, read with deal.II's
 `ParameterAcceptor` / `ParameterHandler` (no third-party JSON library).
 **All keys are optional**; the defaults below are used when a key is missing.
-Two things follow from using `ParameterHandler`:
+
+### Two accepted JSON forms
+
+`ParameterHandler` accepts the same parameters in either of two shapes on input:
+
+- **Full schema** (what the shipped files use). Each entry is an object carrying
+  its `value`, `default_value`, `documentation`, `pattern` and
+  `pattern_description` — the exact schema deal.II's
+  `ParameterHandler::print_parameters(..., ParameterHandler::JSON)` emits (the
+  same one used by tutorial programs such as step-70). It is self-describing,
+  so tools can read the type/pattern/help of every entry. The actual value is in
+  the `"value"` field; `"default_value"` records the program default.
+- **Terse value-only** object, e.g. `{ "finite_element_degree": 2, ... }` — just
+  keys mapped to values. Convenient to hand-write; equally accepted.
+
+Two more things follow from using `ParameterHandler`:
 
 - **Unknown keys are rejected** (a typo'd key aborts the run with a clear
   message), rather than being silently ignored.
-- If the file **does not exist**, a ready-to-run example (identical to the
-  shipped `parameters_generator.json`) is written to that path and the program
-  exits gracefully with a message — so a missing file is self-documenting. With
-  no argument at all, the default path is `parameters_generator.json`.
+- If the file **does not exist**, a ready-to-run template (the full-schema form
+  above, with default values) is written to that path and the program exits
+  gracefully with a message — so a missing file is self-documenting. With no
+  argument at all, the default path is `parameters_generator.json`.
 
 Boundary-id lists are a **comma-separated string** (e.g. `"0, 1, 2, 3"`), not a
 JSON array; an empty list is `""`. The schema is shared with `poisson_mpi`, so
@@ -64,9 +79,25 @@ file meshes are read by `GridIn` (format from extension: `.msh`, `.vtu`, …).
 
 ## Example
 
-This is the shipped `parameters_generator.json`; it is identical to the one in
-`poisson_mpi/`. With `type` omitted, `poisson` solves it directly and
-`poisson_mpi` iteratively.
+The shipped `parameters_generator.json` is in the **full schema** form. A single
+entry looks like this (the whole file is one JSON object of such entries, plus
+the `mesh` and `linear_solver` subsections):
+
+```json
+{
+  "finite_element_degree": {
+    "value": "2",
+    "default_value": "1",
+    "documentation": "FE_Q polynomial degree",
+    "pattern": "1",
+    "pattern_description": "[Integer range 1...2147483647 (inclusive)]",
+    "actions": "1"
+  }
+}
+```
+
+The same parameters in the **terse value-only** form (also accepted on input)
+are much shorter — this is the easiest way to hand-write a file:
 
 ```json
 {
@@ -84,3 +115,7 @@ This is the shipped `parameters_generator.json`; it is identical to the one in
   "linear_solver": { "tolerance": 1e-8, "max_iterations": 0 }
 }
 ```
+
+The shipped file is identical (modulo the `type` default) to the one in
+`poisson_mpi/`. With `type` omitted, `poisson` solves directly and `poisson_mpi`
+iteratively.
