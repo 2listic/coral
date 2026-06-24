@@ -636,9 +636,22 @@ main(int argc, char *argv[])
   if (!run)
     return EXIT_SUCCESS;
 
+  // Under MPI we must run the task layer single-threaded: a thread pool issues
+  // tasks unordered/concurrently, but MPI collectives require a single global
+  // order agreed by all ranks. One worker serializes issue, and Taskflow
+  // guarantees deterministic order with a single worker (taskflow#531), so all
+  // ranks execute the graph in the same order. MPI state is read from the same
+  // JSON field the plugin uses to decide (subjson["MPI"]["enabled"]).
+  const bool mpi_enabled =
+    subjson.contains("MPI") && subjson["MPI"].value("enabled", false);
+
   const size_t n_threads =
-    get_env_or("THREADS", std::thread::hardware_concurrency());
-  slog_info("Thread pool size of %zu.", n_threads);
+    mpi_enabled ? 1 : get_env_or("THREADS", std::thread::hardware_concurrency());
+
+  if (mpi_enabled)
+    slog_info("MPI enabled: forcing single-worker (deterministic) execution.");
+  else
+    slog_info("Thread pool size of %zu.", n_threads);
 
   coral::Network network;
   coral::Network::set_threads_number(n_threads);
