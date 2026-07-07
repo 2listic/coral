@@ -1,7 +1,7 @@
 var searchData=
 [
   ['k_5fvectors_0',['k_vectors',['http://www.dealii.org/developer/doxygen/deal.II/classFESeries_1_1Fourier.html#a251febced13f3f0eab81105d370c023c',1,'FESeries::Fourier']]],
-  ['kappa_1',['kappa',['http://www.dealii.org/developer/doxygen/deal.II/classPlasticityLab_1_1ThermoPlasticMaterial.html#a6bf969e8355e88f491507b2bcd7ddf01',1,'PlasticityLab::ThermoPlasticMaterial']]],
+  ['keep_5fexisting_5ffile_1',['keep_existing_file',['http://www.dealii.org/developer/doxygen/deal.II/structDataOutBase_1_1CFFlags.html#a33b446deefedade568fb4449c79cf9d9',1,'DataOutBase::CFFlags']]],
   ['keepdeclarationorder_2',['KeepDeclarationOrder',['http://www.dealii.org/developer/doxygen/deal.II/classParameterHandler.html#a8364dda711b93753c6809eefe2a8e827a50ae66aa378db81bb360ce7cdf96e3e1',1,'ParameterHandler::KeepDeclarationOrder'],['http://www.dealii.org/developer/doxygen/deal.II/classParameterHandler.html#a8364dda711b93753c6809eefe2a8e827a50ae66aa378db81bb360ce7cdf96e3e1',1,'MultipleParameterLoop::KeepDeclarationOrder']]],
   ['keeponlychanged_3',['KeepOnlyChanged',['http://www.dealii.org/developer/doxygen/deal.II/classParameterHandler.html#a8364dda711b93753c6809eefe2a8e827a723575ded7412b7a0fbd26420288ec5a',1,'ParameterHandler::KeepOnlyChanged'],['http://www.dealii.org/developer/doxygen/deal.II/classParameterHandler.html#a8364dda711b93753c6809eefe2a8e827a723575ded7412b7a0fbd26420288ec5a',1,'MultipleParameterLoop::KeepOnlyChanged']]],
   ['kernel_5fsize_4',['kernel_size',['http://www.dealii.org/developer/doxygen/deal.II/classRelaxationBlock_1_1AdditionalData.html#aff8aa50b0eabb26191b96be6ac009efc',1,'RelaxationBlock::AdditionalData']]],
