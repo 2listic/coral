@@ -13,6 +13,37 @@ using namespace dealii;
 using namespace coral;
 using coral_test::ScopedTestOutputDir;
 
+/*
+ * Find a node with certain value in json and replace it.
+ */
+void
+replace_value(nlohmann::json    &j,
+              const std::string &target,
+              const std::string &replacement)
+{
+  if (j.is_string())
+    {
+      if (j == target)
+        {
+          j = replacement; // modify in place
+        }
+    }
+  else if (j.is_object())
+    {
+      for (auto &[key, value] : j.items())
+        {
+          replace_value(value, target, replacement);
+        }
+    }
+  else if (j.is_array())
+    {
+      for (auto &item : j)
+        {
+          replace_value(item, target, replacement);
+        }
+    }
+}
+
 /**
  * MPI-aware wrapper around ScopedTestOutputDir.
  *
@@ -103,9 +134,23 @@ TEST_F(DealiiMPITest, LaplaceProblem)
   ASSERT_TRUE((*laplace)());
   ASSERT_TRUE(laplace->ready());
 
-  auto run_method        = make_node("LaplaceProblem::run<2>");
+  auto run_method  = make_node("LaplaceProblem::run<2>");
+  auto grid_method = make_node("LaplaceProblem::make_grid_from_generator<2>");
   auto output_dir_string = make_node(std::string(output_dir.path()));
-  run_method->set_arguments({laplace, output_dir_string});
+  auto generator_name    = make_node(std::string("hyper_cube"));
+  auto prec_name         = make_node(std::string("amg"));
+  auto generator_args    = make_node(std::string("0.0 : 1.0 : false"));
+  auto rhs_expression =
+    make_node(std::string("if(y > 0.5 + 0.25 * sin(4 * pi * x), 1.0, -1.0)"));
+  auto n_cycles      = make_node(static_cast<unsigned int>(4));
+  auto n_refinements = make_node(static_cast<unsigned int>(5));
+
+  grid_method->set_arguments(
+    {laplace, generator_name, generator_args, n_refinements});
+  (*grid_method)();
+
+  run_method->set_arguments(
+    {laplace, n_cycles, rhs_expression, prec_name, output_dir_string});
   (*run_method)();
 }
 
@@ -128,21 +173,8 @@ TEST_F(DealiiMPITest, LaplaceProblemNetwork)
 
   ASSERT_FALSE(json_data.empty()) << "JSON data is empty.";
 
-  // Update the initialize constant
-  // Node 5 contains the bool value
-  if (json_data["workflow"]["nodes"].contains("5") &&
-      json_data["workflow"]["nodes"]["5"].contains("value"))
-    {
-      json_data["workflow"]["nodes"]["5"]["value"] = "false";
-    }
-
-  // Update the output file path to use the test output directory
-  // Node 2 contains the output filename
-  if (json_data["workflow"]["nodes"].contains("2") &&
-      json_data["workflow"]["nodes"]["2"].contains("value"))
-    {
-      json_data["workflow"]["nodes"]["2"]["value"] = output_dir.path().string();
-    }
+  // Replace output value according to `output_dir`
+  replace_value(json_data, "/app/build/output", output_dir.path().string());
 
   network.from_json(json_data);
 
