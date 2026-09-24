@@ -152,6 +152,7 @@ These options are enabled by default:
 
 - `CORAL_BUILD_BACKEND_DEALII=ON` (auto-skips if `deal.II` is not found)
 - `CORAL_BUILD_TESTS=ON`
+- `CORAL_INSTALL=ON`
 
 Example:
 
@@ -159,6 +160,42 @@ Example:
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j 8
 ```
+
+To install CORAL for use by another CMake project, choose an installation
+prefix.  The following multi-configuration build installs actual Debug and
+Release binaries side by side, and exports both configurations for consumers
+that build both variants:
+
+```bash
+cmake -S . -B build -G "Ninja Multi-Config" \
+  -DCORAL_BUILD_BACKEND_DEALII=OFF \
+  -DCORAL_BUILD_TESTS=OFF \
+  -DCMAKE_INSTALL_PREFIX=$HOME/.local
+cmake --build build --config Debug
+cmake --build build --config Release
+cmake --install build --config Debug
+cmake --install build --config Release
+```
+
+The installed libraries and executables are placed under configuration-specific
+directories such as `lib/Debug`, `lib/Release`, `bin/Debug`, and `bin/Release`.
+A Release-only installation intentionally does not advertise a Debug target,
+because using a Release library for a Debug plugin could cause an ABI mismatch.
+
+A plugin project can then consume the installed package without checking out
+the CORAL repository:
+
+```cmake
+find_package(coral CONFIG REQUIRED)
+
+add_library(coral_backend_my_backend MODULE plugin_my_backend.cc)
+target_link_libraries(coral_backend_my_backend PRIVATE coral::core)
+```
+
+The package exports `coral::core`; plugins should be built as shared libraries
+and use the headers installed under `include/`.  Keeping
+`CORAL_BUILD_SHARED_CORE=ON` ensures that the plugin and the host use the same
+CORAL type registry at runtime.
 
 ### Warning-free builds
 
