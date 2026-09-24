@@ -43,6 +43,23 @@ add_executable(coral
 target_compile_features(coral PRIVATE cxx_std_17)
 target_link_libraries(coral PRIVATE coral_core)
 
+# The installed executable and library are kept in configuration-specific
+# directories (for example, bin/Debug and lib/Debug).  Make the executable
+# find the matching installed coral_core without requiring LD_LIBRARY_PATH or
+# DYLD_LIBRARY_PATH.
+if(APPLE)
+  set(_coral_install_rpath
+    "@loader_path/../../${CMAKE_INSTALL_LIBDIR}/$<CONFIG>")
+elseif(UNIX)
+  set(_coral_install_rpath
+    "$ORIGIN/../../${CMAKE_INSTALL_LIBDIR}/$<CONFIG>")
+endif()
+
+if(_coral_install_rpath)
+  set_target_properties(coral PROPERTIES
+    INSTALL_RPATH "${_coral_install_rpath}")
+endif()
+
 # Keep build output warning-free by default.
 if(MSVC)
   target_compile_options(coral PRIVATE /W0)
