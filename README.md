@@ -152,6 +152,7 @@ These options are enabled by default:
 
 - `CORAL_BUILD_BACKEND_DEALII=ON` (auto-skips if `deal.II` is not found)
 - `CORAL_BUILD_TESTS=ON`
+- `CORAL_INSTALL=ON`
 
 Example:
 
@@ -159,6 +160,33 @@ Example:
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j 8
 ```
+
+To install CORAL for use by another CMake project, choose an installation
+prefix.  The install contains `coral_core`, the `coral` CLI, the public CORAL
+headers, and all bundled header-only dependencies used by those headers:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+  -DCORAL_BUILD_BACKEND_DEALII=OFF \
+  -DCORAL_BUILD_TESTS=OFF \
+  -DCMAKE_INSTALL_PREFIX=$HOME/.local
+cmake --build build --target install
+```
+
+A plugin project can then consume the installed package without checking out
+the CORAL repository:
+
+```cmake
+find_package(coral CONFIG REQUIRED)
+
+add_library(coral_backend_my_backend MODULE plugin_my_backend.cc)
+target_link_libraries(coral_backend_my_backend PRIVATE coral::core)
+```
+
+The package exports `coral::core`; plugins should be built as shared libraries
+and use the headers installed under `include/`.  Keeping
+`CORAL_BUILD_SHARED_CORE=ON` ensures that the plugin and the host use the same
+CORAL type registry at runtime.
 
 ### Warning-free builds
 
