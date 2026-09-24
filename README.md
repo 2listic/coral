@@ -162,16 +162,25 @@ cmake --build build -j 8
 ```
 
 To install CORAL for use by another CMake project, choose an installation
-prefix.  The install contains `coral_core`, the `coral` CLI, the public CORAL
-headers, and all bundled header-only dependencies used by those headers:
+prefix.  The following multi-configuration build installs actual Debug and
+Release binaries side by side, and exports both configurations for consumers
+that build both variants:
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+cmake -S . -B build -G "Ninja Multi-Config" \
   -DCORAL_BUILD_BACKEND_DEALII=OFF \
   -DCORAL_BUILD_TESTS=OFF \
   -DCMAKE_INSTALL_PREFIX=$HOME/.local
-cmake --build build --target install
+cmake --build build --config Debug
+cmake --build build --config Release
+cmake --install build --config Debug
+cmake --install build --config Release
 ```
+
+The installed libraries and executables are placed under configuration-specific
+directories such as `lib/Debug`, `lib/Release`, `bin/Debug`, and `bin/Release`.
+A Release-only installation intentionally does not advertise a Debug target,
+because using a Release library for a Debug plugin could cause an ABI mismatch.
 
 A plugin project can then consume the installed package without checking out
 the CORAL repository:
