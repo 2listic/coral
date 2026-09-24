@@ -16,13 +16,16 @@ target_compile_features(coral_core PUBLIC cxx_std_17)
 
 target_include_directories(coral_core
   PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/include
-    ${CMAKE_CURRENT_LIST_DIR}/entt/single_include)
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/entt/single_include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 target_compile_definitions(coral_core
   PUBLIC
-    SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+    $<BUILD_INTERFACE:SOURCE_DIR="${PROJECT_SOURCE_DIR}">
     JSON_DIAGNOSTICS=1)
+
+set_target_properties(coral_core PROPERTIES EXPORT_NAME core)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   target_compile_options(coral_core PRIVATE
