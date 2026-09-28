@@ -19,11 +19,21 @@ namespace coral
   CORAL_IMPL_INLINE
   NodeObject::NodeObject(const std::string &hash_str)
   {
-    try
+    auto initializer_it = initializers.find(hash_str);
+    if (initializer_it == initializers.end())
       {
-        initializer = initializers.at(hash_str);
+        const auto alias_it = function_aliases.find(hash_str);
+        if (alias_it != function_aliases.end())
+          initializer_it = initializers.find(alias_it->second);
       }
-    catch (const std::out_of_range &)
+
+    if (initializer_it != initializers.end())
+      {
+        initializer = initializer_it->second;
+        if (initializer_it->first != hash_str)
+          initializer.json_serializer["type"] = hash_str;
+      }
+    else
       {
         // If we did not find the hash, this is actually an std::string
         // object-.
@@ -47,6 +57,15 @@ namespace coral
     for (const auto &[hash_str, initializer] : NodeObject::initializers)
       {
         registry[hash_str] = initializer.json_serializer;
+      }
+    for (const auto &[alias, hash_str] : NodeObject::function_aliases)
+      {
+        const auto it = registry.find(hash_str);
+        if (it != registry.end() && !registry.contains(alias))
+          {
+            registry[alias]         = *it;
+            registry[alias]["type"] = alias;
+          }
       }
     return registry;
   }
@@ -325,7 +344,8 @@ namespace coral
         const auto expected_hash =
           initializer.json_serializer["arguments"][input_indices[i]]["type"]
             .get<std::string>();
-        const auto input_hash = input_node->get_output(input_index)->hash();
+        const auto input_hash =
+          input_node->get_output(input_index)->output_hash();
 
         // Check if the input hash matches the expected hash or is derived
         // from the base type
@@ -558,6 +578,12 @@ namespace coral
         const auto object_hash = detail::hash(object);
         const auto stored_hash =
           std::string(initializer.json_serializer.at("type"));
+        const auto node_type =
+          initializer.json_serializer.value("node_type", "");
+        if (node_type == "function" || node_type == "void_function" ||
+            node_type == "method" || node_type == "const_method" ||
+            node_type == "void_method" || node_type == "void_const_method")
+          return stored_hash;
         if (stored_hash.find(object_hash) != 0)
           throw std::runtime_error(
             "Object type does not match: we store " + stored_hash +
@@ -566,6 +592,25 @@ namespace coral
         return stored_hash;
       }
     return initializer.json_serializer.at("type");
+  }
+
+
+
+  CORAL_IMPL_INLINE std::string
+                    NodeObject::output_hash() const
+  {
+    const auto &outputs = initializer.json_serializer["outputs"];
+    const bool  has_self_output =
+      std::any_of(outputs.begin(), outputs.end(), [](const auto &output) {
+        return output.template get<int>() == -1;
+      });
+    if (has_self_output && initializer.json_serializer.contains("output_type"))
+      {
+        if (ready())
+          return detail::hash(object);
+        return initializer.json_serializer["output_type"].get<std::string>();
+      }
+    return hash();
   }
 
 
@@ -613,7 +658,7 @@ namespace coral
 
 
   CORAL_IMPL_INLINE std::string
-  NodeObject::get_qualified_id() const
+                    NodeObject::get_qualified_id() const
   {
     const auto &j = initializer.json_serializer;
     return j.contains("qualified_id") ? j["qualified_id"].get<std::string>() :

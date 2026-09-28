@@ -3,6 +3,7 @@
 
 #include <nlohmann/json.hpp> // JSON library
 
+#include <algorithm>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -224,6 +225,15 @@ namespace coral
 
 
 
+    template <typename Function>
+    inline auto
+    function_registry_key(const std::string &operation) -> std::string
+    {
+      return operation + "::" + hash<Function>();
+    }
+
+
+
     /** \endcond */
   } // namespace detail
 
@@ -261,9 +271,17 @@ namespace coral
     std::string hash = "";
     if constexpr (detail::is_callable<Arg>::value)
       {
-        // If Arg is callable, hash the std::function type
-        using FuncType = decltype(std::function{std::declval<Arg>()});
-        hash           = detail::hash<FuncType>(method_name);
+        // If Arg is callable, hash the std::function type.  Member function
+        // registrations retain their historical key, while free functions
+        // include the concrete signature so overloaded operations do not
+        // overwrite one another in the registry.
+        if constexpr (std::is_member_function_pointer_v<std::decay_t<Arg>>)
+          hash = detail::hash<Arg>(method_name);
+        else
+          {
+            using FuncType = decltype(std::function{std::declval<Arg>()});
+            hash = detail::function_registry_key<FuncType>(method_name);
+          }
       }
     else
       {
@@ -450,6 +468,15 @@ namespace coral
 
     /** \endcond */
   } // namespace detail
+
+  /** Optional registry metadata for a free function operation. */
+  struct RegistryMetadata
+  {
+    std::string operation;
+    std::string display_name;
+  };
+
+  using FunctionMetadata = RegistryMetadata;
 
   /**
    * Distinguish input arguments of a function from being input or input/output
@@ -989,53 +1016,95 @@ namespace coral
     }
 
     /**
-     * Register a free function. This node will have as arguments the
-     * output of the function, and the arguments of the method.
+     * Register a free function.
      *
-     * The function can be void or return a value, and can have any number of
-     * arguments.
-     *
-     * The first argument of the method is the return type of the class, and
-     * the
-     * @p arg_names must reflect this if non-void, i.e.,
-     * @p arg_names[0] is the name of the function, while @p arg_names[1] is the
-     * (optional) output node (if non-void) by which we store this
-     * function name, while the rest of the arguments are the names of the
-     * arguments of the method.
+     * Void functions use all entries after the operation name as inputs.
+     * Non-void functions may use the same historical
+     * {operation, output, input...} form, or the output-only
+     * {operation, input...} form.  The latter exposes the returned object as
+     * the function node's self output and does not create a dummy output node.
+     * When metadata.operation is set, arg_names contains only input names.
      */
     template <typename ReturnType, typename... Args>
     static void
     register_function(std::function<ReturnType(Args...)> ptr,
-                      std::vector<std::string>           arg_names)
+                      std::vector<std::string>           arg_names,
+                      RegistryMetadata                   metadata = {})
     {
       using ThisMethod              = decltype(ptr);
       constexpr bool return_is_void = std::is_same_v<ReturnType, void>;
       if (arg_names.empty())
         throw std::runtime_error("You must provide at least the name of the "
                                  "function as the first argument.");
-      auto method_name = arg_names[0];
-      arg_names.erase(arg_names.begin());
+
+      const bool has_metadata =
+        !metadata.operation.empty() || !metadata.display_name.empty();
+      const auto operation =
+        metadata.operation.empty() ? arg_names.front() : metadata.operation;
+      const auto registry_key =
+        detail::function_registry_key<ThisMethod>(operation);
+
+      // The historical form is {operation, output, input...}.  The
+      // output-only form is {operation, input...}, or just {input...} when
+      // metadata.operation supplies the operation name.
+      const auto n_inputs = sizeof...(Args);
+      if (has_metadata && arg_names.size() == n_inputs + 1)
+        arg_names.erase(arg_names.begin());
+      else if (!has_metadata)
+        arg_names.erase(arg_names.begin());
+
+      const bool has_legacy_output_name =
+        !has_metadata && arg_names.size() == n_inputs + 1;
+      const bool self_output =
+        !return_is_void && (has_metadata || !has_legacy_output_name ||
+                            !std::is_default_constructible_v<ReturnType>);
+
+      if (self_output && has_legacy_output_name)
+        arg_names.erase(arg_names.begin());
+
+      const auto set_metadata =
+        [&](detail::NodeObjectInitializer &initializer) {
+          if (!metadata.operation.empty())
+            initializer.json_serializer["operation"] = metadata.operation;
+          if (!metadata.display_name.empty())
+            initializer.json_serializer["display_name"] = metadata.display_name;
+        };
+
+      // Keep old workflow JSON readable when an operation has only one
+      // registered signature.  New nodes always use registry_key directly.
+      const auto add_legacy_alias = [&]() {
+        auto alias = function_aliases.find(operation);
+        if (alias == function_aliases.end())
+          function_aliases.emplace(operation, registry_key);
+        else if (alias->second != registry_key)
+          function_aliases.erase(alias);
+      };
+
+      const auto expected_arguments =
+        (!return_is_void && !self_output) ? n_inputs + 1 : n_inputs;
+      if (arg_names.size() != expected_arguments)
+        throw std::runtime_error("Wrong number of arguments for function '" +
+                                 operation + "'.");
 
       if constexpr (return_is_void)
         {
-          if (arg_names.size() != sizeof...(Args))
-            throw std::runtime_error("Wrong number of arguments.");
           auto &initializer =
-            register_json_header<ThisMethod, Args...>(arg_names, method_name);
+            register_json_header<ThisMethod, Args...>(arg_names, registry_key);
           initializer.json_serializer["node_type"] = "void_function";
           initializer.node_type                    = NodeType::void_function;
+          set_metadata(initializer);
+          add_legacy_alias();
 
-          // Add the method to the initializer
           initializer.executor =
-            [ptr, &initializer, method_name](const NodeObjectPtr &,
-                                             std::vector<NodeObjectPtr> args)
+            [ptr, &initializer, operation](const NodeObjectPtr &,
+                                           std::vector<NodeObjectPtr> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
 
             auto tuple = detail::cast_args<Args...>(args);
             slog_debug("void function: %s [%s]",
-                       method_name.c_str(),
+                       operation.c_str(),
                        initializer.type_name.c_str());
             std::apply([ptr](auto &&...unpackedArgs) { ptr(*unpackedArgs...); },
                        tuple);
@@ -1043,14 +1112,47 @@ namespace coral
               std::make_shared<ThisMethod>(ptr));
           };
         }
+      else if (self_output)
+        {
+          auto &initializer =
+            register_json_header<ThisMethod, Args...>(arg_names, registry_key);
+          initializer.json_serializer["node_type"] = "function";
+          initializer.node_type                    = NodeType::function;
+          initializer.json_serializer["outputs"].push_back(-1);
+          initializer.json_serializer["output_type"] =
+            detail::hash<ReturnType>();
+          set_metadata(initializer);
+          add_legacy_alias();
+
+          initializer.executor =
+            [ptr, &initializer, operation](const NodeObjectPtr &,
+                                           std::vector<NodeObjectPtr> args)
+            -> std::shared_ptr<entt::meta_any> {
+            if (args.size() != sizeof...(Args))
+              throw std::runtime_error("Wrong number of arguments.");
+
+            auto tuple = detail::cast_args<Args...>(args);
+            slog_debug("non-void function: %s [%s]",
+                       operation.c_str(),
+                       initializer.type_name.c_str());
+            return std::apply(
+              [ptr](auto &&...unpackedArgs) {
+                return std::make_shared<entt::meta_any>(
+                  std::make_shared<ReturnType>(ptr(*unpackedArgs...)));
+              },
+              tuple);
+          };
+        }
       else
         {
           // Treat output sepearately, as it is the first argument
           auto &initializer =
             register_json_header<ThisMethod, ReturnType &, Args...>(
-              arg_names, method_name);
+              arg_names, registry_key);
           initializer.json_serializer["node_type"] = "function";
           initializer.node_type                    = NodeType::function;
+          set_metadata(initializer);
+          add_legacy_alias();
           const bool output_is_elementary =
             is_registered_elementary_type<ReturnType>();
           if (output_is_elementary)
@@ -1058,7 +1160,7 @@ namespace coral
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr, &initializer, method_name, output_is_elementary](
+            [ptr, &initializer, operation, output_is_elementary](
               const NodeObjectPtr &, std::vector<NodeObjectPtr> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 1 + sizeof...(Args))
@@ -1070,7 +1172,7 @@ namespace coral
 
             auto tuple = detail::cast_args<Args...>(args);
             slog_debug("non-void function: %s [%s]",
-                       method_name.c_str(),
+                       operation.c_str(),
                        initializer.type_name.c_str());
             ret = std::apply(
               [ptr](auto &&...unpackedArgs) { return ptr(*unpackedArgs...); },
@@ -1085,12 +1187,15 @@ namespace coral
     template <typename ReturnType, typename... Args>
     static void
     register_function(ReturnType (*ptr)(Args...),
-                      std::vector<std::string> arg_names);
+                      std::vector<std::string> arg_names,
+                      RegistryMetadata         metadata = {});
 
     // Helper to deduce template arguments automatically
     template <typename Lambda>
     static void
-    register_function(Lambda func, std::vector<std::string> arg_names);
+    register_function(Lambda                   func,
+                      std::vector<std::string> arg_names,
+                      RegistryMetadata         metadata = {});
 
     /**
      * Get a shared pointer of the stored object->
@@ -1217,6 +1322,10 @@ namespace coral
     std::string
     hash() const;
 
+    /** Get the concrete type hash exposed by a selected output. */
+    std::string
+    output_hash() const;
+
     /**
      * Return the human-readable type name for this node.
      */
@@ -1307,6 +1416,10 @@ namespace coral
     // single-threaded init before concurrent use.
     static inline std::map<std::string, detail::NodeObjectInitializer>
       initializers;
+
+    // Compatibility aliases for workflow JSON written before function keys
+    // included their concrete signatures.  Ambiguous aliases are removed.
+    static inline std::unordered_map<std::string, std::string> function_aliases;
 
     /**
      * Hash string that identifies the Network node type.
@@ -1617,20 +1730,23 @@ namespace coral
   template <typename ReturnType, typename... Args>
   inline void
   NodeObject::register_function(ReturnType (*ptr)(Args...),
-                                std::vector<std::string> arg_names)
+                                std::vector<std::string> arg_names,
+                                RegistryMetadata         metadata)
   {
     std::function<ReturnType(Args...)> func = ptr;
-    register_function(func, arg_names);
+    register_function(func, arg_names, metadata);
   }
 
 
 
   template <typename Lambda>
   inline void
-  NodeObject::register_function(Lambda func, std::vector<std::string> arg_names)
+  NodeObject::register_function(Lambda                   func,
+                                std::vector<std::string> arg_names,
+                                RegistryMetadata         metadata)
   {
     auto f = std::function{func};
-    register_function(f, arg_names);
+    register_function(f, arg_names, metadata);
   }
 
 
@@ -1644,7 +1760,7 @@ namespace coral
     using type = std::remove_cv_t<std::remove_reference_t<T>>;
     std::shared_ptr<type> ptr;
 
-    if (hash() != detail::hash<type>())
+    if (output_hash() != detail::hash<type>())
       {
         auto &j = initializer.json_serializer;
         if (!(j.contains("base") &&
@@ -1719,7 +1835,7 @@ namespace coral
       throw std::runtime_error("Object is not ready.");
     using type = std::remove_cv_t<std::remove_reference_t<T>>;
     std::shared_ptr<const type> ptr;
-    if (hash() != detail::hash<type>())
+    if (output_hash() != detail::hash<type>())
       {
         auto &j = initializer.json_serializer;
         if (!(j.contains("base") &&
