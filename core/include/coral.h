@@ -746,6 +746,29 @@ namespace coral
     }
 
     /**
+     * Declare that T derives from B ("T is-a B"): a T node can then be used
+     * wherever a B is expected (by reference, const reference or value).
+     *
+     * All ancestors are tracked: after register_base<A, B>() and
+     * register_base<B, C>(), in any order, A is also a C. A type not yet
+     * registered is registered as abstract; a later register_type() keeps
+     * the inheritance information.
+     *
+     * @code
+     * NodeObject::register_type<A, unsigned int>("degree");
+     * NodeObject::register_base<A, B1>();
+     * NodeObject::register_base<A, B2>();
+     * @endcode
+     *
+     * @note An ancestor reachable through several paths (diamond) is cast
+     * through the first path registered: correct for virtual inheritance,
+     * picks one sub-object for non-virtual diamonds.
+     */
+    template <typename T, typename B>
+    static void
+    register_base();
+
+    /**
      * Register a non-trivially constructible type T derived from type B.
      */
     template <typename B, typename T>
@@ -1588,6 +1611,71 @@ namespace coral
         tuple);
     };
     return initializer;
+  }
+
+
+
+  template <typename T, typename B>
+  inline void
+  NodeObject::register_base()
+  {
+    static_assert(std::is_base_of_v<B, T> && !std::is_same_v<B, T>,
+                  "register_base<T, B>(): T must derive from B.");
+
+    const auto t_hash = detail::hash<T>();
+    const auto b_hash = detail::hash<B>();
+    if (initializers.find(t_hash) == initializers.end())
+      register_abstract_type<T>();
+    if (initializers.find(b_hash) == initializers.end())
+      register_abstract_type<B>();
+
+    auto &t_init = initializers.at(t_hash);
+    auto &b_init = initializers.at(b_hash);
+
+    // Direct caster T -> B.
+    const detail::Caster c_TB =
+      [](std::shared_ptr<entt::meta_any> a) -> std::shared_ptr<entt::meta_any> {
+      const auto ptr = a->template try_cast<std::shared_ptr<T>>();
+      if (ptr == nullptr)
+        throw std::runtime_error("Could not cast derived type to base.");
+      return std::make_shared<entt::meta_any>(
+        std::static_pointer_cast<B>(*ptr));
+    };
+
+    // Casters from T to B and to each ancestor of B.
+    std::map<std::string, detail::Caster> new_ancestors = {{b_hash, c_TB}};
+    for (const auto &[c_hash, c_BC] : b_init.ancestor_casters)
+      new_ancestors[c_hash] = [c_TB, c_BC](std::shared_ptr<entt::meta_any> a) {
+        return c_BC(c_TB(a));
+      };
+
+    // T and each descendant of T, with its caster to T.
+    std::vector<std::pair<std::string, detail::Caster>> targets = {
+      {t_hash, [](std::shared_ptr<entt::meta_any> a) { return a; }}};
+    if (t_init.json_serializer.contains("derived"))
+      for (const auto &d : t_init.json_serializer["derived"])
+        {
+          const auto d_hash = d.template get<std::string>();
+          targets.emplace_back(
+            d_hash, initializers.at(d_hash).ancestor_casters.at(t_hash));
+        }
+
+    for (const auto &[d_hash, c_DT] : targets)
+      {
+        auto &d_init = initializers.at(d_hash);
+        for (const auto &[x_hash, c_TX] : new_ancestors)
+          {
+            // Already an ancestor: repeated call, or diamond (first path wins)
+            if (d_init.ancestor_casters.count(x_hash) > 0)
+              continue;
+            d_init.ancestor_casters[x_hash] =
+              [c_TX, c_DT](std::shared_ptr<entt::meta_any> a) {
+                return c_TX(c_DT(a));
+              };
+            d_init.json_serializer["bases"].push_back(x_hash);
+            initializers.at(x_hash).json_serializer["derived"].push_back(d_hash);
+          }
+      }
   }
 
 
