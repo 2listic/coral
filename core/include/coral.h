@@ -1429,9 +1429,18 @@ namespace coral
     -> detail::NodeObjectInitializer &
   {
     auto hash_str = detail::hash<T>(suffix);
-    if (initializers.find(hash_str) != initializers.end())
-      // Reset the initializer
-      initializers[hash_str] = {};
+    auto it       = initializers.find(hash_str);
+    if (it != initializers.end())
+      {
+        // Reset the construction part, keep the inheritance part
+        detail::NodeObjectInitializer fresh;
+        fresh.ancestor_casters = std::move(it->second.ancestor_casters);
+        for (const char *key : {"bases", "derived"})
+          if (it->second.json_serializer.contains(key))
+            fresh.json_serializer[key] =
+              std::move(it->second.json_serializer[key]);
+        it->second = std::move(fresh);
+      }
 
     auto &initializer                        = initializers[hash_str];
     initializer.type_name                    = boost::core::type_name<T>();
