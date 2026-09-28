@@ -339,6 +339,12 @@ namespace coral
     abstract,
 
     /**
+     * A type that may be stored in a NodeObject, but has no user-facing
+     * constructor. Such types are normally produced by operation outputs.
+     */
+    output_only,
+
+    /**
      * Trivially copyable and constructible types
      */
     elementary_constructor,
@@ -631,6 +637,14 @@ namespace coral
       -> detail::NodeObjectInitializer &;
 
     /**
+     * Register a type only as a value that can be produced by an operation.
+     * No constructor node is added to the registry.
+     */
+    template <typename T>
+    static auto
+    register_output_type() -> detail::NodeObjectInitializer &;
+
+    /**
      * Register a non-trivially constructible type T with constructor arguments.
      */
     template <typename T, typename... Args>
@@ -881,6 +895,7 @@ namespace coral
         }
       else
         {
+          register_output_type<ReturnType>();
           auto &initializer =
             register_json_header<ThisMethod, T &, ReturnType &, Args...>(
               arg_names, method_name);
@@ -979,6 +994,7 @@ namespace coral
         }
       else
         {
+          register_output_type<ReturnType>();
           auto &initializer =
             register_json_header<ThisMethod, const T &, ReturnType &, Args...>(
               arg_names, method_name);
@@ -1145,6 +1161,7 @@ namespace coral
         }
       else
         {
+          register_output_type<ReturnType>();
           // Treat output sepearately, as it is the first argument
           auto &initializer =
             register_json_header<ThisMethod, ReturnType &, Args...>(
@@ -1575,6 +1592,31 @@ namespace coral
             ConnectionType::none)
           initializer.json_serializer["outputs"].push_back(i);
       }
+    return initializer;
+  }
+
+
+
+  template <typename T>
+  inline auto
+  NodeObject::register_output_type() -> detail::NodeObjectInitializer &
+  {
+    using PlainType     = std::remove_cv_t<std::remove_reference_t<T>>;
+    const auto hash_str = detail::hash<PlainType>();
+    const auto existing = initializers.find(hash_str);
+    if (existing != initializers.end())
+      {
+        if (existing->second.node_type == NodeType::none)
+          {
+            existing->second.json_serializer["node_type"] = "output_only";
+            existing->second.node_type = NodeType::output_only;
+          }
+        return existing->second;
+      }
+
+    auto &initializer = register_json_header<PlainType>();
+    initializer.json_serializer["node_type"] = "output_only";
+    initializer.node_type                    = NodeType::output_only;
     return initializer;
   }
 
