@@ -176,6 +176,70 @@ TEST(NodeObject, LambdaNoInputIntOutput)
   ASSERT_EQ(out->get<int>(), 42);
 }
 
+struct FiniteElementSpace
+{
+  explicit FiniteElementSpace(int degree, int components = 1)
+    : degree(degree)
+    , components(components)
+  {}
+
+  int degree;
+  int components;
+};
+
+TEST(NodeObject, NonDefaultFunctionOutputAndOverloads)
+{
+  NodeObject::register_elementary_type<int>();
+  NodeObject::register_type<FiniteElementSpace, int>("degree");
+
+  const RegistryMetadata metadata{"Finite element space",
+                                  "Finite element space"};
+  auto make_space_1 = [](int degree) { return FiniteElementSpace(degree); };
+  auto make_space_2 = [](int degree, int components) {
+    return FiniteElementSpace(degree, components);
+  };
+
+  NodeObject::register_function(make_space_1, {"degree"}, metadata);
+  NodeObject::register_function(make_space_2,
+                                {"degree", "components"},
+                                metadata);
+
+  auto space_1 = make_method_node("Finite element space", make_space_1);
+  auto space_2 = make_method_node("Finite element space", make_space_2);
+
+  ASSERT_NE(space_1->hash(), space_2->hash());
+  ASSERT_EQ(space_1->n_arguments(), 1u);
+  ASSERT_EQ(space_1->n_inputs(), 1u);
+  ASSERT_EQ(space_1->n_outputs(), 1u);
+  ASSERT_EQ(space_1->get_output(0), space_1);
+  ASSERT_TRUE(space_1->is_output_bound(0));
+
+  space_1->bind_input(0, make_node(2));
+  (*space_1)();
+  ASSERT_EQ(space_1->get<FiniteElementSpace>().degree, 2);
+  ASSERT_EQ(space_1->get<FiniteElementSpace>().components, 1);
+
+  auto consume_space = [](const FiniteElementSpace &space) {
+    return space.degree + space.components;
+  };
+  NodeObject::register_function(consume_space, {"consume_space", "space"});
+  auto consumer = make_method_node("consume_space", consume_space);
+  consumer->bind_input(0, space_1->get_output(0));
+  (*consumer)();
+  ASSERT_EQ(consumer->get<int>(), 3);
+
+  space_2->bind_inputs({{make_node(3), 0}, {make_node(4), 0}});
+  (*space_2)();
+  ASSERT_EQ(space_2->get<FiniteElementSpace>().degree, 3);
+  ASSERT_EQ(space_2->get<FiniteElementSpace>().components, 4);
+
+  const auto registry = NodeObject::get_registry();
+  ASSERT_TRUE(registry.contains(space_1->hash()));
+  ASSERT_TRUE(registry.contains(space_2->hash()));
+  EXPECT_EQ(registry[space_1->hash()]["operation"], "Finite element space");
+  EXPECT_EQ(registry[space_1->hash()]["display_name"], "Finite element space");
+}
+
 TEST(NodeObject, OutputBindingRules)
 {
   NodeObject::register_elementary_type<int>();
