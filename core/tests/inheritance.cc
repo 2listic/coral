@@ -432,3 +432,46 @@ TEST(Inheritance, ConstGetBase)
   EXPECT_EQ(cobj.get<B>().b, 1);
   EXPECT_EQ(&cobj.get<B>(), static_cast<const B *>(&cobj.get<A>()));
 }
+
+namespace by_value_base
+{
+  struct C
+  {
+    int c = 1;
+  };
+  struct B : C
+  {
+    int b = 2;
+  };
+  struct A : B
+  {
+    int a = 3;
+  };
+} // namespace by_value_base
+
+TEST(Inheritance, FunctionTakesBaseByValue)
+{
+  using namespace by_value_base;
+  NodeObject::register_elementary_type<int>();
+  NodeObject::register_type<A>();
+  NodeObject::register_base<A, B>();
+  NodeObject::register_base<B, C>();
+
+  // c is a sliced copy: changing it must not change the A node.
+  auto add_to_c = [](C c) {
+    c.c += 41;
+    return c.c;
+  };
+  NodeObject::register_function(add_to_c,
+                                {"inheritance_add_to_c", "value", "c"});
+
+  NodeObjectPtr obj = make_node<A>();
+  (*obj)();
+
+  NodeObjectPtr fun   = make_method_node("inheritance_add_to_c", add_to_c);
+  NodeObjectPtr value = make_node(0);
+  fun->set_arguments({value, obj});
+  (*fun)();
+  EXPECT_EQ(value->get<int>(), 42);
+  EXPECT_EQ(obj->get<A>().c, 1);
+}
