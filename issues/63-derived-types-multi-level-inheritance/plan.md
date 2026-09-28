@@ -8,7 +8,6 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
 
 ## 1. Inheritance part of an entry (D3, D4, D6)
 - [ ] 1.1 In `detail::NodeObjectInitializer` (`core/include/coral.h`, ~`:417`):
-  - [ ] remove `to_base`
   - [ ] add `std::map<std::string, Caster> ancestor_casters` (ancestor hash → caster),
         `Caster = std::function<std::shared_ptr<entt::meta_any>(std::shared_ptr<entt::meta_any>)>`
 - [ ] 1.2 JSON keys of the inheritance part: `"bases"` (all ancestors),
@@ -54,6 +53,7 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
   - [ ] declarations (`:770`, `:789`)
   - [ ] definitions (`:1575`, `:1609`)
 - [ ] 5.2 `detail::shared_ptr_to_base` (`coral.h:107`) and the entt `conv` registrations
+- [ ] 5.3 `NodeObjectInitializer::to_base` (kept until here so every step builds)
 
 ## 6. Sub-network SELF ports (D5)
 - [ ] 6.1 `core/include/coral_network_implementation.h:897`:

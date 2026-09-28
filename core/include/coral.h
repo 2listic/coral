@@ -376,6 +376,12 @@ namespace coral
 
     /** \cond INTERNAL */
     /**
+     * Cast a type-erased shared pointer to one of its ancestors.
+     */
+    using Caster = std::function<std::shared_ptr<entt::meta_any>(
+      std::shared_ptr<entt::meta_any>)>;
+
+    /**
      * Store all std::functions needed to build a NodeObject.
      *
      * This type is internal and not part of the public API surface.
@@ -420,6 +426,13 @@ namespace coral
         std::shared_ptr<entt::meta_any>)>
         to_base = [](std::shared_ptr<entt::meta_any> a)
         -> std::shared_ptr<entt::meta_any> { return a; };
+
+      /**
+       * Casts from this type to each of its ancestors (direct and indirect),
+       * keyed by the ancestor's hash. Changed only by
+       * NodeObject::register_base(), never reset by a re-registration.
+       */
+      std::map<std::string, Caster> ancestor_casters;
 
       /**
        * JSON serialization template for this node type.
