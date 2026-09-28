@@ -2,6 +2,14 @@ cmake_minimum_required(VERSION 3.16)
 
 project(coral VERSION 0.1.0 LANGUAGES C CXX)
 
+# Single-configuration generators default to Release, so that installed
+# binaries always land in a configuration-specific directory matching the
+# install RPATH.
+get_property(_coral_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(NOT _coral_multi_config AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type." FORCE)
+endif()
+
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
@@ -55,20 +63,20 @@ if(CORAL_INSTALL)
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/$<CONFIG>
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/coral)
 
   # CORAL's public headers include the bundled header-only dependencies.  Keep
   # the same include layout in the installation prefix so that both CORAL
   # headers and their transitive includes remain self-contained.
   install(
     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/core/include/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/coral
     FILES_MATCHING
       PATTERN "*.h"
       PATTERN "*.hpp")
   install(
     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/core/entt/single_include/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/coral
     FILES_MATCHING
       PATTERN "*.h"
       PATTERN "*.hpp")
