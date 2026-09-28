@@ -38,6 +38,8 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
 - [ ] 3.8 Doxygen: usage example + one-line diamond note (D9)
 
 ## 4. `get_shared` (D2)
+Applied together with step 7, as one checkpoint: `get_shared` stops reading
+`to_base`/`"base"`, so call sites not yet migrated would fail in between.
 - [ ] 4.1 Non-const overload (`coral.h:1640`)
 - [ ] 4.2 Const overload (`coral.h:1716`)
 - [ ] 4.3 In both: exact-type branch unchanged; otherwise
@@ -62,6 +64,7 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
   - [ ] update the comment above it
 
 ## 7. Migrate call sites (D1)
+Applied together with step 4 (see there).
 - [ ] 7.1 `backends/dealii/include/register_types.h:79`:
       `register_type<std::ofstream, std::string>("file_name");`
       `register_base<std::ofstream, std::ostream>();`

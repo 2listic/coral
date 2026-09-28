@@ -70,7 +70,8 @@ TEST(NodeObject, AbstractType)
   struct Derived : Base
   {};
   NodeObject::register_abstract_type<Base>();
-  NodeObject::register_derived_type<Base, Derived>();
+  NodeObject::register_type<Derived>();
+  NodeObject::register_base<Derived, Base>();
   NodeObjectPtr obj = make_node<Derived>();
   (*obj)();
   ASSERT_TRUE(obj->ready());

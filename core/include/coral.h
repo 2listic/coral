@@ -1756,16 +1756,15 @@ namespace coral
 
     if (hash() != detail::hash<type>())
       {
-        auto &j = initializer.json_serializer;
-        if (!(j.contains("base") &&
-              (detail::hash<type>() == j.at("base").get<std::string>())))
+        const auto it = initializer.ancestor_casters.find(detail::hash<type>());
+        if (it == initializer.ancestor_casters.end())
           throw std::runtime_error("Cannot cast object of type " + type_name() +
                                    " to object of type " +
                                    boost::core::type_name<type>() + ".");
-        auto new_object = initializer.to_base(object);
+        auto new_object = it->second(object);
         if (!(new_object && *new_object))
           throw std::runtime_error("New object does not have value.");
-        if (!(detail::hash(new_object) == j.at("base").get<std::string>()))
+        if (!(detail::hash(new_object) == detail::hash<type>()))
           throw std::runtime_error("New object does not have the right hash.");
         const auto cast_ptr =
           new_object->template try_cast<std::shared_ptr<type>>();
@@ -1831,16 +1830,15 @@ namespace coral
     std::shared_ptr<const type> ptr;
     if (hash() != detail::hash<type>())
       {
-        auto &j = initializer.json_serializer;
-        if (!(j.contains("base") &&
-              (detail::hash<type>() == j.at("base").get<std::string>())))
+        const auto it = initializer.ancestor_casters.find(detail::hash<type>());
+        if (it == initializer.ancestor_casters.end())
           throw std::runtime_error("Cannot cast object of type " + type_name() +
                                    " to object of type " +
                                    boost::core::type_name<type>() + ".");
-        auto new_object = initializer.to_base(object);
+        auto new_object = it->second(object);
         if (!(new_object && *new_object))
           throw std::runtime_error("New object does not have value.");
-        if (!(detail::hash(new_object) == j.at("base").get<std::string>()))
+        if (!(detail::hash(new_object) == detail::hash<type>()))
           throw std::runtime_error("New object does not have the right hash.");
         const auto cast_ptr =
           new_object->template try_cast<std::shared_ptr<const type>>();
