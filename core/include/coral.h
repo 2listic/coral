@@ -102,13 +102,6 @@ namespace coral
 
 
 
-    template <typename Base, typename Derived>
-    std::shared_ptr<Base>
-    shared_ptr_to_base(const std::shared_ptr<Derived> &ptr)
-    {
-      return std::static_pointer_cast<Base>(ptr);
-    }
-
     /** \cond INTERNAL */
     // Utility to detect if Arg is callable (can be wrapped by std::function).
     template <typename Arg, typename = void>
@@ -418,14 +411,6 @@ namespace coral
        * Convert the stored value to a string.
        */
       std::function<std::string(std::shared_ptr<entt::meta_any>)> to_string;
-
-      /**
-       * Convert to base class where needed.
-       */
-      std::function<std::shared_ptr<entt::meta_any>(
-        std::shared_ptr<entt::meta_any>)>
-        to_base = [](std::shared_ptr<entt::meta_any> a)
-        -> std::shared_ptr<entt::meta_any> { return a; };
 
       /**
        * Casts from this type to each of its ancestors (direct and indirect),
@@ -769,44 +754,6 @@ namespace coral
     register_base();
 
     /**
-     * Register a non-trivially constructible type T derived from type B.
-     */
-    template <typename B, typename T>
-    static auto
-    register_derived_type() -> detail::NodeObjectInitializer &
-    {
-      auto &initializer = register_type<T>();
-      initializer.json_serializer["outputs"].push_back(-1);
-
-      auto &base_initializer = register_abstract_type<B>();
-      base_initializer.json_serializer["derived"].push_back(
-        initializer.json_serializer["type"]);
-      initializer.json_serializer["base"] =
-        base_initializer.json_serializer["type"];
-
-      using stored_derived =
-        std::shared_ptr<std::remove_cv_t<std::remove_reference_t<T>>>;
-      entt::meta_factory<stored_derived>()
-        .template conv<&detail::shared_ptr_to_base<B, T>>();
-
-      initializer.to_base = [](std::shared_ptr<entt::meta_any> a)
-        -> std::shared_ptr<entt::meta_any> {
-        const auto ptr = a->template try_cast<std::shared_ptr<T>>();
-        if (ptr == nullptr)
-          throw std::runtime_error("Could not cast derived type to base.");
-        return std::make_shared<entt::meta_any>(
-          std::static_pointer_cast<B>(*ptr));
-      };
-
-      return initializer;
-    }
-
-    template <typename B, typename T, typename... Args>
-    static auto
-    register_derived_type(const std::vector<std::string> &arg_names)
-      -> detail::NodeObjectInitializer &;
-
-    /**
      * Same as above, for objects that require a single argument.
      */
     template <typename T, typename Arg>
@@ -816,14 +763,6 @@ namespace coral
     {
       return register_type<T, Arg>(std::vector<std::string>{{arg_name}});
     }
-
-    /**
-     * Same as above, for objects that require a single argument.
-     */
-    template <typename B, typename T, typename Arg>
-    static auto
-    register_derived_type(const std::string &arg_name)
-      -> detail::NodeObjectInitializer &;
 
     template <typename T, typename ReturnType, typename... Args>
     using MethodPtr = ReturnType (T::*)(Args...);
@@ -1679,49 +1618,6 @@ namespace coral
   }
 
 
-
-  template <typename B, typename T, typename... Args>
-  inline auto
-  NodeObject::register_derived_type(const std::vector<std::string> &arg_names)
-    -> detail::NodeObjectInitializer &
-  {
-    auto &initializer      = register_type<T, Args...>(arg_names);
-    auto &base_initializer = register_abstract_type<B>();
-
-    base_initializer.json_serializer["derived"].push_back(
-      initializer.json_serializer["type"]);
-
-    initializer.json_serializer["base"] =
-      base_initializer.json_serializer["type"];
-
-    // Register entt conversion shared_ptr<Derived> -> shared_ptr<Base>
-    using stored_derived =
-      std::shared_ptr<std::remove_cv_t<std::remove_reference_t<T>>>;
-    entt::meta_factory<stored_derived>()
-      .template conv<&detail::shared_ptr_to_base<B, T>>();
-
-    // Add the conversion to the base class.
-    initializer.to_base =
-      [](std::shared_ptr<entt::meta_any> a) -> std::shared_ptr<entt::meta_any> {
-      const auto ptr = a->template try_cast<std::shared_ptr<T>>();
-      if (ptr == nullptr)
-        throw std::runtime_error("Could not cast derived type to base.");
-      return std::make_shared<entt::meta_any>(
-        std::static_pointer_cast<B>(*ptr));
-    };
-    return initializer;
-  }
-
-
-
-  template <typename B, typename T, typename Arg>
-  inline auto
-  NodeObject::register_derived_type(const std::string &arg_name)
-    -> detail::NodeObjectInitializer &
-  {
-    return register_derived_type<B, T, Arg>(
-      std::vector<std::string>{{arg_name}});
-  }
 
 
   template <typename ReturnType, typename... Args>
