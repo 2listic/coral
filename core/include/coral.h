@@ -1738,7 +1738,7 @@ namespace coral
         if (!(detail::hash(new_object) == detail::hash<type>()))
           throw std::runtime_error("New object does not have the right hash.");
         const auto cast_ptr =
-          new_object->template try_cast<std::shared_ptr<const type>>();
+          new_object->template try_cast<std::shared_ptr<type>>();
         if (cast_ptr == nullptr)
           throw std::runtime_error("Could not cast converted object to " +
                                    std::string(boost::core::type_name<type>()));
@@ -1747,7 +1747,7 @@ namespace coral
     else
       {
         const auto cast_ptr =
-          object->template try_cast<std::shared_ptr<const type>>();
+          object->template try_cast<std::shared_ptr<type>>();
         if (cast_ptr == nullptr)
           throw std::runtime_error(
             "Could not cast object to shared pointer of type " +

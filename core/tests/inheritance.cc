@@ -395,3 +395,40 @@ TEST(Inheritance, FunctionTakesBase)
   (*getter)();
   EXPECT_EQ(value->get<int>(), 42);
 }
+
+namespace const_get
+{
+  struct B
+  {
+    int b = 1;
+  };
+  struct A : B
+  {
+    int a = 2;
+  };
+} // namespace const_get
+
+TEST(Inheritance, ConstGetExactType)
+{
+  using namespace const_get;
+  NodeObject::register_type<A>();
+  NodeObject::register_base<A, B>();
+
+  NodeObjectPtr obj = make_node<A>();
+  (*obj)();
+  const NodeObject &cobj = *obj;
+  EXPECT_EQ(cobj.get<A>().a, 2);
+}
+
+TEST(Inheritance, ConstGetBase)
+{
+  using namespace const_get;
+  NodeObject::register_type<A>();
+  NodeObject::register_base<A, B>();
+
+  NodeObjectPtr obj = make_node<A>();
+  (*obj)();
+  const NodeObject &cobj = *obj;
+  EXPECT_EQ(cobj.get<B>().b, 1);
+  EXPECT_EQ(&cobj.get<B>(), static_cast<const B *>(&cobj.get<A>()));
+}
