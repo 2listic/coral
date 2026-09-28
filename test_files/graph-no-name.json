@@ -112,7 +112,7 @@
             "type": "std::string"
           }
         ],
-        "base": "std::ostream",
+        "bases": ["std::ostream"],
         "inputs": [0],
         "node_type": "constructor",
         "outputs": [-1],
