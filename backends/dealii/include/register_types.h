@@ -147,7 +147,8 @@ namespace coral
        "output_file"});
 
     NodeObject::register_type<FE_Q<dim, spacedim>, unsigned int>("fe_degree");
-    NodeObject::register_base<FE_Q<dim, spacedim>, FiniteElement<dim, spacedim>>();
+    NodeObject::register_base<FE_Q<dim, spacedim>,
+                              FiniteElement<dim, spacedim>>();
 
     NodeObject::register_type<PoissonSolver<dim, spacedim>,
                               const Triangulation<dim, spacedim> &,

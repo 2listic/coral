@@ -754,7 +754,8 @@ namespace coral
     register_base();
 
     /**
-     * Same as above, for objects that require a single argument.
+     * Same as register_type(const std::vector<std::string> &), for objects
+     * that require a single argument.
      */
     template <typename T, typename Arg>
     static auto
@@ -1612,11 +1613,11 @@ namespace coral
                 return c_TX(c_DT(a));
               };
             d_init.json_serializer["bases"].push_back(x_hash);
-            initializers.at(x_hash).json_serializer["derived"].push_back(d_hash);
+            initializers.at(x_hash).json_serializer["derived"].push_back(
+              d_hash);
           }
       }
   }
-
 
 
 
