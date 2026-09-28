@@ -114,7 +114,8 @@ include:
   types
 - **register_abstract_type**: For interface types that can't be instantiated
   directly
-- **register_base**: Declares that a registered type derives from another
+- **register_base**: Declares that a type derives from a base class, so it
+  can be used wherever the base (or any of its ancestors) is expected
 - **register_method**: For member functions (void/non-void, const/non-const)
 - **register_function**: For free functions
 
