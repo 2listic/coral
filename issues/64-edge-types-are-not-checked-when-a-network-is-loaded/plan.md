@@ -60,5 +60,5 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
       report to user, decide case by case
 
 ## 9. Docs (D7)
-- [ ] 9.1 `README.md:60`: wording shown to user before editing
-- [ ] 9.2 Check Doxygen of steps 1, 3, 4, 5 is in place
+- [x] 9.1 `README.md:60`: wording shown to user before editing
+- [x] 9.2 Check Doxygen of steps 1, 3, 4, 5 is in place
