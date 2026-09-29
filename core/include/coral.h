@@ -9,6 +9,7 @@
 #include <memory>
 #include <mutex>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -43,6 +44,22 @@ namespace coral
   class Network;
 
   using NodeObjectPtr = std::shared_ptr<NodeObject>;
+
+  /**
+   * Exception thrown when an edge connects an output to an input of an
+   * incompatible type.
+   *
+   * An output of type `T` can feed an input expecting type `E` if `T` is `E`,
+   * or if `E` is an ancestor of `T` (see NodeObject::register_base). The check
+   * is done when the edge is bound, before any node runs.
+   */
+  class TypeMismatchException : public std::runtime_error
+  {
+  public:
+    explicit TypeMismatchException(const std::string &message)
+      : std::runtime_error(message)
+    {}
+  };
 
   namespace detail
   {

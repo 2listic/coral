@@ -7,10 +7,10 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
 `docker exec coral bash -lc 'cmake --build /app/build -j4 && ctest --test-dir /app/build --output-on-failure'`
 
 ## 1. `TypeMismatchException` (D5)
-- [ ] 1.1 New class in `core/include/coral.h` (`bind_input` throws it;
+- [x] 1.1 New class in `core/include/coral.h` (`bind_input` throws it;
       `coral_network.h` includes `coral.h`), `: public std::runtime_error`,
       `explicit` ctor taking the message, style of `DuplicateQualifiedIdException`
-- [ ] 1.2 Doxygen on the class (D7)
+- [x] 1.2 Doxygen on the class (D7)
 
 ## 2. `detail::is_type_compatible` (D1, D2)
 - [ ] 2.1 Declare in `coral.h` (`namespace detail`), implement in
