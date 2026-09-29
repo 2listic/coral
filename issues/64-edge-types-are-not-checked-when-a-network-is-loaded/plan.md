@@ -40,14 +40,14 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
 - [x] 5.3 Doxygen on `add_connection`: throws `TypeMismatchException` if… (D7)
 
 ## 6. Core tests (D6.1–D6.12)
-- [ ] 6.1 New `core/tests/edge_types.cc` (picked up by the glob in
+- [x] 6.1 New `core/tests/edge_types.cc` (picked up by the glob in
       `core/tests/CMakeLists.txt`), local test types as in `inheritance.cc`
-- [ ] 6.2 Cases 1–4 (`add_connection`: exact, 2-level chain + run, unrelated, base → derived)
-- [ ] 6.3 Case 5 (JSON load, bad edge; message has edge id and `qualified_id`s)
-- [ ] 6.4 Cases 6–7 (`bind_inputs`: derived → base, unrelated)
-- [ ] 6.5 Case 8 (`register_base` after node creation: load and `get_shared` both refuse)
-- [ ] 6.6 Cases 9–12 (multiple bases, chain derived-first, siblings, virtual diamond + run)
-- [ ] 6.7 Build and run core tests: all pass
+- [x] 6.2 Cases 1–4 (`add_connection`: exact, 2-level chain + run, unrelated, base → derived)
+- [x] 6.3 Case 5 (JSON load, bad edge; message has edge id and `qualified_id`s)
+- [x] 6.4 Cases 6–7 (`bind_inputs`: derived → base, unrelated)
+- [x] 6.5 Case 8 (`register_base` after node creation: load and `get_shared` both refuse)
+- [x] 6.6 Cases 9–12 (multiple bases, chain derived-first, siblings, virtual diamond + run)
+- [x] 6.7 Build and run core tests: all pass
 
 ## 7. deal.II test (D6.13)
 - [ ] 7.1 In `backends/dealii/tests/dealii_types.cc`: `FE_Q<2>` → `FiniteElement<2>`,
