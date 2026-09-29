@@ -12,17 +12,16 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
       `explicit` ctor taking the message, style of `DuplicateQualifiedIdException`
 - [x] 1.2 Doxygen on the class (D7)
 
-## 2. `detail::is_type_compatible` (D1, D2)
-- [ ] 2.1 Declare in `coral.h` (`namespace detail`), implement in
-      `coral_implementation.h`:
-      `bool is_type_compatible(const NodeObjectPtr &value, const std::string &expected_type)`
-- [ ] 2.2 `true` iff `value->hash() == expected_type`, or `expected_type` is in
-      `value->get_info()["bases"]` (key may be absent)
+## 2. `NodeObject::is_compatible_with` (D1, D2)
+- [x] 2.1 Public `const` member, declared in `coral.h` after `hash()`,
+      implemented in `coral_implementation.h`:
+      `bool is_compatible_with(const std::string &type) const`
+- [x] 2.2 `true` iff `hash() == type` or `initializer.ancestor_casters` has `type`
 
 ## 3. Check in `bind_input` (D1, D4)
 - [ ] 3.1 In `NodeObject::bind_input` (`coral_implementation.h:498`), after the
       existing null/index checks and before binding: if
-      `!is_type_compatible(value, arguments-entry "type")` → throw
+      `!value->is_compatible_with(arguments-entry "type")` → throw
       `TypeMismatchException("Input <i> '<name>' of '<type_name>' expects '<expected>', got '<value hash>'.")`
 - [ ] 3.2 Doxygen on `bind_input`: throws `TypeMismatchException` if… (D7)
 

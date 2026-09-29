@@ -1211,6 +1211,17 @@ namespace coral
     hash() const;
 
     /**
+     * Return true if this object can be passed where an object of type
+     * `type` (a hash string) is expected: `type` is this object's own type,
+     * or one of its ancestors (see register_base).
+     *
+     * Uses the same ancestor table as get_shared(), so a type accepted here
+     * is also accepted by get_shared() at run time.
+     */
+    bool
+    is_compatible_with(const std::string &type) const;
+
+    /**
      * Return the human-readable type name for this node.
      */
     std::string

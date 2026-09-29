@@ -17,12 +17,14 @@ see `desiderata.md` for the goals. Plan: `plan.md`. Builds on #63 (implemented).
 An edge is valid iff `source.type == expected` or `expected ∈ source.bases`.
 
 ## Decisions
-1. **Check in `bind_input`**, via a separate function
-   `is_type_compatible(value, expected_type)`. Fail fast: the first bad edge
+1. **Check in `bind_input`**, via a public member
+   `value->is_compatible_with(expected_type)`. Fail fast: the first bad edge
    throws, before any node runs.
-2. **`bases` read from the source value's own entry copy** (`get_info()`), the
-   same copy `get_shared` casts with (`coral.h:1656`). Load check and run-time
-   cast agree; a `register_base` after node creation is invisible to both.
+2. **Ancestors read from the source value's own entry copy**
+   (`initializer.ancestor_casters`), the same table `get_shared` casts with
+   (`coral.h:1656`). Load check and run-time cast agree; a `register_base`
+   after node creation is invisible to both. Not `get_info()`: it stringifies
+   a built value into `j["value"]` (cost + side effect).
 3. **`bind_inputs`** keeps only its count check, then calls `bind_input` per
    input. Its own type check is deleted.
 4. **Message**: `bind_input` gives the type information; `Network::add_connection`

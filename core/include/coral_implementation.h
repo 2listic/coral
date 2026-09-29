@@ -570,6 +570,14 @@ namespace coral
 
 
 
+  CORAL_IMPL_INLINE bool
+  NodeObject::is_compatible_with(const std::string &type) const
+  {
+    return hash() == type || initializer.ancestor_casters.count(type) > 0;
+  }
+
+
+
   CORAL_IMPL_INLINE std::string
                     NodeObject::type_name() const
   {
