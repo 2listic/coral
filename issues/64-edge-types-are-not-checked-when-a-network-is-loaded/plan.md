@@ -26,10 +26,10 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
 - [x] 3.2 Doxygen on `bind_input`: throws `TypeMismatchException` if… (D7)
 
 ## 4. `bind_inputs` delegates (D3)
-- [ ] 4.1 `NodeObject::bind_inputs` (`coral_implementation.h:312`): keep the
+- [x] 4.1 `NodeObject::bind_inputs` (`coral_implementation.h:312`): keep the
       count check; loop `bind_input(i, inputs[i].first->get_output(inputs[i].second))`
-- [ ] 4.2 Delete its old type check (the `"base"` read and its messages)
-- [ ] 4.3 Doxygen on `bind_inputs`: throws `TypeMismatchException` if… (D7)
+- [x] 4.2 Delete its old type check (the `"base"` read and its messages)
+- [x] 4.3 Doxygen on `bind_inputs`: throws `TypeMismatchException` if… (D7)
 
 ## 5. Edge context in `add_connection` (D4, D5)
 - [ ] 5.1 In `Network::add_connection(id, conn)` (`coral_network_implementation.h:411`),

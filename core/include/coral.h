@@ -1378,6 +1378,10 @@ namespace coral
     /**
      * Bind all inputs using a list of node/output pairs.
      *
+     * Each pair is bound with bind_input(), so the same type check applies:
+     * throws TypeMismatchException on the first incompatible input (earlier
+     * inputs stay bound).
+     *
      * @code
      * node->bind_inputs({{upstream, 0}});
      * @endcode
