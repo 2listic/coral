@@ -4,7 +4,7 @@ Context for implementing GitHub issue #64 (2listic/coral). Agreed in discussion;
 see `desiderata.md` for the goals. Plan: `plan.md`. Builds on #63 (implemented).
 
 ## Problem (verified)
-- `NodeObject::bind_input` (`core/include/coral_implementation.h:498`) checks the
+- `NodeObject::bind_input` (`core/include/coral_implementation.h:498`, at the base commit) checks the
   index only. Every network path binds through it: `Network::add_connection`
   (`core/include/coral_network_implementation.h:411`), hence JSON load (`:638`),
   `refresh_dynamic_inputs` (`:150`), sub-network wiring (`:1363`). A wrongly
@@ -14,7 +14,8 @@ see `desiderata.md` for the goals. Plan: `plan.md`. Builds on #63 (implemented).
   `"base"`, so it accepts exact matches only (refuses `FE_Q` → `FiniteElement`).
 
 ## Rule
-An edge is valid iff `source.type == expected` or `expected ∈ source.bases`.
+An edge is valid iff `source.type == expected` or `expected` is an ancestor of
+`source` (a key of its `ancestor_casters`, mirrored in JSON as `"bases"`).
 
 ## Decisions
 1. **Check in `bind_input`**, via a public member
@@ -30,7 +31,7 @@ An edge is valid iff `source.type == expected` or `expected ∈ source.bases`.
 4. **Message**: `bind_input` gives the type information; `Network::add_connection`
    catches and prefixes the edge context (nodes by `qualified_id`):
    ```
-   Edge 3 (mesh[0] -> dofh[1]): input 1 'fe' of 'DoFHandler<2,2>' expects 'FiniteElement<2,2>', got 'Vector<double>'.
+   Edge 3 (mesh[0] -> dofh[1]): Input 1 'fe' of 'dealii::DoFHandler<2, 2>' expects 'dealii::FiniteElement<2, 2>', got 'dealii::Vector<double>'.
    ```
 5. **Exception**: new `coral::TypeMismatchException : std::runtime_error`,
    same style as `DuplicateQualifiedIdException` (`coral_network.h:21`).
@@ -70,3 +71,8 @@ An edge is valid iff `source.type == expected` or `expected ∈ source.bases`.
 - `refresh_dynamic_inputs` (`coral_network_implementation.h:142`) now checks
   types too; a sub-network relying on a mismatched binding would throw.
   The existing suite is the detector.
+  Outcome: no existing test failed (plan 8.2).
+
+## Audit fixes
+- Message names the target by `hash()` (registry/JSON name), not `type_name()`.
+- `from_json` logs a failing edge (`slog_error`) and rethrows, like nodes.

@@ -481,7 +481,7 @@ namespace coral
     if (!value->is_compatible_with(expected))
       throw TypeMismatchException(
         "Input " + std::to_string(index) + " '" + arg_entry.value("name", "") +
-        "' of '" + type_name() + "' expects '" + expected + "', got '" +
+        "' of '" + hash() + "' expects '" + expected + "', got '" +
         value->hash() + "'.");
     arguments[input_indices[index]] = value;
     input_bound[index]              = true;

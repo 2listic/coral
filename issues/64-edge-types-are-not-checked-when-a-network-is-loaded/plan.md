@@ -1,7 +1,8 @@
 # #64 — Implementation plan
 
-Read `decisions.md` first: it holds the context and every decision (D1–D7)
+Read `decisions.md` first: it holds the context and every decision (D1–D8)
 this plan implements. Goals: `desiderata.md`.
+Line numbers refer to the base commit `d2b89a5`; they shift as steps land.
 
 Build/test only inside the `coral` container (repo mounted at `/app`):
 `docker exec coral bash -lc 'cmake --build /app/build -j4 && ctest --test-dir /app/build --output-on-failure'`
@@ -22,7 +23,9 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
 - [x] 3.1 In `NodeObject::bind_input` (`coral_implementation.h:498`), after the
       existing null/index checks and before binding: if
       `!value->is_compatible_with(arguments-entry "type")` → throw
-      `TypeMismatchException("Input <i> '<name>' of '<type_name>' expects '<expected>', got '<value hash>'.")`
+      `TypeMismatchException("Input <i> '<name>' of '<hash>' expects '<expected>', got '<value hash>'.")`
+      (`hash()`, not `type_name()`: for function nodes the latter is the
+      `std::function<…>` signature, not the registry/JSON name — audit fix)
 - [x] 3.2 Doxygen on `bind_input`: throws `TypeMismatchException` if… (D7)
 
 ## 4. `bind_inputs` delegates (D3)

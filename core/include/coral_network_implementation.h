@@ -649,7 +649,15 @@ namespace coral
             // Use the edge_key as the connection ID (converted to int)
             int conn_id = std::stoi(edge_key);
 
-            add_connection(conn_id, conn);
+            try
+              {
+                add_connection(conn_id, conn);
+              }
+            catch (const std::exception &e)
+              {
+                slog_error("Error with edge %s: %s", edge_key.c_str(), e.what());
+                throw;
+              }
           }
       }
     else
