@@ -1170,6 +1170,10 @@ namespace coral
     /**
      * Bind an input slot to a NodeObject.
      *
+     * @p value must be of the input's type, or of a type derived from it
+     * (see register_base); otherwise TypeMismatchException is thrown and the
+     * input is left unchanged.
+     *
      * @code
      * node->bind_input(0, other);
      * @endcode

@@ -19,11 +19,11 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
 - [x] 2.2 `true` iff `hash() == type` or `initializer.ancestor_casters` has `type`
 
 ## 3. Check in `bind_input` (D1, D4)
-- [ ] 3.1 In `NodeObject::bind_input` (`coral_implementation.h:498`), after the
+- [x] 3.1 In `NodeObject::bind_input` (`coral_implementation.h:498`), after the
       existing null/index checks and before binding: if
       `!value->is_compatible_with(arguments-entry "type")` → throw
       `TypeMismatchException("Input <i> '<name>' of '<type_name>' expects '<expected>', got '<value hash>'.")`
-- [ ] 3.2 Doxygen on `bind_input`: throws `TypeMismatchException` if… (D7)
+- [x] 3.2 Doxygen on `bind_input`: throws `TypeMismatchException` if… (D7)
 
 ## 4. `bind_inputs` delegates (D3)
 - [ ] 4.1 `NodeObject::bind_inputs` (`coral_implementation.h:312`): keep the
