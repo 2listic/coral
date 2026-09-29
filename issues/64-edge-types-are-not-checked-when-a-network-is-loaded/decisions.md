@@ -66,6 +66,11 @@ An edge is valid iff `source.type == expected` or `expected` is an ancestor of
 ## Out of scope
 - Frontend (`dealiiX-platform`).
 - Collecting all bad edges at once (`Network::validate()`), not needed now.
+- Dedicated mismatch test through `refresh_dynamic_inputs` / sub-network
+  wiring: same `add_connection` → `bind_input` path as D6 cases 3 and 5;
+  valid-edge acceptance is covered by the existing `modules.cc` tests.
+- `set_arguments` (`coral_implementation.h:206`) assigns arguments without the
+  type check. Not an edge path (unused by the network); left as is.
 
 ## Risk
 - `refresh_dynamic_inputs` (`coral_network_implementation.h:142`) now checks
