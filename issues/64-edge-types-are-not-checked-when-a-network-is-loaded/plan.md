@@ -32,14 +32,12 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
 - [x] 4.3 Doxygen on `bind_inputs`: throws `TypeMismatchException` if… (D7)
 
 ## 5. Edge context in `add_connection` (D4, D5)
-- [ ] 5.1 In `Network::add_connection(id, conn)` (`coral_network_implementation.h:411`),
+- [x] 5.1 In `Network::add_connection(id, conn)` (`coral_network_implementation.h:411`),
       wrap `bind_input` in `try`; `catch (const TypeMismatchException &e)` →
       rethrow `TypeMismatchException("Edge <id> (<src qid>[<out>] -> <tgt qid>[<in>]): " + e.what())`,
       qids via `get_node_qualified_id`
-- [ ] 5.2 Decide at implementation time (show to user): the connection is
-      stored in `connections[id]` *before* binding (`:365`). On throw it stays
-      stored; leave as is or erase it
-- [ ] 5.3 Doxygen on `add_connection`: throws `TypeMismatchException` if… (D7)
+- [x] 5.2 Move `connections[id] = conn` after a successful `bind_input` (D8)
+- [x] 5.3 Doxygen on `add_connection`: throws `TypeMismatchException` if… (D7)
 
 ## 6. Core tests (D6.1–D6.12)
 - [ ] 6.1 New `core/tests/edge_types.cc` (picked up by the glob in

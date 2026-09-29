@@ -59,6 +59,8 @@ An edge is valid iff `source.type == expected` or `expected ∈ source.bases`.
    `add_connection`, JSON load, `bind_inputs`; before any node runs; derived →
    base allowed). Doxygen "throws `TypeMismatchException` if…" on `bind_input`,
    `bind_inputs`, `add_connection`, and the exception class.
+8. **Refused edge not stored**: `add_connection` stores `connections[id]` only
+   after `bind_input` succeeds (also covers the "node not found" throws).
 
 ## Out of scope
 - Frontend (`dealiiX-platform`).

@@ -151,6 +151,14 @@ namespace coral
     std::string
     get_node_qualified_id(unsigned int id) const;
 
+    /**
+     * Add the edge @p conn with id @p id, binding the target input to the
+     * source output. The other overloads forward to this one.
+     *
+     * Throws TypeMismatchException if the source output's type is neither the
+     * target input's type nor derived from it; the message names the edge and
+     * its nodes by qualified_id. A refused edge is not stored.
+     */
     void
     add_connection(unsigned int id, const Connection &conn);
 

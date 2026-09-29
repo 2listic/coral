@@ -364,7 +364,6 @@ namespace coral
                conn.source_output,
                conn.target_id,
                conn.target_input);
-    connections[id] = conn;
     // Ensure both source and target nodes exist
     if (nodes.find(conn.source_id) == nodes.end())
       {
@@ -408,8 +407,23 @@ namespace coral
       }
 
     // Set the input of the target node to the output of the source node
-    nodes[conn.target_id]->bind_input(
-      conn.target_input, nodes[conn.source_id]->get_output(conn.source_output));
+    try
+      {
+        nodes[conn.target_id]->bind_input(
+          conn.target_input,
+          nodes[conn.source_id]->get_output(conn.source_output));
+      }
+    catch (const TypeMismatchException &e)
+      {
+        throw TypeMismatchException(
+          "Edge " + std::to_string(id) + " (" +
+          get_node_qualified_id(conn.source_id) + "[" +
+          std::to_string(conn.source_output) + "] -> " +
+          get_node_qualified_id(conn.target_id) + "[" +
+          std::to_string(conn.target_input) + "]): " + e.what());
+      }
+    // Stored only once bound: a refused edge never enters the network
+    connections[id] = conn;
 
     const auto source_it = node_tasks.find(conn.source_id);
     if (source_it == node_tasks.end())
