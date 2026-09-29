@@ -50,13 +50,13 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
 - [x] 6.7 Build and run core tests: all pass
 
 ## 7. deal.II test (D6.13)
-- [ ] 7.1 In `backends/dealii/tests/dealii_types.cc`: `FE_Q<2>` → `FiniteElement<2>`,
+- [x] 7.1 In `backends/dealii/tests/dealii_types.cc`: `FE_Q<2>` → `FiniteElement<2>`,
       `ofstream` → `ostream` edges accepted
-- [ ] 7.2 Build and run: passes
+- [x] 7.2 Build and run: passes
 
 ## 8. Full suite (D6, Risk)
-- [ ] 8.1 Run the whole suite (core + deal.II)
-- [ ] 8.2 Any failure from a wrong edge (incl. `refresh_dynamic_inputs`):
+- [x] 8.1 Run the whole suite (core + deal.II): 111/111 pass (2 MPI skipped)
+- [x] 8.2 Any failure from a wrong edge (incl. `refresh_dynamic_inputs`): none;
       report to user, decide case by case
 
 ## 9. Docs (D7)
