@@ -212,11 +212,28 @@ Options</h2>
 <ul>
 <li><span class="tt">CORAL_BUILD_BACKEND_DEALII=ON</span> (auto-skips if <span class="tt">deal.II</span> is not found)</li>
 <li><span class="tt">CORAL_BUILD_TESTS=ON</span></li>
+<li><span class="tt">CORAL_INSTALL=ON</span></li>
 </ul>
 <p>Example:</p>
 <div class="fragment"><div class="line">cmake -S . -B build -DCMAKE_BUILD_TYPE=Release</div>
 <div class="line">cmake --build build -j 8</div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md14"></a>
+</div><!-- fragment --><p>To install CORAL for use by another CMake project, choose an installation prefix. The following multi-configuration build installs actual Debug and Release binaries side by side, and exports both configurations for consumers that build both variants:</p>
+<div class="fragment"><div class="line">cmake -S . -B build -G &quot;Ninja Multi-Config&quot; \</div>
+<div class="line">  -DCORAL_BUILD_BACKEND_DEALII=OFF \</div>
+<div class="line">  -DCORAL_BUILD_TESTS=OFF \</div>
+<div class="line">  -DCMAKE_INSTALL_PREFIX=$HOME/.local</div>
+<div class="line">cmake --build build --config Debug</div>
+<div class="line">cmake --build build --config Release</div>
+<div class="line">cmake --install build --config Debug</div>
+<div class="line">cmake --install build --config Release</div>
+</div><!-- fragment --><p>The installed libraries and executables are placed under configuration-specific directories such as <span class="tt">lib/Debug</span>, <span class="tt">lib/Release</span>, <span class="tt">bin/Debug</span>, and <span class="tt">bin/Release</span>. A Release-only installation intentionally does not advertise a Debug target, because using a Release library for a Debug plugin could cause an ABI mismatch.</p>
+<p>A plugin project can then consume the installed package without checking out the CORAL repository:</p>
+<div class="fragment"><div class="line">find_package(coral CONFIG REQUIRED)</div>
+<div class="line"> </div>
+<div class="line">add_library(coral_backend_my_backend MODULE plugin_my_backend.cc)</div>
+<div class="line">target_link_libraries(coral_backend_my_backend PRIVATE coral::core)</div>
+</div><!-- fragment --><p>The package exports <span class="tt">coral::core</span>; plugins should be built as shared libraries and use the headers installed under <span class="tt">include/</span>. Keeping <span class="tt">CORAL_BUILD_SHARED_CORE=ON</span> ensures that the plugin and the host use the same CORAL type registry at runtime.</p>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md14"></a>
 Warning-free builds</h2>
 <p>External libraries (and translation units that include a lot of external headers, such as deal.II-heavy code) are built with warnings disabled to keep output clean by default.</p>
 <h1 class="doxsection"><a class="anchor" id="autotoc_md15"></a>
