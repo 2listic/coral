@@ -65,3 +65,90 @@ Build/test only inside the `coral` container (repo mounted at `/app`):
 ## 9. Docs (D7)
 - [x] 9.1 `README.md:60`: wording shown to user before editing
 - [x] 9.2 Check Doxygen of steps 1, 3, 4, 5 is in place
+
+---
+
+# Revision 2 — migration to whole-graph validation
+
+Read `decisions.md` first ("Why revision 2", "Principle (R2)"): this part
+implements D1, D3–D5, D8–D12 and the R2 test and docs lists. Steps 1–9 above are
+revision 1 (done); part of their code changes here.
+
+Starting state: branch `64-edge-types-are-not-checked-when-a-network-is-loaded`
+(PR #67), HEAD `0ec05c5`, a merge of branch `63-…` (PR #65), which merged
+`main` (including #69). The 4 `PassThrough*` tests in `core/tests/edge_types.cc`
+fail; everything else passes. Line numbers below refer to `0ec05c5`.
+
+Build and test in the `coral` container, in a fresh build directory:
+`docker exec coral bash -lc 'cd /app && cmake -S . -B /tmp/b64 -DCMAKE_BUILD_TYPE=Debug && cmake --build /tmp/b64 -j16 && cd /tmp/b64 && ctest --output-on-failure'`
+Run `ctest` serially: with `-j16`, two VTK tests (`vtk-gen2`, `graph-no-name`)
+failed once and passed when run serially.
+
+As `desiderata.md` asks: one step at a time; show every code or doc change to the
+user before editing.
+
+## 10. `Network::get_input_connection` (D11)
+- [ ] 10.1 Declare in `core/include/coral_network.h` after
+      `get_node_connections` (`:223`):
+      `auto get_input_connection(unsigned int node_id, unsigned int input) const -> std::optional<Connection>;`
+      add `#include <optional>`
+- [ ] 10.2 Implement in `coral_network_implementation.h` after
+      `get_node_connections` (`:765`): last entry (highest id) of `connections`
+      with `target_id == node_id && target_input == input`, else `std::nullopt`
+- [ ] 10.3 Doxygen (D7)
+
+## 11. `add_connection` records only (Principle, D8)
+- [ ] 11.1 In `Network::add_connection(id, conn)`
+      (`coral_network_implementation.h:357`): remove the `bind_input` call and
+      its `TypeMismatchException` catch-and-prefix (`:409-424`)
+- [ ] 11.2 After the missing-node checks (`:368-378`) add the structural checks
+      of D8: `source_output < n_outputs()`, `target_input < n_inputs()`, target
+      input not `self` (`input_indices[target_input] != -1`; private, `Network`
+      is a friend); throw `std::runtime_error` naming the edge id; edge not stored
+- [ ] 11.3 Store `connections[id] = conn` after the checks; keep auto-naming
+      (`:380-407`) and task precedence (`:428-443`)
+- [ ] 11.4 Doxygen on `add_connection` (`coral_network.h:154-161`) (D7)
+
+## 12. `bind_input` keeps its check (D3)
+- [ ] 12.1 No code change: the type check (`coral_implementation.h:479-485`)
+      and the Doxygen of `bind_input` (`coral.h:1170-1176`) and `bind_inputs`
+      (`coral.h:1378-1388`) stay as in revision 1
+
+## 13. `Network::validate()` (D1, D4, D5, D9, D10)
+- [ ] 13.1 Declare public `void validate() const;` in `coral_network.h`, next
+      to `run()` (`:202`)
+- [ ] 13.2 Kahn order over `nodes` / `connections`, iterative, ready set ordered
+      by node id; nodes left over → `std::runtime_error("Cycle in network: nodes <ids>.")` (D10)
+- [ ] 13.3 Type pass with a local map, as in D9 (uses `get_input_connection`)
+- [ ] 13.4 One D4 line per bad edge; if any, throw one `TypeMismatchException`
+      with header `Type mismatch in <N> edge(s):`
+- [ ] 13.5 Doxygen on `validate()` and on `TypeMismatchException`
+      (`coral.h:48-55`) (D7)
+
+## 14. Call `validate()` (D1)
+- [ ] 14.1 At the end of `Network::from_json` (`coral_network_implementation.h:554`),
+      after the edges loop; on failure `slog_error` and rethrow, like the edges
+      loop (`:656`)
+- [ ] 14.2 At the start of `Network::run()` (`:672`), before `executor.run`
+
+## 15. Tests (decisions.md, "Tests (R2)")
+- [ ] 15.1 Build and run: failures expected exactly in the "To adapt" list;
+      report anything else to the user
+- [ ] 15.2 Adapt `UnrelatedThrows`, `BaseToDerivedThrows`,
+      `RegisterBaseAfterNodeCreation`, `SiblingThrows` (exact changes agreed
+      with the user)
+- [ ] 15.3 Adapt `Network.BareMinimal` (`backends/dealii/tests/network.cc:89-90`)
+- [ ] 15.4 New tests a–e in `core/tests/edge_types.cc`
+- [ ] 15.5 Whole suite (core + deal.II), serial: all pass (2 MPI skipped),
+      including the 4 `PassThrough*` tests
+
+## 16. Docs (decisions.md, "Docs (R2)")
+- [ ] 16.1 `README.md:61-64`: wording shown to the user before editing
+- [ ] 16.2 Check that the Doxygen of steps 10–14 is in place and the old wording
+      on edges ("type-checked when it is made", "done when the edge is bound",
+      `add_connection` throwing `TypeMismatchException`) is gone:
+      `grep -n TypeMismatchException core/include README.md`
+
+## 17. Audit (desiderata, phase 4)
+- [ ] 17.1 Check code, tests and docs for consistency against `decisions.md`;
+      report to the user
