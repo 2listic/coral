@@ -76,8 +76,8 @@ namespace coral
 
     NodeObject::register_type<GridOut>();
 
-    NodeObject::register_derived_type<std::ostream, std::ofstream, std::string>(
-      "file_name");
+    NodeObject::register_type<std::ofstream, std::string>("file_name");
+    NodeObject::register_base<std::ofstream, std::ostream>();
     Network::register_node();
   }
 
@@ -146,9 +146,9 @@ namespace coral
        "triangulation",
        "output_file"});
 
-    NodeObject::register_derived_type<FiniteElement<dim, spacedim>,
-                                      FE_Q<dim, spacedim>,
-                                      unsigned int>("fe_degree");
+    NodeObject::register_type<FE_Q<dim, spacedim>, unsigned int>("fe_degree");
+    NodeObject::register_base<FE_Q<dim, spacedim>,
+                              FiniteElement<dim, spacedim>>();
 
     NodeObject::register_type<PoissonSolver<dim, spacedim>,
                               const Triangulation<dim, spacedim> &,
