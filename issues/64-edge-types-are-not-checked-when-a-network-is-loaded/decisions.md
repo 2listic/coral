@@ -141,8 +141,10 @@ An edge is valid iff `source.type == expected` or `expected` is an ancestor of
    equivalent to the frontend's "any candidate matches": ancestors are
    transitive (#63) and the upstream edge is checked on its own.
 10. *(R2)* **Cycles**: nodes left over by Kahn →
-    `std::runtime_error("Cycle in network: nodes <ids>.")`, not a
-    `TypeMismatchException`; no type check is done.
+    `std::runtime_error("Cycle in network: nodes <qids>.")`, not a
+    `TypeMismatchException`; no type check is done. Nodes are named by
+    `get_node_qualified_id`, as in D4, and are listed by node id. The list
+    includes the nodes downstream of the cycle.
 11. *(R2)* **`Network::get_input_connection(node_id, input) const -> std::optional<Connection>`**,
     public: the recorded edge feeding `(node_id, input)`, read from
     `connections` (like `get_inputs`, `coral_network_implementation.h:784`);
@@ -223,3 +225,14 @@ Wording is shown to the user before editing.
 ## Audit fixes (revision 1)
 - Message names the target by `hash()` (registry/JSON name), not `type_name()`.
 - `from_json` logs a failing edge (`slog_error`) and rethrows, like nodes.
+
+## Implementation notes (R2)
+- `Network::describe_edge(id, conn)` (private) builds `Edge <id> (<src qid>[<out>] -> <tgt qid>[<in>])`;
+  used by `add_connection` (D8 errors) and `validate()` (D4 lines).
+- `NodeObject::input_type_mismatch(index, value)` (private) holds the Rule and
+  the D4 text `Input <i> '<name>' of '<hash>' expects '<expected>', got '<hash>'.`;
+  used by `bind_input` and `validate()`. Reads the JSON only (`.at`), never writes it.
+- `validate()` builds the per-node in/out edge lists once: O(N + E).
+- Tests beyond the R2 list: (a) no rollback after a failing `from_json` (D8);
+  (c) highest id wins, not last added (D11); (d) upstream first is accepted
+  (D3); (e) `run()` binds the input (D12).

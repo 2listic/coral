@@ -129,7 +129,8 @@ user before editing.
 - [x] 14.1 At the end of `Network::from_json` (`coral_network_implementation.h:554`),
       after the edges loop; on failure `slog_error` and rethrow, like the edges
       loop (`:656`)
-- [x] 14.2 At the start of `Network::run()` (`:672`), before `executor.run`
+- [x] 14.2 In `Network::run()` (`:672`), inside the existing `try`, before
+      `executor.run`: a failure is logged by `Network run failed` and rethrown
 
 ## 15. Tests (decisions.md, "Tests (R2)")
 - [x] 15.1 Build and run: failures expected exactly in the "To adapt" list;
@@ -150,5 +151,5 @@ user before editing.
       `grep -n TypeMismatchException core/include README.md`
 
 ## 17. Audit (desiderata, phase 4)
-- [ ] 17.1 Check code, tests and docs for consistency against `decisions.md`;
+- [x] 17.1 Check code, tests and docs for consistency against `decisions.md`;
       report to the user

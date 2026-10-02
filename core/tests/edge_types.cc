@@ -347,6 +347,28 @@ TEST(EdgeTypes, InputUnboundBeforeRun)
   EXPECT_EQ(net.get_node(dst)->get_input(0), net.get_node(src));
 }
 
+// R2 D8. Structural errors: add_connection throws and does not store the edge.
+namespace edge_types::structural
+{
+  struct A
+  {
+    int v = 1;
+  };
+} // namespace edge_types::structural
+
+TEST(EdgeTypes, StructuralErrorsNotStored)
+{
+  using namespace edge_types::structural;
+  NodeObject::register_type<A>();
+
+  Network    net;
+  const auto src = net.add_node(make_node<A>());
+  const auto dst = add_consumer<A>(net, "edge_types_structural");
+  EXPECT_THROW(net.add_connection(src, dst, 1, 0), std::runtime_error);
+  EXPECT_THROW(net.add_connection(src, dst, 0, 1), std::runtime_error);
+  EXPECT_EQ(net.n_connections(), 0);
+}
+
 // 6. and 7.
 namespace edge_types::bind_inputs
 {

@@ -341,7 +341,7 @@ namespace coral
 
 
   CORAL_IMPL_INLINE std::string
-                    Network::get_node_qualified_id(unsigned int id) const
+  Network::get_node_qualified_id(unsigned int id) const
   {
     auto it = nodes.find(id);
     if (it == nodes.end() || !it->second)
