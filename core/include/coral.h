@@ -51,8 +51,10 @@ namespace coral
    * incompatible type.
    *
    * An output of type `T` can feed an input expecting type `E` if `T` is `E`,
-   * or if `E` is an ancestor of `T` (see NodeObject::register_base). The check
-   * is done when the edge is bound, before any node runs.
+   * or if `E` is an ancestor of `T` (see NodeObject::register_base).
+   * Network::validate() checks the complete graph before any node runs and
+   * throws once, listing every bad edge; NodeObject::bind_input() checks the
+   * single input it binds.
    */
   class TypeMismatchException : public std::runtime_error
   {
@@ -1288,7 +1290,8 @@ namespace coral
      * otherwise. @p index must be a valid input that is not 'self'.
      */
     std::optional<std::string>
-    input_type_mismatch(const unsigned int index, const NodeObject &value) const;
+    input_type_mismatch(const unsigned int index,
+                        const NodeObject  &value) const;
 
     /**
      * The actual object is stored here as a std::shared_ptr<entt::meta_any>.

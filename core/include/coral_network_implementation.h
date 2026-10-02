@@ -675,6 +675,17 @@ namespace coral
       {
         slog_warn("Network JSON has no 'edges' section");
       }
+
+    // Types are a property of the complete graph: checked once all edges exist
+    try
+      {
+        validate();
+      }
+    catch (const std::exception &e)
+      {
+        slog_error("Invalid network: %s", e.what());
+        throw;
+      }
   }
 
 
@@ -769,6 +780,7 @@ namespace coral
       n_threads);
     try
       {
+        validate();
         executor.run(taskflow).get();
       }
     catch (const std::exception &e)

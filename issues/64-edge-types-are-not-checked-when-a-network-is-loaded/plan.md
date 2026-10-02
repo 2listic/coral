@@ -122,17 +122,17 @@ user before editing.
 - [x] 13.3 Type pass with a local map, as in D9 (uses `get_input_connection`)
 - [x] 13.4 One D4 line per bad edge; if any, throw one `TypeMismatchException`
       with header `Type mismatch in <N> edge(s):`
-- [ ] 13.5 Doxygen on `validate()` and on `TypeMismatchException`
+- [x] 13.5 Doxygen on `validate()` and on `TypeMismatchException`
       (`coral.h:48-55`) (D7)
 
 ## 14. Call `validate()` (D1)
-- [ ] 14.1 At the end of `Network::from_json` (`coral_network_implementation.h:554`),
+- [x] 14.1 At the end of `Network::from_json` (`coral_network_implementation.h:554`),
       after the edges loop; on failure `slog_error` and rethrow, like the edges
       loop (`:656`)
-- [ ] 14.2 At the start of `Network::run()` (`:672`), before `executor.run`
+- [x] 14.2 At the start of `Network::run()` (`:672`), before `executor.run`
 
 ## 15. Tests (decisions.md, "Tests (R2)")
-- [ ] 15.1 Build and run: failures expected exactly in the "To adapt" list;
+- [x] 15.1 Build and run: failures expected exactly in the "To adapt" list;
       report anything else to the user
 - [ ] 15.2 Adapt `UnrelatedThrows`, `BaseToDerivedThrows`,
       `RegisterBaseAfterNodeCreation`, `SiblingThrows` (exact changes agreed

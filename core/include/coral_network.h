@@ -206,6 +206,20 @@ namespace coral
     void
     run();
 
+    /**
+     * Check the types of all edges of the complete graph, before any node
+     * runs. Called by from_json(), after all edges are recorded, and by run();
+     * it may also be called directly.
+     *
+     * A pass-through output carries the object of the edge feeding its input,
+     * whatever the order in which the edges were added.
+     *
+     * Throws std::runtime_error if the graph has a cycle, naming the nodes on
+     * or downstream of it; no type is checked then. Otherwise throws
+     * TypeMismatchException if any edge is incompatible, one line per bad
+     * edge: "Edge <id> (<source>[<output>] -> <target>[<input>]): Input <i>
+     * '<name>' of '<target type>' expects '<expected>', got '<actual>'."
+     */
     void
     validate() const;
 
