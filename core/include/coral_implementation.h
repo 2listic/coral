@@ -476,13 +476,8 @@ namespace coral
         ", which points to argument number " + std::to_string(arg_id) +
         ", but there are only " + std::to_string(arguments.size()) +
         " arguments to pick from.");
-    const auto &arg_entry = initializer.json_serializer["arguments"][arg_id];
-    const auto  expected  = arg_entry.at("type").get<std::string>();
-    if (!value->is_compatible_with(expected))
-      throw TypeMismatchException(
-        "Input " + std::to_string(index) + " '" + arg_entry.value("name", "") +
-        "' of '" + hash() + "' expects '" + expected + "', got '" +
-        value->hash() + "'.");
+    if (const auto mismatch = input_type_mismatch(index, *value))
+      throw TypeMismatchException(*mismatch);
     arguments[input_indices[index]] = value;
     input_bound[index]              = true;
   }
@@ -631,6 +626,22 @@ namespace coral
       if (input_indices[i] == argument_index)
         return i;
     throw std::runtime_error("Argument is not exposed as an input.");
+  }
+
+
+
+  CORAL_IMPL_INLINE std::optional<std::string>
+  NodeObject::input_type_mismatch(const unsigned int index,
+                                  const NodeObject  &value) const
+  {
+    const auto &arg_entry =
+      initializer.json_serializer.at("arguments")[input_indices[index]];
+    const auto expected = arg_entry.at("type").get<std::string>();
+    if (value.is_compatible_with(expected))
+      return std::nullopt;
+    return "Input " + std::to_string(index) + " '" +
+           arg_entry.value("name", "") + "' of '" + hash() + "' expects '" +
+           expected + "', got '" + value.hash() + "'.";
   }
 
 

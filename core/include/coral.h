@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -1280,6 +1281,14 @@ namespace coral
      */
     unsigned int
     input_index_for_argument(const int argument_index) const;
+
+    /**
+     * Return "Input <i> '<name>' of '<hash>' expects '<expected>', got
+     * '<value hash>'." if @p value cannot feed input @p index, std::nullopt
+     * otherwise. @p index must be a valid input that is not 'self'.
+     */
+    std::optional<std::string>
+    input_type_mismatch(const unsigned int index, const NodeObject &value) const;
 
     /**
      * The actual object is stored here as a std::shared_ptr<entt::meta_any>.

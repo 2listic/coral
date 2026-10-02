@@ -341,7 +341,7 @@ namespace coral
 
 
   CORAL_IMPL_INLINE std::string
-  Network::get_node_qualified_id(unsigned int id) const
+                    Network::get_node_qualified_id(unsigned int id) const
   {
     auto it = nodes.find(id);
     if (it == nodes.end() || !it->second)
@@ -349,6 +349,19 @@ namespace coral
 
     const std::string qid = it->second->get_qualified_id();
     return qid.empty() ? std::to_string(id) : qid;
+  }
+
+
+
+  CORAL_IMPL_INLINE auto
+  Network::describe_edge(unsigned int id, const Connection &conn) const
+    -> std::string
+  {
+    return "Edge " + std::to_string(id) + " (" +
+           get_node_qualified_id(conn.source_id) + "[" +
+           std::to_string(conn.source_output) + "] -> " +
+           get_node_qualified_id(conn.target_id) + "[" +
+           std::to_string(conn.target_input) + "])";
   }
 
 
@@ -377,11 +390,23 @@ namespace coral
                                  std::to_string(conn.target_id));
       }
 
+    const auto &source_node = nodes.at(conn.source_id);
+    const auto &target_node = nodes.at(conn.target_id);
+    const auto  edge        = describe_edge(id, conn) + ": ";
+    if (conn.source_output >= source_node->n_outputs())
+      throw std::runtime_error(edge + "source has " +
+                               std::to_string(source_node->n_outputs()) +
+                               " output(s).");
+    if (conn.target_input >= target_node->n_inputs())
+      throw std::runtime_error(edge + "target has " +
+                               std::to_string(target_node->n_inputs()) +
+                               " input(s).");
+    if (target_node->input_indices[conn.target_input] == -1)
+      throw std::runtime_error(edge + "target input is 'self'.");
+
     try
       {
-        const auto &source_node = nodes.at(conn.source_id);
-        const auto &target_node = nodes.at(conn.target_id);
-        auto        output_ptr  = source_node->get_output(conn.source_output);
+        auto output_ptr = source_node->get_output(conn.source_output);
 
         if (output_ptr == source_node && get_node_name(conn.source_id).empty())
           {
@@ -406,23 +431,7 @@ namespace coral
         // Naming is best-effort; ignore errors
       }
 
-    // Set the input of the target node to the output of the source node
-    try
-      {
-        nodes[conn.target_id]->bind_input(
-          conn.target_input,
-          nodes[conn.source_id]->get_output(conn.source_output));
-      }
-    catch (const TypeMismatchException &e)
-      {
-        throw TypeMismatchException(
-          "Edge " + std::to_string(id) + " (" +
-          get_node_qualified_id(conn.source_id) + "[" +
-          std::to_string(conn.source_output) + "] -> " +
-          get_node_qualified_id(conn.target_id) + "[" +
-          std::to_string(conn.target_input) + "]): " + e.what());
-      }
-    // Stored only once bound: a refused edge never enters the network
+    // Recorded only: types are checked by validate(), inputs bound by run()
     connections[id] = conn;
 
     const auto source_it = node_tasks.find(conn.source_id);
@@ -655,7 +664,9 @@ namespace coral
               }
             catch (const std::exception &e)
               {
-                slog_error("Error with edge %s: %s", edge_key.c_str(), e.what());
+                slog_error("Error with edge %s: %s",
+                           edge_key.c_str(),
+                           e.what());
                 throw;
               }
           }
@@ -663,6 +674,85 @@ namespace coral
     else
       {
         slog_warn("Network JSON has no 'edges' section");
+      }
+  }
+
+
+
+  CORAL_IMPL_INLINE void
+  Network::validate() const
+  {
+    // Edges leaving and entering each node, by edge id
+    std::map<unsigned int, std::vector<unsigned int>> outgoing;
+    std::map<unsigned int, std::vector<unsigned int>> incoming;
+    std::map<unsigned int, unsigned int>              in_degree;
+    for (const auto &[node_id, node] : nodes)
+      in_degree[node_id] = 0;
+    for (const auto &[conn_id, conn] : connections)
+      {
+        outgoing[conn.source_id].push_back(conn_id);
+        incoming[conn.target_id].push_back(conn_id);
+        ++in_degree[conn.target_id];
+      }
+
+    // Kahn: the ready set is ordered by node id, so the order is deterministic
+    std::set<unsigned int> ready;
+    for (const auto &[node_id, degree] : in_degree)
+      if (degree == 0)
+        ready.insert(node_id);
+    std::vector<unsigned int> order;
+    while (!ready.empty())
+      {
+        const auto node_id = *ready.begin();
+        ready.erase(ready.begin());
+        order.push_back(node_id);
+        for (const auto conn_id : outgoing[node_id])
+          if (--in_degree[connections.at(conn_id).target_id] == 0)
+            ready.insert(connections.at(conn_id).target_id);
+      }
+    if (order.size() != nodes.size())
+      {
+        std::string ids;
+        for (const auto &[node_id, degree] : in_degree)
+          if (degree > 0)
+            ids += (ids.empty() ? "" : ", ") + get_node_qualified_id(node_id);
+        throw std::runtime_error("Cycle in network: nodes " + ids + ".");
+      }
+
+    // Resolved object at each (node, output), filled upstream first
+    std::map<std::pair<unsigned int, unsigned int>, NodeObjectPtr> type;
+    std::vector<std::string>                                       errors;
+    for (const auto node_id : order)
+      {
+        const auto &node = nodes.at(node_id);
+        for (unsigned int o = 0; o < node->n_outputs(); ++o)
+          {
+            std::optional<Connection> feed;
+            if (node->is_passthrough_output(o))
+              feed = get_input_connection(node_id,
+                                          node->input_index_for_argument(
+                                            node->output_indices[o]));
+            type[{node_id, o}] =
+              feed ? type.at({feed->source_id, feed->source_output}) :
+                     node->get_output(o);
+          }
+        for (const auto conn_id : incoming[node_id])
+          {
+            const auto &conn   = connections.at(conn_id);
+            const auto &source = type.at({conn.source_id, conn.source_output});
+            if (const auto mismatch =
+                  node->input_type_mismatch(conn.target_input, *source))
+              errors.push_back(describe_edge(conn_id, conn) + ": " + *mismatch);
+          }
+      }
+
+    if (!errors.empty())
+      {
+        std::string message =
+          "Type mismatch in " + std::to_string(errors.size()) + " edge(s):";
+        for (const auto &line : errors)
+          message += "\n" + line;
+        throw TypeMismatchException(message);
       }
   }
 
@@ -920,7 +1010,7 @@ namespace coral
         if (node_it == nodes.end() || !node_it->second)
           throw std::runtime_error("Network interface node not found.");
 
-        const auto info = node_it->second->get_info();
+        const auto     info = node_it->second->get_info();
         nlohmann::json arg_json;
         if (entry.argument_index < 0)
           {
@@ -1033,7 +1123,7 @@ namespace coral
             for (unsigned int i = 0; i < outputs.size(); ++i)
               {
                 const int arg_index = outputs[i].get<int>();
-                bool connected = false;
+                bool      connected = false;
                 for (const auto &[conn_id, conn] : connections)
                   {
                     (void)conn_id;

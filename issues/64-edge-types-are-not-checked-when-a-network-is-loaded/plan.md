@@ -98,29 +98,29 @@ user before editing.
 - [x] 10.3 Doxygen (D7)
 
 ## 11. `add_connection` records only (Principle, D8)
-- [ ] 11.1 In `Network::add_connection(id, conn)`
+- [x] 11.1 In `Network::add_connection(id, conn)`
       (`coral_network_implementation.h:357`): remove the `bind_input` call and
       its `TypeMismatchException` catch-and-prefix (`:409-424`)
-- [ ] 11.2 After the missing-node checks (`:368-378`) add the structural checks
+- [x] 11.2 After the missing-node checks (`:368-378`) add the structural checks
       of D8: `source_output < n_outputs()`, `target_input < n_inputs()`, target
       input not `self` (`input_indices[target_input] != -1`; private, `Network`
       is a friend); throw `std::runtime_error` naming the edge id; edge not stored
-- [ ] 11.3 Store `connections[id] = conn` after the checks; keep auto-naming
+- [x] 11.3 Store `connections[id] = conn` after the checks; keep auto-naming
       (`:380-407`) and task precedence (`:428-443`)
-- [ ] 11.4 Doxygen on `add_connection` (`coral_network.h:154-161`) (D7)
+- [x] 11.4 Doxygen on `add_connection` (`coral_network.h:154-161`) (D7)
 
 ## 12. `bind_input` keeps its check (D3)
-- [ ] 12.1 No code change: the type check (`coral_implementation.h:479-485`)
+- [x] 12.1 No code change: the type check (`coral_implementation.h:479-485`)
       and the Doxygen of `bind_input` (`coral.h:1170-1176`) and `bind_inputs`
       (`coral.h:1378-1388`) stay as in revision 1
 
 ## 13. `Network::validate()` (D1, D4, D5, D9, D10)
-- [ ] 13.1 Declare public `void validate() const;` in `coral_network.h`, next
+- [x] 13.1 Declare public `void validate() const;` in `coral_network.h`, next
       to `run()` (`:202`)
-- [ ] 13.2 Kahn order over `nodes` / `connections`, iterative, ready set ordered
+- [x] 13.2 Kahn order over `nodes` / `connections`, iterative, ready set ordered
       by node id; nodes left over → `std::runtime_error("Cycle in network: nodes <ids>.")` (D10)
-- [ ] 13.3 Type pass with a local map, as in D9 (uses `get_input_connection`)
-- [ ] 13.4 One D4 line per bad edge; if any, throw one `TypeMismatchException`
+- [x] 13.3 Type pass with a local map, as in D9 (uses `get_input_connection`)
+- [x] 13.4 One D4 line per bad edge; if any, throw one `TypeMismatchException`
       with header `Type mismatch in <N> edge(s):`
 - [ ] 13.5 Doxygen on `validate()` and on `TypeMismatchException`
       (`coral.h:48-55`) (D7)
