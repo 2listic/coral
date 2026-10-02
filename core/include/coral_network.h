@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -108,6 +109,9 @@ namespace coral
     void
     refresh_dynamic_inputs(unsigned int target_id);
 
+    auto
+    describe_edge(unsigned int id, const Connection &conn) const -> std::string;
+
     void
     execute_node_task(unsigned int         node_id,
                       const NodeObjectPtr &node,
@@ -151,6 +155,15 @@ namespace coral
     std::string
     get_node_qualified_id(unsigned int id) const;
 
+    /**
+     * Record the edge @p conn with id @p id. No input is bound and no type is
+     * checked: validate() checks the types of the complete graph, run() binds
+     * the inputs. The other overloads forward to this one.
+     *
+     * Throws std::runtime_error, and does not store the edge, if the source or
+     * target node is missing, the source output or target input is out of
+     * range, or the target input is 'self'.
+     */
     void
     add_connection(unsigned int id, const Connection &conn);
 
@@ -193,6 +206,23 @@ namespace coral
     void
     run();
 
+    /**
+     * Check the types of all edges of the complete graph, before any node
+     * runs. Called by from_json(), after all edges are recorded, and by run();
+     * it may also be called directly.
+     *
+     * A pass-through output carries the object of the edge feeding its input,
+     * whatever the order in which the edges were added.
+     *
+     * Throws std::runtime_error if the graph has a cycle, naming the nodes on
+     * or downstream of it; no type is checked then. Otherwise throws
+     * TypeMismatchException if any edge is incompatible, one line per bad
+     * edge: "Edge <id> (<source>[<output>] -> <target>[<input>]): Input <i>
+     * '<name>' of '<target type>' expects '<expected>', got '<actual>'."
+     */
+    void
+    validate() const;
+
     void
     clear_network();
 
@@ -213,6 +243,15 @@ namespace coral
 
     auto
     get_node_connections(unsigned int nodeId) const -> std::vector<Connection>;
+
+    /**
+     * Return the recorded edge feeding input @p input of node @p node_id, or
+     * std::nullopt if there is none. If several edges feed it, return the one
+     * with the highest id: the one run() binds last.
+     */
+    auto
+    get_input_connection(unsigned int node_id, unsigned int input) const
+      -> std::optional<Connection>;
 
     auto
     get_inputs() const -> std::vector<std::pair<unsigned int, unsigned int>>;

@@ -8,7 +8,9 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -43,6 +45,24 @@ namespace coral
   class Network;
 
   using NodeObjectPtr = std::shared_ptr<NodeObject>;
+
+  /**
+   * Exception thrown when an edge connects an output to an input of an
+   * incompatible type.
+   *
+   * An output of type `T` can feed an input expecting type `E` if `T` is `E`,
+   * or if `E` is an ancestor of `T` (see NodeObject::register_base).
+   * Network::validate() checks the complete graph before any node runs and
+   * throws once, listing every bad edge; NodeObject::bind_input() checks the
+   * single input it binds.
+   */
+  class TypeMismatchException : public std::runtime_error
+  {
+  public:
+    explicit TypeMismatchException(const std::string &message)
+      : std::runtime_error(message)
+    {}
+  };
 
   namespace detail
   {
@@ -101,13 +121,6 @@ namespace coral
     }
 
 
-
-    template <typename Base, typename Derived>
-    std::shared_ptr<Base>
-    shared_ptr_to_base(const std::shared_ptr<Derived> &ptr)
-    {
-      return std::static_pointer_cast<Base>(ptr);
-    }
 
     /** \cond INTERNAL */
     // Utility to detect if Arg is callable (can be wrapped by std::function).
@@ -376,6 +389,12 @@ namespace coral
 
     /** \cond INTERNAL */
     /**
+     * Cast a type-erased shared pointer to one of its ancestors.
+     */
+    using Caster = std::function<std::shared_ptr<entt::meta_any>(
+      std::shared_ptr<entt::meta_any>)>;
+
+    /**
      * Store all std::functions needed to build a NodeObject.
      *
      * This type is internal and not part of the public API surface.
@@ -414,12 +433,11 @@ namespace coral
       std::function<std::string(std::shared_ptr<entt::meta_any>)> to_string;
 
       /**
-       * Convert to base class where needed.
+       * Casts from this type to each of its ancestors (direct and indirect),
+       * keyed by the ancestor's hash. Changed only by
+       * NodeObject::register_base(), never reset by a re-registration.
        */
-      std::function<std::shared_ptr<entt::meta_any>(
-        std::shared_ptr<entt::meta_any>)>
-        to_base = [](std::shared_ptr<entt::meta_any> a)
-        -> std::shared_ptr<entt::meta_any> { return a; };
+      std::map<std::string, Caster> ancestor_casters;
 
       /**
        * JSON serialization template for this node type.
@@ -733,45 +751,31 @@ namespace coral
     }
 
     /**
-     * Register a non-trivially constructible type T derived from type B.
+     * Declare that T derives from B ("T is-a B"): a T node can then be used
+     * wherever a B is expected (by reference, const reference or value).
+     *
+     * All ancestors are tracked: after register_base<A, B>() and
+     * register_base<B, C>(), in any order, A is also a C. A type not yet
+     * registered is registered as abstract; a later register_type() keeps
+     * the inheritance information.
+     *
+     * @code
+     * NodeObject::register_type<A, unsigned int>("degree");
+     * NodeObject::register_base<A, B1>();
+     * NodeObject::register_base<A, B2>();
+     * @endcode
+     *
+     * @note An ancestor reachable through several paths (diamond) is cast
+     * through the first path registered: correct for virtual inheritance,
+     * picks one sub-object for non-virtual diamonds.
      */
-    template <typename B, typename T>
-    static auto
-    register_derived_type() -> detail::NodeObjectInitializer &
-    {
-      auto &initializer = register_type<T>();
-      initializer.json_serializer["outputs"].push_back(-1);
-
-      auto &base_initializer = register_abstract_type<B>();
-      base_initializer.json_serializer["derived"].push_back(
-        initializer.json_serializer["type"]);
-      initializer.json_serializer["base"] =
-        base_initializer.json_serializer["type"];
-
-      using stored_derived =
-        std::shared_ptr<std::remove_cv_t<std::remove_reference_t<T>>>;
-      entt::meta_factory<stored_derived>()
-        .template conv<&detail::shared_ptr_to_base<B, T>>();
-
-      initializer.to_base = [](std::shared_ptr<entt::meta_any> a)
-        -> std::shared_ptr<entt::meta_any> {
-        const auto ptr = a->template try_cast<std::shared_ptr<T>>();
-        if (ptr == nullptr)
-          throw std::runtime_error("Could not cast derived type to base.");
-        return std::make_shared<entt::meta_any>(
-          std::static_pointer_cast<B>(*ptr));
-      };
-
-      return initializer;
-    }
-
-    template <typename B, typename T, typename... Args>
-    static auto
-    register_derived_type(const std::vector<std::string> &arg_names)
-      -> detail::NodeObjectInitializer &;
+    template <typename T, typename B>
+    static void
+    register_base();
 
     /**
-     * Same as above, for objects that require a single argument.
+     * Same as register_type(const std::vector<std::string> &), for objects
+     * that require a single argument.
      */
     template <typename T, typename Arg>
     static auto
@@ -780,14 +784,6 @@ namespace coral
     {
       return register_type<T, Arg>(std::vector<std::string>{{arg_name}});
     }
-
-    /**
-     * Same as above, for objects that require a single argument.
-     */
-    template <typename B, typename T, typename Arg>
-    static auto
-    register_derived_type(const std::string &arg_name)
-      -> detail::NodeObjectInitializer &;
 
     template <typename T, typename ReturnType, typename... Args>
     using MethodPtr = ReturnType (T::*)(Args...);
@@ -1177,6 +1173,10 @@ namespace coral
     /**
      * Bind an input slot to a NodeObject.
      *
+     * @p value must be of the input's type, or of a type derived from it
+     * (see register_base); otherwise TypeMismatchException is thrown and the
+     * input is left unchanged.
+     *
      * @code
      * node->bind_input(0, other);
      * @endcode
@@ -1216,6 +1216,17 @@ namespace coral
      */
     std::string
     hash() const;
+
+    /**
+     * Return true if this object can be passed where an object of type
+     * `type` (a hash string) is expected: `type` is this object's own type,
+     * or one of its ancestors (see register_base).
+     *
+     * Uses the same ancestor table as get_shared(), so a type accepted here
+     * is also accepted by get_shared() at run time.
+     */
+    bool
+    is_compatible_with(const std::string &type) const;
 
     /**
      * Return the human-readable type name for this node.
@@ -1272,6 +1283,15 @@ namespace coral
      */
     unsigned int
     input_index_for_argument(const int argument_index) const;
+
+    /**
+     * Return "Input <i> '<name>' of '<hash>' expects '<expected>', got
+     * '<value hash>'." if @p value cannot feed input @p index, std::nullopt
+     * otherwise. @p index must be a valid input that is not 'self'.
+     */
+    std::optional<std::string>
+    input_type_mismatch(const unsigned int index,
+                        const NodeObject  &value) const;
 
     /**
      * The actual object is stored here as a std::shared_ptr<entt::meta_any>.
@@ -1370,6 +1390,10 @@ namespace coral
     /**
      * Bind all inputs using a list of node/output pairs.
      *
+     * Each pair is bound with bind_input(), so the same type check applies:
+     * throws TypeMismatchException on the first incompatible input (earlier
+     * inputs stay bound).
+     *
      * @code
      * node->bind_inputs({{upstream, 0}});
      * @endcode
@@ -1416,9 +1440,18 @@ namespace coral
     -> detail::NodeObjectInitializer &
   {
     auto hash_str = detail::hash<T>(suffix);
-    if (initializers.find(hash_str) != initializers.end())
-      // Reset the initializer
-      initializers[hash_str] = {};
+    auto it       = initializers.find(hash_str);
+    if (it != initializers.end())
+      {
+        // Reset the construction part, keep the inheritance part
+        detail::NodeObjectInitializer fresh;
+        fresh.ancestor_casters = std::move(it->second.ancestor_casters);
+        for (const char *key : {"bases", "derived"})
+          if (it->second.json_serializer.contains(key))
+            fresh.json_serializer[key] =
+              std::move(it->second.json_serializer[key]);
+        it->second = std::move(fresh);
+      }
 
     auto &initializer                        = initializers[hash_str];
     initializer.type_name                    = boost::core::type_name<T>();
@@ -1570,28 +1603,25 @@ namespace coral
 
 
 
-  template <typename B, typename T, typename... Args>
-  inline auto
-  NodeObject::register_derived_type(const std::vector<std::string> &arg_names)
-    -> detail::NodeObjectInitializer &
+  template <typename T, typename B>
+  inline void
+  NodeObject::register_base()
   {
-    auto &initializer      = register_type<T, Args...>(arg_names);
-    auto &base_initializer = register_abstract_type<B>();
+    static_assert(std::is_base_of_v<B, T> && !std::is_same_v<B, T>,
+                  "register_base<T, B>(): T must derive from B.");
 
-    base_initializer.json_serializer["derived"].push_back(
-      initializer.json_serializer["type"]);
+    const auto t_hash = detail::hash<T>();
+    const auto b_hash = detail::hash<B>();
+    if (initializers.find(t_hash) == initializers.end())
+      register_abstract_type<T>();
+    if (initializers.find(b_hash) == initializers.end())
+      register_abstract_type<B>();
 
-    initializer.json_serializer["base"] =
-      base_initializer.json_serializer["type"];
+    auto &t_init = initializers.at(t_hash);
+    auto &b_init = initializers.at(b_hash);
 
-    // Register entt conversion shared_ptr<Derived> -> shared_ptr<Base>
-    using stored_derived =
-      std::shared_ptr<std::remove_cv_t<std::remove_reference_t<T>>>;
-    entt::meta_factory<stored_derived>()
-      .template conv<&detail::shared_ptr_to_base<B, T>>();
-
-    // Add the conversion to the base class.
-    initializer.to_base =
+    // Direct caster T -> B.
+    const detail::Caster c_TB =
       [](std::shared_ptr<entt::meta_any> a) -> std::shared_ptr<entt::meta_any> {
       const auto ptr = a->template try_cast<std::shared_ptr<T>>();
       if (ptr == nullptr)
@@ -1599,19 +1629,44 @@ namespace coral
       return std::make_shared<entt::meta_any>(
         std::static_pointer_cast<B>(*ptr));
     };
-    return initializer;
+
+    // Casters from T to B and to each ancestor of B.
+    std::map<std::string, detail::Caster> new_ancestors = {{b_hash, c_TB}};
+    for (const auto &[c_hash, c_BC] : b_init.ancestor_casters)
+      new_ancestors[c_hash] = [c_TB, c_BC](std::shared_ptr<entt::meta_any> a) {
+        return c_BC(c_TB(a));
+      };
+
+    // T and each descendant of T, with its caster to T.
+    std::vector<std::pair<std::string, detail::Caster>> targets = {
+      {t_hash, [](std::shared_ptr<entt::meta_any> a) { return a; }}};
+    if (t_init.json_serializer.contains("derived"))
+      for (const auto &d : t_init.json_serializer["derived"])
+        {
+          const auto d_hash = d.template get<std::string>();
+          targets.emplace_back(
+            d_hash, initializers.at(d_hash).ancestor_casters.at(t_hash));
+        }
+
+    for (const auto &[d_hash, c_DT] : targets)
+      {
+        auto &d_init = initializers.at(d_hash);
+        for (const auto &[x_hash, c_TX] : new_ancestors)
+          {
+            // Already an ancestor: repeated call, or diamond (first path wins)
+            if (d_init.ancestor_casters.count(x_hash) > 0)
+              continue;
+            d_init.ancestor_casters[x_hash] =
+              [c_TX, c_DT](std::shared_ptr<entt::meta_any> a) {
+                return c_TX(c_DT(a));
+              };
+            d_init.json_serializer["bases"].push_back(x_hash);
+            initializers.at(x_hash).json_serializer["derived"].push_back(
+              d_hash);
+          }
+      }
   }
 
-
-
-  template <typename B, typename T, typename Arg>
-  inline auto
-  NodeObject::register_derived_type(const std::string &arg_name)
-    -> detail::NodeObjectInitializer &
-  {
-    return register_derived_type<B, T, Arg>(
-      std::vector<std::string>{{arg_name}});
-  }
 
 
   template <typename ReturnType, typename... Args>
@@ -1646,16 +1701,15 @@ namespace coral
 
     if (hash() != detail::hash<type>())
       {
-        auto &j = initializer.json_serializer;
-        if (!(j.contains("base") &&
-              (detail::hash<type>() == j.at("base").get<std::string>())))
+        const auto it = initializer.ancestor_casters.find(detail::hash<type>());
+        if (it == initializer.ancestor_casters.end())
           throw std::runtime_error("Cannot cast object of type " + type_name() +
                                    " to object of type " +
                                    boost::core::type_name<type>() + ".");
-        auto new_object = initializer.to_base(object);
+        auto new_object = it->second(object);
         if (!(new_object && *new_object))
           throw std::runtime_error("New object does not have value.");
-        if (!(detail::hash(new_object) == j.at("base").get<std::string>()))
+        if (!(detail::hash(new_object) == detail::hash<type>()))
           throw std::runtime_error("New object does not have the right hash.");
         const auto cast_ptr =
           new_object->template try_cast<std::shared_ptr<type>>();
@@ -1721,19 +1775,18 @@ namespace coral
     std::shared_ptr<const type> ptr;
     if (hash() != detail::hash<type>())
       {
-        auto &j = initializer.json_serializer;
-        if (!(j.contains("base") &&
-              (detail::hash<type>() == j.at("base").get<std::string>())))
+        const auto it = initializer.ancestor_casters.find(detail::hash<type>());
+        if (it == initializer.ancestor_casters.end())
           throw std::runtime_error("Cannot cast object of type " + type_name() +
                                    " to object of type " +
                                    boost::core::type_name<type>() + ".");
-        auto new_object = initializer.to_base(object);
+        auto new_object = it->second(object);
         if (!(new_object && *new_object))
           throw std::runtime_error("New object does not have value.");
-        if (!(detail::hash(new_object) == j.at("base").get<std::string>()))
+        if (!(detail::hash(new_object) == detail::hash<type>()))
           throw std::runtime_error("New object does not have the right hash.");
         const auto cast_ptr =
-          new_object->template try_cast<std::shared_ptr<const type>>();
+          new_object->template try_cast<std::shared_ptr<type>>();
         if (cast_ptr == nullptr)
           throw std::runtime_error("Could not cast converted object to " +
                                    std::string(boost::core::type_name<type>()));
@@ -1742,7 +1795,7 @@ namespace coral
     else
       {
         const auto cast_ptr =
-          object->template try_cast<std::shared_ptr<const type>>();
+          object->template try_cast<std::shared_ptr<type>>();
         if (cast_ptr == nullptr)
           throw std::runtime_error(
             "Could not cast object to shared pointer of type " +

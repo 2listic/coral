@@ -85,12 +85,12 @@ TEST(Network, BareMinimal)
   ASSERT_EQ(n1->get_output(0)->get<double>(), 1.0);
   ASSERT_EQ(n2->get_output(0)->get<double>(), 2.0);
 
-  // Check the connections of the sum node
-  ASSERT_EQ(n4->get_input(0), n1->get_output(0));
-  ASSERT_EQ(n4->get_input(1), n2->get_output(0));
-
-  // Verify the output node is not a pass-through input
-  ASSERT_NE(n4->get_output(0), n4->get_input(0));
+  // Check the recorded connections of the sum node (bound only by run())
+  const auto in0 = network.get_input_connection(id4, 0);
+  const auto in1 = network.get_input_connection(id4, 1);
+  ASSERT_TRUE(in0 && in1);
+  ASSERT_EQ(in0->source_id, id1);
+  ASSERT_EQ(in1->source_id, id2);
 
   network.output_dot(output_dir.path() / "bare_minimal.dot");
   // dump the json of the network
@@ -106,6 +106,13 @@ TEST(Network, BareMinimal)
 
   ASSERT_EQ(n4->get_output(0)->get<double>(), 3.0)
     << "The output node should have the value 3.0";
+
+  // Check the connections of the sum node, bound by run()
+  ASSERT_EQ(n4->get_input(0), n1->get_output(0));
+  ASSERT_EQ(n4->get_input(1), n2->get_output(0));
+
+  // Verify the output node is not a pass-through input
+  ASSERT_NE(n4->get_output(0), n4->get_input(0));
 }
 
 TEST(Network, ExplicitNodeNaming)

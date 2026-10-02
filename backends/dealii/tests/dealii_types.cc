@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 #include "coral.h"
+#include "coral_network.h"
 #include "register_types.h"
 
 using namespace dealii;
@@ -29,8 +30,8 @@ TEST(dealiiTypes, FE_Q)
 {
   using type = FE_Q<2>;
   NodeObject::register_type<unsigned int>();
-  NodeObject::register_derived_type<FiniteElement<2>, type, unsigned int>(
-    "fe_degree");
+  NodeObject::register_type<type, unsigned int>("fe_degree");
+  NodeObject::register_base<type, FiniteElement<2>>();
 
   // This builds a FE_Q<2> object
   NodeObjectPtr obj    = make_node<type>();
@@ -122,4 +123,26 @@ TEST(dealiiTypes, NodeObjectInputsOutputs)
   // Check the number of inputs and outputs
   ASSERT_EQ(obj->n_inputs(), 0);  // Assuming no inputs are registered
   ASSERT_EQ(obj->n_outputs(), 1); // Assuming one output is registered (self)
+}
+
+// #64: real derived -> base edges are accepted when a network is loaded.
+TEST(dealiiTypes, DerivedToBaseEdges)
+{
+  register_all_types();
+
+  nlohmann::json j;
+  auto          &nodes = j["workflow"]["nodes"];
+  nodes["0"] = {{"type", "dealii::FE_Q<2, 2>"}, {"qualified_id", "fe"}};
+  nodes["1"] = {{"type", "PoissonSolver<2, 2>"}, {"qualified_id", "solver"}};
+  nodes["2"] = {{"type", "std::ofstream"}, {"qualified_id", "file"}};
+  nodes["3"] = {{"type", "GridOut::write_vtk<2>"}, {"qualified_id", "vtk"}};
+  // FE_Q -> FiniteElement (input 1), ofstream -> ostream (input 2)
+  j["workflow"]["edges"]["0"] = {
+    {"source", 0}, {"source_output", 0}, {"target", 1}, {"target_input", 1}};
+  j["workflow"]["edges"]["1"] = {
+    {"source", 2}, {"source_output", 0}, {"target", 3}, {"target_input", 2}};
+
+  Network net;
+  EXPECT_NO_THROW(net.from_json(j));
+  EXPECT_EQ(net.n_connections(), 2);
 }
