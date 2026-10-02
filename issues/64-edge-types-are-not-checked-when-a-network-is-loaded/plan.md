@@ -88,14 +88,14 @@ As `desiderata.md` asks: one step at a time; show every code or doc change to th
 user before editing.
 
 ## 10. `Network::get_input_connection` (D11)
-- [ ] 10.1 Declare in `core/include/coral_network.h` after
+- [x] 10.1 Declare in `core/include/coral_network.h` after
       `get_node_connections` (`:223`):
       `auto get_input_connection(unsigned int node_id, unsigned int input) const -> std::optional<Connection>;`
       add `#include <optional>`
-- [ ] 10.2 Implement in `coral_network_implementation.h` after
+- [x] 10.2 Implement in `coral_network_implementation.h` after
       `get_node_connections` (`:765`): last entry (highest id) of `connections`
       with `target_id == node_id && target_input == input`, else `std::nullopt`
-- [ ] 10.3 Doxygen (D7)
+- [x] 10.3 Doxygen (D7)
 
 ## 11. `add_connection` records only (Principle, D8)
 - [ ] 11.1 In `Network::add_connection(id, conn)`

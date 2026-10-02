@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -221,6 +222,15 @@ namespace coral
 
     auto
     get_node_connections(unsigned int nodeId) const -> std::vector<Connection>;
+
+    /**
+     * Return the recorded edge feeding input @p input of node @p node_id, or
+     * std::nullopt if there is none. If several edges feed it, return the one
+     * with the highest id: the one run() binds last.
+     */
+    auto
+    get_input_connection(unsigned int node_id, unsigned int input) const
+      -> std::optional<Connection>;
 
     auto
     get_inputs() const -> std::vector<std::pair<unsigned int, unsigned int>>;

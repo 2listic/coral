@@ -781,6 +781,23 @@ namespace coral
 
 
   CORAL_IMPL_INLINE auto
+  Network::get_input_connection(unsigned int node_id, unsigned int input) const
+    -> std::optional<Connection>
+  {
+    // connections is ordered by id: the last match has the highest id.
+    std::optional<Connection> result;
+    for (const auto &[conn_id, conn] : connections)
+      {
+        (void)conn_id;
+        if (conn.target_id == node_id && conn.target_input == input)
+          result = conn;
+      }
+    return result;
+  }
+
+
+
+  CORAL_IMPL_INLINE auto
   Network::get_inputs() const
     -> std::vector<std::pair<unsigned int, unsigned int>>
   {
