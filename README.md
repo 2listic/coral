@@ -58,11 +58,13 @@ workflows.
 
 The core design principles of CORAL are:
 
-- **Type Safety**: Every connection is type-checked when it is made
-  (`add_connection`, loading a network from JSON, `bind_inputs`), before any
-  node runs. An output can feed an input of its own type or of one of its
-  base types (see `register_base`); otherwise `coral::TypeMismatchException`
-  is thrown.
+- **Type Safety**: An output can feed an input of its own type or of one of
+  its base types (see `register_base`). A network is checked as a whole by
+  `Network::validate()`, which `from_json` and `run()` call before any node
+  runs: it follows pass-through arguments whatever the order in which edges
+  were added, and throws one `coral::TypeMismatchException` listing every bad
+  edge. `connect()` and `bind_inputs` check each input when they bind it, so
+  they depend on the order of the calls.
 
 - **Reflection System**: The library implements a runtime reflection system
   that allows for introspection of types, methods, and functions, without

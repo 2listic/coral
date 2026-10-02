@@ -9,7 +9,8 @@ using namespace coral;
 using json = nlohmann::json;
 
 // Edge type check (#64): an output of type T feeds an input expecting E iff
-// T is E or E is an ancestor of T. Numbers refer to decisions.md, D6.
+// T is E or E is an ancestor of T. Numbers refer to decisions.md, D6 of
+// revision 1; "R2 <letter>" to its "Tests (R2)" list.
 //
 // The type registry is global to the test executable: every test uses its own
 // types and function names, so that registrations do not leak.
@@ -117,10 +118,11 @@ TEST(EdgeTypes, UnrelatedThrows)
   Network    net;
   const auto src = net.add_node(make_node<U>());
   const auto dst = add_consumer<A>(net, "edge_types_unrelated");
-  EXPECT_THROW(net.add_connection(src, dst, 0, 0), TypeMismatchException);
-  // Refused before anything runs, and not stored (D8).
+  EXPECT_NO_THROW(net.add_connection(src, dst, 0, 0));
+  // Stored (D8); refused by run() before anything runs (D1).
+  EXPECT_EQ(net.n_connections(), 1);
+  EXPECT_THROW(net.run(), TypeMismatchException);
   EXPECT_FALSE(net.get_node(src)->ready());
-  EXPECT_EQ(net.n_connections(), 0);
 }
 
 // 4.
@@ -143,7 +145,8 @@ TEST(EdgeTypes, BaseToDerivedThrows)
   Network    net;
   const auto src = net.add_node(make_node<A>());
   const auto dst = add_consumer<B>(net, "edge_types_base_to_derived");
-  EXPECT_THROW(net.add_connection(src, dst, 0, 0), TypeMismatchException);
+  EXPECT_NO_THROW(net.add_connection(src, dst, 0, 0));
+  EXPECT_THROW(net.validate(), TypeMismatchException);
 }
 
 // 5.
@@ -188,6 +191,160 @@ TEST(EdgeTypes, JsonLoadThrowsWithEdgeContext)
       EXPECT_NE(msg.find("Edge 7 (src[0] -> dst[0])"), std::string::npos)
         << msg;
     }
+}
+
+// R2 a. Every bad edge is reported, in one exception.
+namespace edge_types::two_bad_edges
+{
+  struct A
+  {
+    int v = 1;
+  };
+  struct U
+  {};
+} // namespace edge_types::two_bad_edges
+
+TEST(EdgeTypes, JsonLoadReportsAllBadEdges)
+{
+  using namespace edge_types::two_bad_edges;
+  NodeObject::register_type<A>();
+  NodeObject::register_type<U>();
+  const std::string name = "edge_types_two_bad_edges";
+  const auto        consumer_type =
+    make_method_node(name, register_consumer<A>(name))->hash();
+
+  json j;
+  j["workflow"]["nodes"]["0"]["type"]         = detail::hash<U>();
+  j["workflow"]["nodes"]["0"]["qualified_id"] = "src";
+  j["workflow"]["nodes"]["1"]["type"]         = consumer_type;
+  j["workflow"]["nodes"]["1"]["qualified_id"] = "dst1";
+  j["workflow"]["nodes"]["2"]["type"]         = consumer_type;
+  j["workflow"]["nodes"]["2"]["qualified_id"] = "dst2";
+  j["workflow"]["edges"]["3"]                 = {{"source", 0},
+                                                 {"source_output", 0},
+                                                 {"target", 1},
+                                                 {"target_input", 0}};
+  j["workflow"]["edges"]["4"]                 = {{"source", 0},
+                                                 {"source_output", 0},
+                                                 {"target", 2},
+                                                 {"target_input", 0}};
+
+  Network net;
+  try
+    {
+      net.from_json(j);
+      FAIL() << "Expected TypeMismatchException";
+    }
+  catch (const TypeMismatchException &e)
+    {
+      const std::string msg = e.what();
+      EXPECT_NE(msg.find("Type mismatch in 2 edge(s):"), std::string::npos)
+        << msg;
+      EXPECT_NE(msg.find("Edge 3 (src[0] -> dst1[0])"), std::string::npos)
+        << msg;
+      EXPECT_NE(msg.find("Edge 4 (src[0] -> dst2[0])"), std::string::npos)
+        << msg;
+    }
+  // No rollback: the network keeps every edge of the JSON (D8).
+  EXPECT_EQ(net.n_connections(), 2);
+}
+
+// R2 b. A cycle is reported as such, not as a type mismatch (D10).
+namespace edge_types::cycle
+{
+  struct A
+  {
+    int v = 1;
+  };
+} // namespace edge_types::cycle
+
+TEST(EdgeTypes, CycleThrows)
+{
+  using namespace edge_types::cycle;
+  NodeObject::register_type<A>();
+
+  Network    net;
+  const auto x = add_consumer<A>(net, "edge_types_cycle");
+  const auto y = add_consumer<A>(net, "edge_types_cycle");
+  net.add_connection(x, y, 0, 0);
+  net.add_connection(y, x, 0, 0);
+  try
+    {
+      net.validate();
+      FAIL() << "Expected std::runtime_error";
+    }
+  catch (const TypeMismatchException &e)
+    {
+      FAIL() << "Expected a cycle error, got: " << e.what();
+    }
+  catch (const std::runtime_error &e)
+    {
+      const std::string msg = e.what();
+      EXPECT_NE(msg.find("Cycle in network: nodes " + std::to_string(x) + ", " +
+                         std::to_string(y) + "."),
+                std::string::npos)
+        << msg;
+    }
+}
+
+// R2 c. get_input_connection: the recorded edge feeding an input (D11).
+namespace edge_types::input_connection
+{
+  struct A
+  {
+    int v = 1;
+  };
+} // namespace edge_types::input_connection
+
+TEST(EdgeTypes, GetInputConnection)
+{
+  using namespace edge_types::input_connection;
+  NodeObject::register_type<A>();
+
+  Network    net;
+  const auto src1 = net.add_node(make_node<A>());
+  const auto src2 = net.add_node(make_node<A>());
+  const auto dst  = add_consumer<A>(net, "edge_types_input_connection");
+  EXPECT_FALSE(net.get_input_connection(dst, 0).has_value());
+
+  net.add_connection(7, src1, dst, 0, 0);
+  const auto conn = net.get_input_connection(dst, 0);
+  ASSERT_TRUE(conn.has_value());
+  EXPECT_EQ(conn->source_id, src1);
+  EXPECT_EQ(conn->source_output, 0);
+  EXPECT_EQ(conn->target_id, dst);
+  EXPECT_EQ(conn->target_input, 0);
+
+  // Several edges feeding one input: the highest id wins, as in run().
+  net.add_connection(3, src2, dst, 0, 0);
+  EXPECT_EQ(net.get_input_connection(dst, 0)->source_id, src1);
+  net.add_connection(9, src2, dst, 0, 0);
+  EXPECT_EQ(net.get_input_connection(dst, 0)->source_id, src2);
+}
+
+// R2 e. Before run() an input fed by an edge is unbound; run() binds it (D12).
+namespace edge_types::unbound
+{
+  struct A
+  {
+    int v = 1;
+  };
+} // namespace edge_types::unbound
+
+TEST(EdgeTypes, InputUnboundBeforeRun)
+{
+  using namespace edge_types::unbound;
+  NodeObject::register_type<A>();
+
+  Network    net;
+  const auto src = net.add_node(make_node<A>());
+  const auto dst = add_consumer<A>(net, "edge_types_unbound");
+  net.add_connection(src, dst, 0, 0);
+  EXPECT_EQ(net.get_node(dst)->get_input(0), nullptr);
+
+  Network::set_touch_file_base_path("edge_types_touch");
+  net.run();
+  EXPECT_EQ(net.get_node(dst)->get_input(0), net.get_node(src));
 }
 
 // 6. and 7.
@@ -250,7 +407,8 @@ TEST(EdgeTypes, RegisterBaseAfterNodeCreation)
   const auto dst = add_consumer<A>(net, "edge_types_late_base");
 
   // Load check and run-time cast agree: both refuse.
-  EXPECT_THROW(net.add_connection(src, dst, 0, 0), TypeMismatchException);
+  EXPECT_NO_THROW(net.add_connection(src, dst, 0, 0));
+  EXPECT_THROW(net.validate(), TypeMismatchException);
   (*net.get_node(src))();
   EXPECT_THROW(net.get_node(src)->get<A>(), std::runtime_error);
 }
@@ -335,7 +493,8 @@ TEST(EdgeTypes, SiblingThrows)
   Network    net;
   const auto src = net.add_node(make_node<T1>());
   const auto dst = add_consumer<T2>(net, "edge_types_siblings");
-  EXPECT_THROW(net.add_connection(src, dst, 0, 0), TypeMismatchException);
+  EXPECT_NO_THROW(net.add_connection(src, dst, 0, 0));
+  EXPECT_THROW(net.validate(), TypeMismatchException);
 }
 
 // 12.
@@ -380,9 +539,8 @@ TEST(EdgeTypes, VirtualDiamondRuns)
 //
 // setup's pass-through output is declared as Base but carries the Derived
 // object bound upstream, so e_down is valid (on main the graph runs and
-// consume returns 42 whatever the edge order). With the bind-time check, an
-// unbound pass-through output still holds a placeholder of its declared type
-// (Base), so e_down is refused when it is bound before e_up.
+// consume returns 42 whatever the edge order). Network::validate() resolves
+// the pass-through on the complete graph, so the edge order does not matter.
 
 namespace edge_types::passthrough
 {
@@ -578,4 +736,21 @@ TEST(EdgeTypes, PassThroughChainJsonLoadEdgeKeyOrder)
   net.from_json(j);
   net.run();
   EXPECT_EQ(net.get_node(4)->get_output(0)->get<int>(), 43);
+}
+
+// R2 d. connect() binds the object currently at the source output, so it is
+// order-dependent (D3): connected downstream first, setup's pass-through
+// output still holds its declared type (Base) and is refused; connected
+// upstream first, it carries the Derived object and is accepted.
+TEST(EdgeTypes, ConnectPassThroughOrderDependent)
+{
+  using namespace edge_types::passthrough;
+  register_all();
+  auto d = make_node<Derived>();
+  auto s = make_method_node("edge_types_pt_setup", setup);
+  auto c = make_method_node("edge_types_pt_consume", consume);
+  EXPECT_THROW(connect(c, {{s, 0}}), TypeMismatchException);
+
+  connect(s, {{d, 0}});
+  EXPECT_NO_THROW(connect(c, {{s, 0}}));
 }

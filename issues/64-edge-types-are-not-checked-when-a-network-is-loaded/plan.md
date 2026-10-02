@@ -134,17 +134,17 @@ user before editing.
 ## 15. Tests (decisions.md, "Tests (R2)")
 - [x] 15.1 Build and run: failures expected exactly in the "To adapt" list;
       report anything else to the user
-- [ ] 15.2 Adapt `UnrelatedThrows`, `BaseToDerivedThrows`,
+- [x] 15.2 Adapt `UnrelatedThrows`, `BaseToDerivedThrows`,
       `RegisterBaseAfterNodeCreation`, `SiblingThrows` (exact changes agreed
       with the user)
-- [ ] 15.3 Adapt `Network.BareMinimal` (`backends/dealii/tests/network.cc:89-90`)
-- [ ] 15.4 New tests a–e in `core/tests/edge_types.cc`
-- [ ] 15.5 Whole suite (core + deal.II), serial: all pass (2 MPI skipped),
+- [x] 15.3 Adapt `Network.BareMinimal` (`backends/dealii/tests/network.cc:89-90`)
+- [x] 15.4 New tests a–e in `core/tests/edge_types.cc`
+- [x] 15.5 Whole suite (core + deal.II), serial: all pass (2 MPI skipped),
       including the 4 `PassThrough*` tests
 
 ## 16. Docs (decisions.md, "Docs (R2)")
-- [ ] 16.1 `README.md:61-64`: wording shown to the user before editing
-- [ ] 16.2 Check that the Doxygen of steps 10–14 is in place and the old wording
+- [x] 16.1 `README.md:61-64`: wording shown to the user before editing
+- [x] 16.2 Check that the Doxygen of steps 10–14 is in place and the old wording
       on edges ("type-checked when it is made", "done when the edge is bound",
       `add_connection` throwing `TypeMismatchException`) is gone:
       `grep -n TypeMismatchException core/include README.md`
