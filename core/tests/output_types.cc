@@ -39,6 +39,17 @@ namespace
     set(const int &)
     {}
   };
+
+  struct SharedOwner
+  {
+    void
+    set(const int &value)
+    {
+      this->value = value;
+    }
+
+    int value = 0;
+  };
 } // namespace
 
 TEST(OutputType, RegistersValueWithoutConstructor)
@@ -142,4 +153,34 @@ TEST(OutputType, RegistersMethodIdentity)
   EXPECT_EQ(entry.at("display_name"), "Set");
   EXPECT_EQ(entry.at("class_name"), "ExampleOwner");
   EXPECT_EQ(entry.at("method_name"), "set");
+}
+
+TEST(OutputType, RegistersAndExecutesSharedMethod)
+{
+  using OwnerHandle = std::shared_ptr<SharedOwner>;
+
+  coral::NodeObject::register_elementary_type<int>();
+  coral::detail::set_type_alias<OwnerHandle>("SharedOwnerHandle");
+  auto &owner_initializer =
+    coral::NodeObject::register_output_type<OwnerHandle>();
+  owner_initializer.json_serializer["outputs"].push_back(-1);
+
+  coral::NodeObject::register_shared_method<SharedOwner, void, const int &>(
+    &SharedOwner::set,
+    {"SharedOwner::set", "owner", "value"},
+    coral::RegistryMetadata{"SharedOwner::set",
+                            "Set",
+                            {},
+                            {},
+                            "SharedOwner",
+                            "set"});
+
+  auto owner_value = std::make_shared<SharedOwner>();
+  auto owner       = std::make_shared<OwnerHandle>(owner_value);
+  auto method      = coral::make_node("SharedOwner::set");
+  method->bind_inputs({{std::make_shared<coral::NodeObject>(owner), 0},
+                       {coral::make_node(7), 0}});
+
+  ASSERT_TRUE((*method)());
+  EXPECT_EQ(owner_value->value, 7);
 }

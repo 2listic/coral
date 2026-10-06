@@ -1005,6 +1005,107 @@ namespace coral
     }
 
     /**
+     * Register a method whose graph receiver is a shared pointer to its
+     * owning object.
+     *
+     * The receiver is serialized as std::shared_ptr<T> and is invoked by
+     * dereferencing the handle before calling the member function. This is
+     * the method form to use when a constructor returns a shared pointer.
+     */
+    template <typename T, typename ReturnType, typename... Args>
+    static void
+    register_shared_method(MethodPtr<T, ReturnType, Args...> ptr,
+                           std::vector<std::string>          arg_names,
+                           RegistryMetadata                   metadata = {})
+    {
+      using ThisMethod              = MethodPtr<T, ReturnType, Args...>;
+      constexpr bool return_is_void = std::is_same_v<ReturnType, void>;
+      auto           method_name    = arg_names[0];
+      arg_names.erase(arg_names.begin());
+
+      if constexpr (return_is_void)
+        {
+          auto &initializer = register_json_header<
+            ThisMethod, std::shared_ptr<T> &, Args...>(arg_names, method_name);
+          initializer.json_serializer["node_type"] = "void_method";
+          initializer.node_type                    = NodeType::void_method;
+          set_registry_metadata(initializer, metadata);
+          set_method_identity(initializer, method_name);
+
+          initializer.executor =
+            [ptr, &initializer, method_name](const NodeObjectPtr &,
+                                             std::vector<NodeObjectPtr> args)
+            -> std::shared_ptr<entt::meta_any> {
+            if (args.size() != 1 + sizeof...(Args))
+              throw std::runtime_error("Wrong number of arguments.");
+            auto &handle = args[0]->get<std::shared_ptr<T>>();
+            if (!handle)
+              throw std::runtime_error(
+                "Cannot invoke a method on a null handle.");
+            args.erase(args.begin());
+
+            auto tuple = detail::cast_args<Args...>(args);
+            slog_debug("%s: %s",
+                       method_name.c_str(),
+                       initializer.type_name.c_str());
+            std::apply(
+              [&handle, ptr](auto &&...unpackedArgs) {
+                ((*handle).*ptr)(*unpackedArgs...);
+              },
+              tuple);
+            return std::make_shared<entt::meta_any>(
+              std::make_shared<ThisMethod>(ptr));
+          };
+        }
+      else
+        {
+          register_output_type<ReturnType>();
+          auto &initializer = register_json_header<
+            ThisMethod,
+            std::shared_ptr<T> &,
+            ReturnType &,
+            Args...>(arg_names, method_name);
+          initializer.json_serializer["node_type"] = "method";
+          initializer.node_type                    = NodeType::method;
+          set_registry_metadata(initializer, metadata);
+          set_method_identity(initializer, method_name);
+          const bool output_is_elementary =
+            is_registered_elementary_type<ReturnType>();
+          if (output_is_elementary)
+            set_output_only(initializer, 1);
+
+          initializer.executor =
+            [ptr, &initializer, method_name, output_is_elementary](
+              const NodeObjectPtr &, std::vector<NodeObjectPtr> args)
+            -> std::shared_ptr<entt::meta_any> {
+            if (args.size() != 2 + sizeof...(Args))
+              throw std::runtime_error("Wrong number of arguments.");
+            auto &handle = args[0]->get<std::shared_ptr<T>>();
+            if (!handle)
+              throw std::runtime_error(
+                "Cannot invoke a method on a null handle.");
+            if (output_is_elementary && !args[1]->ready())
+              (*args[1])();
+            auto &ret = args[1]->get<ReturnType>();
+
+            std::vector<NodeObjectPtr> function_args(args.begin() + 2,
+                                                     args.end());
+            slog_debug("%s: %s",
+                       method_name.c_str(),
+                       initializer.type_name.c_str());
+            auto tuple = detail::cast_args<Args...>(function_args);
+            ret        = std::apply(
+              [&handle, ptr](auto &&...unpackedArgs) {
+                return ((*handle).*ptr)(*unpackedArgs...);
+              },
+              tuple);
+            return std::make_shared<entt::meta_any>(
+              std::make_shared<ThisMethod>(ptr));
+          };
+        }
+    }
+
+    /**
      * Register a const method of a class. This node will have as arguments
      * the object of the class, possibly the output argument, and the
      * arguments of the method.
