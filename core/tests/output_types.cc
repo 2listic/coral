@@ -33,6 +33,10 @@ namespace
     return value;
   }
 
+  void
+  templated_free_function(const int &)
+  {}
+
   struct ExampleOwner
   {
     void
@@ -176,6 +180,22 @@ TEST(OutputType, RemovesTemplateSpecializationFromMethodOwner)
   const auto entry = registry.at("ImmersX::TemplatedOwner<2>::set");
   EXPECT_EQ(entry.at("class_name"), "ImmersX::TemplatedOwner");
   EXPECT_EQ(entry.at("method_name"), "set");
+}
+
+TEST(OutputType, InfersFreeFunctionMethodIdentity)
+{
+  coral::NodeObject::register_elementary_type<int>();
+  coral::NodeObject::register_function(
+    std::function<void(const int &)>(templated_free_function),
+    {"ImmersX::TemplatedOwner<2>::inspect", "value"});
+
+  const auto registry = coral::NodeObject::get_registry();
+  const auto entry = registry.at(
+    coral::detail::function_registry_key<
+      std::function<void(const int &)>>
+      ("ImmersX::TemplatedOwner<2>::inspect"));
+  EXPECT_EQ(entry.at("class_name"), "ImmersX::TemplatedOwner");
+  EXPECT_EQ(entry.at("method_name"), "inspect");
 }
 
 TEST(OutputType, RegistersAndExecutesSharedMethod)

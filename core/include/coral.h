@@ -1287,6 +1287,7 @@ namespace coral
           initializer.json_serializer["node_type"] = "void_function";
           initializer.node_type                    = NodeType::void_function;
           set_metadata(initializer);
+          set_method_identity(initializer, operation);
           add_legacy_alias();
 
           initializer.executor =
@@ -1316,6 +1317,7 @@ namespace coral
           initializer.json_serializer["output_type"] =
             detail::hash<ReturnType>();
           set_metadata(initializer);
+          set_method_identity(initializer, operation);
           add_legacy_alias();
 
           initializer.executor =
@@ -1347,6 +1349,7 @@ namespace coral
           initializer.json_serializer["node_type"] = "function";
           initializer.node_type                    = NodeType::function;
           set_metadata(initializer);
+          set_method_identity(initializer, operation);
           add_legacy_alias();
           const bool output_is_elementary =
             is_registered_elementary_type<ReturnType>();
