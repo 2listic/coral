@@ -50,6 +50,14 @@ namespace
 
     int value = 0;
   };
+
+  template <int dim>
+  struct TemplatedOwner
+  {
+    void
+    set(const int &)
+    {}
+  };
 } // namespace
 
 TEST(OutputType, RegistersValueWithoutConstructor)
@@ -152,6 +160,21 @@ TEST(OutputType, RegistersMethodIdentity)
   EXPECT_EQ(entry.at("operation"), "ExampleOwner::set");
   EXPECT_EQ(entry.at("display_name"), "Set");
   EXPECT_EQ(entry.at("class_name"), "ExampleOwner");
+  EXPECT_EQ(entry.at("method_name"), "set");
+}
+
+TEST(OutputType, RemovesTemplateSpecializationFromMethodOwner)
+{
+  coral::NodeObject::register_elementary_type<int>();
+  coral::NodeObject::register_output_type<TemplatedOwner<2>>();
+
+  coral::NodeObject::register_method<TemplatedOwner<2>, void, const int &>(
+    &TemplatedOwner<2>::set,
+    {"ImmersX::TemplatedOwner<2>::set", "owner", "value"});
+
+  const auto registry = coral::NodeObject::get_registry();
+  const auto entry = registry.at("ImmersX::TemplatedOwner<2>::set");
+  EXPECT_EQ(entry.at("class_name"), "ImmersX::TemplatedOwner");
   EXPECT_EQ(entry.at("method_name"), "set");
 }
 

@@ -526,6 +526,16 @@ namespace coral
       initializer.json_serializer["method_name"] = metadata.method_name;
   }
 
+  /** Remove template arguments from a registered method's owner name. */
+  inline std::string
+  canonical_method_class_name(const std::string &class_name)
+  {
+    const auto template_start = class_name.find('<');
+    return template_start == std::string::npos
+             ? class_name
+             : class_name.substr(0, template_start);
+  }
+
   /** Add the canonical owner and member identity to a registered method. */
   inline void
   set_method_identity(detail::NodeObjectInitializer &initializer,
@@ -539,7 +549,7 @@ namespace coral
       initializer.json_serializer["operation"] = method_name;
     if (!initializer.json_serializer.contains("class_name"))
       initializer.json_serializer["class_name"] =
-        method_name.substr(0, separator);
+        canonical_method_class_name(method_name.substr(0, separator));
     if (!initializer.json_serializer.contains("method_name"))
       initializer.json_serializer["method_name"] =
         method_name.substr(separator + 2);
