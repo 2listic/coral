@@ -20,6 +20,25 @@ namespace
   {
     return OutputOnly(value);
   }
+
+  int
+  metadata_output(const int &value)
+  {
+    return value;
+  }
+
+  int
+  legacy_metadata_output(const int &value)
+  {
+    return value;
+  }
+
+  struct ExampleOwner
+  {
+    void
+    set(const int &)
+    {}
+  };
 } // namespace
 
 TEST(OutputType, RegistersValueWithoutConstructor)
@@ -52,4 +71,75 @@ TEST(OutputType, FreeFunctionRegistersAndProducesOutputOnlyValue)
   ASSERT_TRUE((*function)());
   EXPECT_EQ(function->get<OutputOnly>().value, 7);
   EXPECT_EQ(function->output_hash(), coral::detail::hash<OutputOnly>());
+}
+
+TEST(OutputType, PreservesOptionalRegistryMetadata)
+{
+  coral::NodeObject::register_elementary_type<int>();
+
+  coral::RegistryMetadata metadata;
+  metadata.operation    = "metadata_operation";
+  metadata.display_name = "Metadata operation";
+  metadata.variant_name = "Integer variant";
+  metadata.description  = "A test operation with optional metadata.";
+  metadata.class_name   = "ExampleClass";
+  metadata.method_name  = "example_method";
+
+  coral::NodeObject::register_function(
+    std::function<int(const int &)>(metadata_output), {"value"}, metadata);
+
+  const auto registry_key =
+    coral::detail::function_registry_key<std::function<int(const int &)>>(
+      "metadata_operation");
+  const auto registry = coral::NodeObject::get_registry();
+  const auto entry    = registry.at(registry_key);
+  EXPECT_EQ(entry.at("operation"), "metadata_operation");
+  EXPECT_EQ(entry.at("display_name"), "Metadata operation");
+  EXPECT_EQ(entry.at("variant_name"), "Integer variant");
+  EXPECT_EQ(entry.at("description"),
+            "A test operation with optional metadata.");
+  EXPECT_EQ(entry.at("class_name"), "ExampleClass");
+  EXPECT_EQ(entry.at("method_name"), "example_method");
+}
+
+TEST(OutputType, OmitsOptionalRegistryMetadataWhenNotProvided)
+{
+  coral::NodeObject::register_elementary_type<int>();
+  coral::NodeObject::register_function(
+    std::function<int(const int &)>(legacy_metadata_output),
+    {"value"},
+    {"legacy_operation", "Legacy operation"});
+
+  const auto registry_key =
+    coral::detail::function_registry_key<std::function<int(const int &)>>(
+      "legacy_operation");
+  const auto registry = coral::NodeObject::get_registry();
+  const auto entry    = registry.at(registry_key);
+  EXPECT_EQ(entry.at("operation"), "legacy_operation");
+  EXPECT_EQ(entry.at("display_name"), "Legacy operation");
+  EXPECT_FALSE(entry.contains("variant_name"));
+  EXPECT_FALSE(entry.contains("description"));
+}
+
+TEST(OutputType, RegistersMethodIdentity)
+{
+  coral::NodeObject::register_elementary_type<int>();
+  coral::NodeObject::register_output_type<ExampleOwner>();
+
+  coral::RegistryMetadata metadata;
+  metadata.operation    = "ExampleOwner::set";
+  metadata.display_name = "Set";
+
+  coral::NodeObject::register_method<ExampleOwner, void, const int &>(
+    &ExampleOwner::set,
+    {"ExampleOwner::set", "owner", "value"},
+    metadata);
+
+  const auto registry = coral::NodeObject::get_registry();
+  const auto entry    = registry.at("ExampleOwner::set");
+  EXPECT_EQ(entry.at("node_type"), "void_method");
+  EXPECT_EQ(entry.at("operation"), "ExampleOwner::set");
+  EXPECT_EQ(entry.at("display_name"), "Set");
+  EXPECT_EQ(entry.at("class_name"), "ExampleOwner");
+  EXPECT_EQ(entry.at("method_name"), "set");
 }

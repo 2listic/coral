@@ -13,6 +13,7 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "slog.h"
@@ -475,14 +476,74 @@ namespace coral
     /** \endcond */
   } // namespace detail
 
-  /** Optional registry metadata for a free function operation. */
+  /** Optional registry metadata for a function or method operation. */
   struct RegistryMetadata
   {
+    RegistryMetadata() = default;
+
+    RegistryMetadata(std::string operation,
+                     std::string display_name = {},
+                     std::string variant_name = {},
+                     std::string description = {},
+                     std::string class_name = {},
+                     std::string method_name = {})
+      : operation(std::move(operation))
+      , display_name(std::move(display_name))
+      , variant_name(std::move(variant_name))
+      , description(std::move(description))
+      , class_name(std::move(class_name))
+      , method_name(std::move(method_name))
+    {}
+
     std::string operation;
     std::string display_name;
+    std::string variant_name;
+    std::string description;
+    /** Canonical owning class for method-like function registrations. */
+    std::string class_name;
+    /** Canonical logical method name for method-like registrations. */
+    std::string method_name;
   };
 
   using FunctionMetadata = RegistryMetadata;
+
+  /** Serialize optional operation metadata on a registry initializer. */
+  inline void
+  set_registry_metadata(detail::NodeObjectInitializer &initializer,
+                        const RegistryMetadata          &metadata)
+  {
+    if (!metadata.operation.empty())
+      initializer.json_serializer["operation"] = metadata.operation;
+    if (!metadata.display_name.empty())
+      initializer.json_serializer["display_name"] = metadata.display_name;
+    if (!metadata.variant_name.empty())
+      initializer.json_serializer["variant_name"] = metadata.variant_name;
+    if (!metadata.description.empty())
+      initializer.json_serializer["description"] = metadata.description;
+    if (!metadata.class_name.empty())
+      initializer.json_serializer["class_name"] = metadata.class_name;
+    if (!metadata.method_name.empty())
+      initializer.json_serializer["method_name"] = metadata.method_name;
+  }
+
+  /** Add the canonical owner and member identity to a registered method. */
+  inline void
+  set_method_identity(detail::NodeObjectInitializer &initializer,
+                      const std::string              &method_name)
+  {
+    const auto separator = method_name.rfind("::");
+    if (separator == std::string::npos)
+      return;
+
+    if (!initializer.json_serializer.contains("operation"))
+      initializer.json_serializer["operation"] = method_name;
+    if (!initializer.json_serializer.contains("class_name"))
+      initializer.json_serializer["class_name"] =
+        method_name.substr(0, separator);
+    if (!initializer.json_serializer.contains("method_name"))
+      initializer.json_serializer["method_name"] =
+        method_name.substr(separator + 2);
+  }
 
   /**
    * Distinguish input arguments of a function from being input or input/output
@@ -855,7 +916,8 @@ namespace coral
     template <typename T, typename ReturnType, typename... Args>
     static void
     register_method(MethodPtr<T, ReturnType, Args...> ptr,
-                    std::vector<std::string>          arg_names)
+                    std::vector<std::string>          arg_names,
+                    RegistryMetadata                   metadata = {})
     {
       using ThisMethod              = MethodPtr<T, ReturnType, Args...>;
       constexpr bool return_is_void = std::is_same_v<ReturnType, void>;
@@ -869,6 +931,8 @@ namespace coral
                                                            method_name);
           initializer.json_serializer["node_type"] = "void_method";
           initializer.node_type                    = NodeType::void_method;
+          set_registry_metadata(initializer, metadata);
+          set_method_identity(initializer, method_name);
 
           // Add the method to the initializer
           initializer.executor =
@@ -901,6 +965,8 @@ namespace coral
               arg_names, method_name);
           initializer.json_serializer["node_type"] = "method";
           initializer.node_type                    = NodeType::method;
+          set_registry_metadata(initializer, metadata);
+          set_method_identity(initializer, method_name);
           const bool output_is_elementary =
             is_registered_elementary_type<ReturnType>();
           if (output_is_elementary)
@@ -956,7 +1022,8 @@ namespace coral
     template <typename T, typename ReturnType, typename... Args>
     static void
     register_method(ConstMethodPtr<T, ReturnType, Args...> ptr,
-                    std::vector<std::string>               arg_names)
+                    std::vector<std::string>               arg_names,
+                    RegistryMetadata                        metadata = {})
     {
       using ThisMethod              = ConstMethodPtr<T, ReturnType, Args...>;
       constexpr bool return_is_void = std::is_same_v<ReturnType, void>;
@@ -970,6 +1037,8 @@ namespace coral
                                                                  method_name);
           initializer.json_serializer["node_type"] = "void_const_method";
           initializer.node_type = NodeType::void_const_method;
+          set_registry_metadata(initializer, metadata);
+          set_method_identity(initializer, method_name);
 
           // Add the method to the initializer
           initializer.executor =
@@ -1000,6 +1069,8 @@ namespace coral
               arg_names, method_name);
           initializer.json_serializer["node_type"] = "const_method";
           initializer.node_type                    = NodeType::const_method;
+          set_registry_metadata(initializer, metadata);
+          set_method_identity(initializer, method_name);
           const bool output_is_elementary =
             is_registered_elementary_type<ReturnType>();
           if (output_is_elementary)
@@ -1078,13 +1149,9 @@ namespace coral
       if (self_output && has_legacy_output_name)
         arg_names.erase(arg_names.begin());
 
-      const auto set_metadata =
-        [&](detail::NodeObjectInitializer &initializer) {
-          if (!metadata.operation.empty())
-            initializer.json_serializer["operation"] = metadata.operation;
-          if (!metadata.display_name.empty())
-            initializer.json_serializer["display_name"] = metadata.display_name;
-        };
+      const auto set_metadata = [&](detail::NodeObjectInitializer &initializer) {
+        set_registry_metadata(initializer, metadata);
+      };
 
       // Keep old workflow JSON readable when an operation has only one
       // registered signature.  New nodes always use registry_key directly.
