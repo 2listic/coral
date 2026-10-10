@@ -27,6 +27,17 @@ namespace coral
           initializer_it = initializers.find(alias_it->second);
       }
 
+    if (initializer_it == initializers.end())
+      {
+        const auto canonical_hash = detail::canonical_type_key(hash_str);
+        for (auto it = initializers.begin(); it != initializers.end(); ++it)
+          if (detail::canonical_type_key(it->first) == canonical_hash)
+            {
+              initializer_it = it;
+              break;
+            }
+      }
+
     if (initializer_it != initializers.end())
       {
         initializer = initializer_it->second;

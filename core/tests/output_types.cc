@@ -64,6 +64,26 @@ namespace
   };
 } // namespace
 
+TEST(OutputType, CanonicalizesCompilerSpecificFunctionKeys)
+{
+  const std::string libstdcxx_key =
+    "std::function<void (dealii::ParameterAcceptor &, const "
+    "std::__cxx11::basic_string<char, "
+    "std::char_traits<char>, std::allocator<char> > &)>";
+  const std::string libcxx_key =
+    "std::function<void(dealii::ParameterAcceptor&,std::string&)>";
+  const std::string trailing_const_key =
+    "std::function<void(dealii::ParameterAcceptor&, "
+    "std::string const &)>";
+
+  EXPECT_EQ(coral::detail::canonical_type_key(libstdcxx_key),
+            coral::detail::canonical_type_key(libcxx_key));
+  EXPECT_EQ(coral::detail::canonical_type_key(trailing_const_key),
+            coral::detail::canonical_type_key(libcxx_key));
+  EXPECT_EQ(coral::detail::canonical_type_key("std::const_iterator"),
+            "std::const_iterator");
+}
+
 TEST(OutputType, RegistersValueWithoutConstructor)
 {
   coral::NodeObject::register_elementary_type<int>();

@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp> // JSON library
 
 #include <algorithm>
+#include <cctype>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -231,6 +232,62 @@ namespace coral
     function_registry_key(const std::string &operation) -> std::string
     {
       return operation + "::" + hash<Function>();
+    }
+
+
+
+    /** Normalize compiler-specific spellings in serialized function keys. */
+    inline auto
+    canonical_type_key(std::string value) -> std::string
+    {
+      for (std::size_t position = value.find("const");
+           position != std::string::npos;
+           position = value.find("const", position))
+        {
+          const auto is_identifier_character = [](const unsigned char c) {
+            return std::isalnum(c) || c == '_';
+          };
+          const bool starts_qualifier =
+            position == 0 ||
+            !is_identifier_character(
+              static_cast<unsigned char>(value[position - 1]));
+          const auto next = position + 5;
+          const bool ends_qualifier =
+            next < value.size() &&
+            !is_identifier_character(static_cast<unsigned char>(value[next]));
+          if (starts_qualifier && ends_qualifier)
+            value.erase(position, 5);
+          else
+            position += 5;
+        }
+
+      value.erase(std::remove_if(value.begin(),
+                                 value.end(),
+                                 [](const unsigned char character) {
+                                   return std::isspace(character);
+                                 }),
+                  value.end());
+
+      const std::string basic_string =
+        "basic_string<char,std::char_traits<char>,std::allocator<char>>";
+      for (std::size_t position = value.find(basic_string);
+           position != std::string::npos;
+           position = value.find(basic_string))
+        value.replace(position, basic_string.size(), "string");
+
+      for (const auto &abi_namespace : {"__cxx11::", "__1::"})
+        for (std::size_t position = value.find(abi_namespace);
+             position != std::string::npos;
+             position = value.find(abi_namespace))
+          value.erase(position, std::char_traits<char>::length(abi_namespace));
+
+      const std::string monostate = ",std::monostate";
+      for (std::size_t position = value.find(monostate);
+           position != std::string::npos;
+           position = value.find(monostate))
+        value.erase(position, monostate.size());
+
+      return value;
     }
 
 
