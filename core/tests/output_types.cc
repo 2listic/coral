@@ -75,10 +75,15 @@ TEST(OutputType, CanonicalizesCompilerSpecificFunctionKeys)
   const std::string trailing_const_key =
     "std::function<void(dealii::ParameterAcceptor&, "
     "std::string const &)>";
+  const std::string abbreviated_string_key =
+    "std::function<void(dealii::ParameterAcceptor&, "
+    "std::__cxx11::basic_string<char> const &)>";
 
   EXPECT_EQ(coral::detail::canonical_type_key(libstdcxx_key),
             coral::detail::canonical_type_key(libcxx_key));
   EXPECT_EQ(coral::detail::canonical_type_key(trailing_const_key),
+            coral::detail::canonical_type_key(libcxx_key));
+  EXPECT_EQ(coral::detail::canonical_type_key(abbreviated_string_key),
             coral::detail::canonical_type_key(libcxx_key));
   EXPECT_EQ(coral::detail::canonical_type_key("std::const_iterator"),
             "std::const_iterator");

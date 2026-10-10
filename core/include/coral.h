@@ -268,18 +268,30 @@ namespace coral
                                  }),
                   value.end());
 
-      const std::string basic_string =
-        "basic_string<char,std::char_traits<char>,std::allocator<char>>";
-      for (std::size_t position = value.find(basic_string);
-           position != std::string::npos;
-           position = value.find(basic_string))
-        value.replace(position, basic_string.size(), "string");
-
       for (const auto &abi_namespace : {"__cxx11::", "__1::"})
         for (std::size_t position = value.find(abi_namespace);
              position != std::string::npos;
              position = value.find(abi_namespace))
           value.erase(position, std::char_traits<char>::length(abi_namespace));
+
+      for (std::size_t position = value.find("basic_string<char");
+           position != std::string::npos;
+           position = value.find("basic_string<char", position))
+        {
+          const auto template_start = value.find('<', position);
+          unsigned int depth = 0;
+          auto         template_end = template_start;
+          for (; template_end < value.size(); ++template_end)
+            if (value[template_end] == '<')
+              ++depth;
+            else if (value[template_end] == '>' && --depth == 0)
+              break;
+
+          if (template_end == value.size())
+            break;
+          value.replace(position, template_end - position + 1, "string");
+          position += 6;
+        }
 
       const std::string monostate = ",std::monostate";
       for (std::size_t position = value.find(monostate);
