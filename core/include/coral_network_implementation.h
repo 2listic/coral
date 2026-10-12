@@ -892,10 +892,11 @@ namespace coral
             if (!info.contains("type"))
               throw std::runtime_error("Node metadata missing type.");
 
-            // SELF outputs are exposed using the node's externally connectable
-            // type. Derived nodes advertise their base type on SELF ports.
-            arg_json["type"] = info.contains("base") ? info["base"] :
-                                                       info["type"];
+            // SELF outputs are exposed with the node's own type, plus its
+            // ancestors (if any): the port can feed any of them.
+            arg_json["type"] = info["type"];
+            if (info.contains("bases") && !info["bases"].empty())
+              arg_json["bases"] = info["bases"];
             const auto node_name = get_node_name(entry.node_id);
             arg_json["name"]     = node_name.empty() ? "self" : node_name;
           }

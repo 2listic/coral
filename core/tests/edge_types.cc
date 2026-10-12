@@ -52,7 +52,8 @@ namespace edge_types::passthrough
   register_all()
   {
     NodeObject::register_elementary_type<int>();
-    NodeObject::register_derived_type<Base, Derived>();
+    NodeObject::register_type<Derived>();
+    NodeObject::register_base<Derived, Base>();
     NodeObject::register_function(setup, {"edge_types_pt_setup", "obj"});
     NodeObject::register_function(increment,
                                   {"edge_types_pt_increment", "obj"});

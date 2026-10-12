@@ -58,7 +58,7 @@
           "x": 320.5236019111856,
           "y": 750.2268762279346
         },
-        "base": "dealii::FiniteElement<2, 2>",
+        "bases": ["dealii::FiniteElement<2, 2>"],
         "qualified_id": "7"
       },
       "8": {

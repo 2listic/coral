@@ -29,8 +29,8 @@ TEST(dealiiTypes, FE_Q)
 {
   using type = FE_Q<2>;
   NodeObject::register_type<unsigned int>();
-  NodeObject::register_derived_type<FiniteElement<2>, type, unsigned int>(
-    "fe_degree");
+  NodeObject::register_type<type, unsigned int>("fe_degree");
+  NodeObject::register_base<type, FiniteElement<2>>();
 
   // This builds a FE_Q<2> object
   NodeObjectPtr obj    = make_node<type>();

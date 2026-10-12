@@ -92,7 +92,7 @@
               "10": {
                 "type": "std::ofstream",
                 "position": { "x": 759.4506318169646, "y": 900.9714692153324 },
-                "base": "std::ostream",
+                "bases": ["std::ostream"],
                 "qualified_id": "12_10"
               },
               "11": {

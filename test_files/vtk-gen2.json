@@ -202,7 +202,7 @@
                     "type": "std::string"
                   }
                 ],
-                "base": "std::ostream",
+                "bases": ["std::ostream"],
                 "inputs": [
                   0
                 ],

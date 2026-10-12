@@ -114,7 +114,8 @@ include:
   types
 - **register_abstract_type**: For interface types that can't be instantiated
   directly
-- **register_derived_type**: For types inheriting from a base class
+- **register_base**: Declares that a type derives from a base class, so it
+  can be used wherever the base (or any of its ancestors) is expected
 - **register_method**: For member functions (void/non-void, const/non-const)
 - **register_function**: For free functions
 
@@ -456,7 +457,7 @@ nlohmann::json registry = coral::NodeObject::get_registry();
 - \ref coral::NodeObject::register_elementary_type
 - \ref coral::NodeObject::register_type
 - \ref coral::NodeObject::register_abstract_type
-- \ref coral::NodeObject::register_derived_type
+- \ref coral::NodeObject::register_base
 - \ref coral::NodeObject::register_function
 - \ref coral::NodeObject::register_method
 - \ref coral::NodeObject::register_json_header
@@ -471,7 +472,8 @@ struct Example
   void set_value(int) {}
 };
 coral::NodeObject::register_abstract_type<Base>();
-coral::NodeObject::register_derived_type<Base, Derived>();
+coral::NodeObject::register_type<Derived>();
+coral::NodeObject::register_base<Derived, Base>();
 auto fn = [](int x) { return x + 1; };
 coral::NodeObject::register_function(fn, {"inc_int", "out", "in"});
 coral::NodeObject::register_method(&Example::set_value,

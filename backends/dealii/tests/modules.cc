@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -140,6 +141,31 @@ TEST(Modules, NetworkNodeExposesDanglingSelfOutput)
   EXPECT_EQ(info["arguments"][0]["name"], "triangulation");
   EXPECT_EQ(info["arguments"][0]["connection_type"], "output");
   EXPECT_EQ(info["arguments"][0]["type"], "dealii::Triangulation<2, 2>");
+}
+
+TEST(Modules, NetworkNodeExposesDerivedSelfOutput)
+{
+  coral::register_all_types();
+
+  coral::Network inner_network;
+  inner_network.add_node(coral::make_node<dealii::FE_Q<2>>(), "fe");
+
+  nlohmann::json node_json = {{"type", "coral::Network"},
+                              {"value", nlohmann::json(inner_network)}};
+
+  coral::NodeObjectPtr network_node;
+  coral::from_json(node_json, network_node);
+
+  // The FE_Q node also exposes its dangling fe_degree input: look for SELF.
+  const auto  info = network_node->get_info();
+  const auto &args = info["arguments"];
+  const auto  self = std::find_if(args.begin(), args.end(), [](const auto &a) {
+    return a["connection_type"] == "output";
+  });
+  ASSERT_NE(self, args.end());
+  EXPECT_EQ((*self)["type"], "dealii::FE_Q<2, 2>");
+  EXPECT_EQ((*self)["bases"],
+            nlohmann::json::array({"dealii::FiniteElement<2, 2>"}));
 }
 
 TEST(Modules, CompleteNetworkNoIO)
