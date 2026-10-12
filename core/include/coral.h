@@ -8,7 +8,9 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -43,6 +45,24 @@ namespace coral
   class Network;
 
   using NodeObjectPtr = std::shared_ptr<NodeObject>;
+
+  /**
+   * Exception thrown when an edge connects an output to an input of an
+   * incompatible type.
+   *
+   * An output of type `T` can feed an input expecting type `E` if `T` is `E`,
+   * or if `E` is an ancestor of `T` (see NodeObject::register_base).
+   * Network::validate() checks the complete graph before any node runs and
+   * throws once, listing every bad edge; NodeObject::bind_input() checks the
+   * single input it binds.
+   */
+  class TypeMismatchException : public std::runtime_error
+  {
+  public:
+    explicit TypeMismatchException(const std::string &message)
+      : std::runtime_error(message)
+    {}
+  };
 
   namespace detail
   {
@@ -1153,6 +1173,10 @@ namespace coral
     /**
      * Bind an input slot to a NodeObject.
      *
+     * @p value must be of the input's type, or of a type derived from it
+     * (see register_base); otherwise TypeMismatchException is thrown and the
+     * input is left unchanged.
+     *
      * @code
      * node->bind_input(0, other);
      * @endcode
@@ -1192,6 +1216,17 @@ namespace coral
      */
     std::string
     hash() const;
+
+    /**
+     * Return true if this object can be passed where an object of type
+     * `type` (a hash string) is expected: `type` is this object's own type,
+     * or one of its ancestors (see register_base).
+     *
+     * Uses the same ancestor table as get_shared(), so a type accepted here
+     * is also accepted by get_shared() at run time.
+     */
+    bool
+    is_compatible_with(const std::string &type) const;
 
     /**
      * Return the human-readable type name for this node.
@@ -1248,6 +1283,15 @@ namespace coral
      */
     unsigned int
     input_index_for_argument(const int argument_index) const;
+
+    /**
+     * Return "Input <i> '<name>' of '<hash>' expects '<expected>', got
+     * '<value hash>'." if @p value cannot feed input @p index, std::nullopt
+     * otherwise. @p index must be a valid input that is not 'self'.
+     */
+    std::optional<std::string>
+    input_type_mismatch(const unsigned int index,
+                        const NodeObject  &value) const;
 
     /**
      * The actual object is stored here as a std::shared_ptr<entt::meta_any>.
@@ -1345,6 +1389,10 @@ namespace coral
   public:
     /**
      * Bind all inputs using a list of node/output pairs.
+     *
+     * Each pair is bound with bind_input(), so the same type check applies:
+     * throws TypeMismatchException on the first incompatible input (earlier
+     * inputs stay bound).
      *
      * @code
      * node->bind_inputs({{upstream, 0}});

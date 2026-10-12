@@ -318,44 +318,7 @@ namespace coral
         " instead of " + std::to_string(input_indices.size()) + ".");
 
     for (unsigned int i = 0; i < inputs.size(); ++i)
-      {
-        const auto &input_node  = inputs[i].first;
-        const auto &input_index = inputs[i].second;
-
-        const auto expected_hash =
-          initializer.json_serializer["arguments"][input_indices[i]]["type"]
-            .get<std::string>();
-        const auto input_hash = input_node->get_output(input_index)->hash();
-
-        // Check if the input hash matches the expected hash or is derived
-        // from the base type
-        const auto &base_hash =
-          initializer.json_serializer["arguments"][input_indices[i]].value(
-            "base", "");
-        const bool is_valid =
-          (expected_hash == input_hash) || (base_hash == input_hash);
-
-        if (!is_valid)
-          {
-            const std::string base_suffix =
-              base_hash.empty() ? std::string() :
-                                  " or its base type (" + base_hash + ")";
-            slog_error(
-              "Type mismatch binding input %u for '%s': got '%s', expected '%s'%s",
-              i,
-              initializer.type_name.c_str(),
-              input_hash.c_str(),
-              expected_hash.c_str(),
-              base_hash.empty() ? "" : " (or base type)");
-            throw std::runtime_error("The hash type of input " +
-                                     std::to_string(i) + " (" + input_hash +
-                                     ") does not match the expected hash (" +
-                                     expected_hash + ")" + base_suffix + ".");
-          }
-
-        arguments[input_indices[i]] = input_node->get_output(input_index);
-        input_bound[i]              = true;
-      }
+      bind_input(i, inputs[i].first->get_output(inputs[i].second));
   }
 
 
@@ -513,6 +476,8 @@ namespace coral
         ", which points to argument number " + std::to_string(arg_id) +
         ", but there are only " + std::to_string(arguments.size()) +
         " arguments to pick from.");
+    if (const auto mismatch = input_type_mismatch(index, *value))
+      throw TypeMismatchException(*mismatch);
     arguments[input_indices[index]] = value;
     input_bound[index]              = true;
   }
@@ -566,6 +531,14 @@ namespace coral
         return stored_hash;
       }
     return initializer.json_serializer.at("type");
+  }
+
+
+
+  CORAL_IMPL_INLINE bool
+  NodeObject::is_compatible_with(const std::string &type) const
+  {
+    return hash() == type || initializer.ancestor_casters.count(type) > 0;
   }
 
 
@@ -653,6 +626,22 @@ namespace coral
       if (input_indices[i] == argument_index)
         return i;
     throw std::runtime_error("Argument is not exposed as an input.");
+  }
+
+
+
+  CORAL_IMPL_INLINE std::optional<std::string>
+  NodeObject::input_type_mismatch(const unsigned int index,
+                                  const NodeObject  &value) const
+  {
+    const auto &arg_entry =
+      initializer.json_serializer.at("arguments")[input_indices[index]];
+    const auto expected = arg_entry.at("type").get<std::string>();
+    if (value.is_compatible_with(expected))
+      return std::nullopt;
+    return "Input " + std::to_string(index) + " '" +
+           arg_entry.value("name", "") + "' of '" + hash() + "' expects '" +
+           expected + "', got '" + value.hash() + "'.";
   }
 
 
