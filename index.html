@@ -123,7 +123,7 @@ Functional approach</h2>
 Key Features</h2>
 <p>The core design principles of CORAL are:</p>
 <ul>
-<li><b>Type Safety</b>: All connections between nodes are type-checked at runtime, ensuring that only compatible types can be connected.</li>
+<li><b>Type Safety</b>: An output can feed an input of its own type or of one of its base types (see <span class="tt">register_base</span>). A network is checked as a whole by <span class="tt">Network::validate()</span>, which <span class="tt">from_json</span> and <span class="tt">run()</span> call before any node runs: it follows pass-through arguments whatever the order in which edges were added, and throws one <span class="tt">coral::TypeMismatchException</span> listing every bad edge. <span class="tt">connect()</span> and <span class="tt">bind_inputs</span> check each input when they bind it, so they depend on the order of the calls.</li>
 <li><b>Reflection System</b>: The library implements a runtime reflection system that allows for introspection of types, methods, and functions, without requiring compiler support for C++ reflection.</li>
 <li><b>Polymorphism Support</b>: The system properly handles inheritance hierarchies, allowing derived types to be used where base types are expected.</li>
 <li><b><a class="elRef" href="http://www.dealii.org/developer/doxygen/deal.II/classLazy.html">Lazy</a> Evaluation</b>: Computation nodes are only executed when explicitly requested or when their outputs are needed by other nodes, allowing for efficient execution.</li>
