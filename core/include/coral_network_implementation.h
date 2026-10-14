@@ -106,7 +106,6 @@ namespace coral
     const char *env_th = std::getenv("THREADS");
     n_threads          = env_th ? static_cast<size_t>(std::stoull(env_th)) :
                                   std::thread::hardware_concurrency();
-    slog_info("Created network with executor pool size of %zu.", n_threads);
   }
 
   CORAL_IMPL_INLINE
@@ -341,7 +340,7 @@ namespace coral
 
 
   CORAL_IMPL_INLINE std::string
-  Network::get_node_qualified_id(unsigned int id) const
+                    Network::get_node_qualified_id(unsigned int id) const
   {
     auto it = nodes.find(id);
     if (it == nodes.end() || !it->second)
