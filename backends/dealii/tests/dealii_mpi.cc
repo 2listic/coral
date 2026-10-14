@@ -174,7 +174,7 @@ TEST_F(DealiiMPITest, LaplaceProblemNetwork)
   ASSERT_FALSE(json_data.empty()) << "JSON data is empty.";
 
   // Replace output value according to `output_dir`
-  replace_value(json_data, "/app/build/output", output_dir.path().string());
+  replace_value(json_data, "/coral/build/output", output_dir.path().string());
 
   network.from_json(json_data);
 
