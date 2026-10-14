@@ -646,7 +646,8 @@ main(int argc, char *argv[])
     subjson.contains("MPI") && subjson["MPI"].value("enabled", false);
 
   const size_t n_threads =
-    mpi_enabled ? 1 : get_env_or("THREADS", std::thread::hardware_concurrency());
+    mpi_enabled ? 1 :
+                  get_env_or("THREADS", std::thread::hardware_concurrency());
 
   if (mpi_enabled)
     slog_info("MPI enabled: forcing single-worker (deterministic) execution.");
