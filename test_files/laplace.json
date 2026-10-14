@@ -91,7 +91,7 @@
           "x": 752.086882,
           "y": 706.8415359999999
         },
-        "value": "/app/build/output",
+        "value": "/coral/build/output",
         "qualified_id": "11"
       }
     },
