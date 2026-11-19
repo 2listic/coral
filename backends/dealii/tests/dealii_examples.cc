@@ -99,8 +99,8 @@ TEST(dealiiExamples, step01)
   Network network;
   network.clear_network();
 
-  auto make_grid =
-    make_node("GridGenerator::generate_from_name_and_arguments<2>");
+  auto make_grid = make_node(
+    "GridGenerator::generate_from_name_and_arguments<2>::std::function<void (dealii::Triangulation<2, 2> &, const std::string &, const std::string &)>");
 
   std::string vtk_path       = output_dir.path() / "grid-1.vtk";
   auto        tria           = make_node<Triangulation<2>>();
@@ -162,8 +162,8 @@ TEST(dealiiExamples, NetworkStep00)
   network.set_touch_file_base_path(output_dir);
   network.clear_network();
 
-  auto make_grid =
-    make_node("GridGenerator::generate_from_name_and_arguments<2>");
+  auto make_grid = make_node(
+    "GridGenerator::generate_from_name_and_arguments<2>::std::function<void (dealii::Triangulation<2, 2> &, const std::string &, const std::string &)>");
 
   auto tria           = make_node<Triangulation<2>>();
   auto grid_name      = make_node("hyper_cube");
@@ -225,8 +225,8 @@ TEST(dealiiExamples, NetworkStep01)
   network.set_touch_file_base_path(output_dir);
   network.clear_network();
 
-  auto make_grid =
-    make_node("GridGenerator::generate_from_name_and_arguments<2>");
+  auto make_grid = make_node(
+    "GridGenerator::generate_from_name_and_arguments<2>::std::function<void (dealii::Triangulation<2, 2> &, const std::string &, const std::string &)>");
 
   std::string vtk_path       = output_dir.path() / "grid-1.vtk";
   auto        tria           = make_node<Triangulation<2>>();

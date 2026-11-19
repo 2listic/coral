@@ -20,9 +20,9 @@ namespace
   {
     coral::Network network;
 
-    auto triangulation = coral::make_node<dealii::Triangulation<2>>();
-    auto grid_generator =
-      coral::make_node("GridGenerator::generate_from_name_and_arguments<2>");
+    auto triangulation  = coral::make_node<dealii::Triangulation<2>>();
+    auto grid_generator = coral::make_node(
+      "GridGenerator::generate_from_name_and_arguments<2>::std::function<void (dealii::Triangulation<2, 2> &, const std::string &, const std::string &)>");
     auto refine_global = coral::make_node("Triangulation<2>::refine_global");
 
     auto tri_id  = network.add_node(triangulation);

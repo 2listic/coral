@@ -118,6 +118,12 @@ include:
 - **register_method**: For member functions (void/non-void, const/non-const)
 - **register_function**: For free functions
 
+Free functions are identified by their operation and concrete signature, such
+as `operation::std::function<int (int)>`. Use the registry's `type` when writing
+graph JSON, or `make_method_node(operation, callable)` in C++. Plain operation
+names are not registered as aliases; graphs using them must be updated to the
+signature key. Labels remain independent of these identifiers.
+
 ## Repository Layout
 
 The codebase is intentionally split so the **core graph library** can be built

@@ -22,13 +22,6 @@ namespace coral
     auto initializer_it = initializers.find(hash_str);
     if (initializer_it == initializers.end())
       {
-        const auto alias_it = function_aliases.find(hash_str);
-        if (alias_it != function_aliases.end())
-          initializer_it = initializers.find(alias_it->second);
-      }
-
-    if (initializer_it == initializers.end())
-      {
         const auto canonical_hash = detail::canonical_type_key(hash_str);
         for (auto it = initializers.begin(); it != initializers.end(); ++it)
           if (detail::canonical_type_key(it->first) == canonical_hash)
@@ -68,15 +61,6 @@ namespace coral
     for (const auto &[hash_str, initializer] : NodeObject::initializers)
       {
         registry[hash_str] = initializer.json_serializer;
-      }
-    for (const auto &[alias, hash_str] : NodeObject::function_aliases)
-      {
-        const auto it = registry.find(hash_str);
-        if (it != registry.end() && !registry.contains(alias))
-          {
-            registry[alias]         = *it;
-            registry[alias]["type"] = alias;
-          }
       }
     return registry;
   }

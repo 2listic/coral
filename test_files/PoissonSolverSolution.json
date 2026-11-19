@@ -2,7 +2,7 @@
   "workflow": {
     "nodes": {
       "0": {
-        "type": "GridGenerator::generate_from_name_and_arguments<2>",
+        "type": "GridGenerator::generate_from_name_and_arguments<2>::std::function<void (dealii::Triangulation<2, 2> &, const std::string &, const std::string &)>",
         "position": {
           "x": 349,
           "y": 285

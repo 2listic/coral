@@ -113,12 +113,72 @@ TEST(OutputType, FreeFunctionRegistersAndProducesOutputOnlyValue)
                                          make_output),
                                        {"make_output", "value"});
 
-  auto function = coral::make_node("make_output");
+  const auto key = coral::detail::function_registry_key<
+    std::function<OutputOnly(const int &)>>("make_output");
+  EXPECT_FALSE(coral::NodeObject::get_registry().contains("make_output"));
+  auto function = coral::make_node(key);
   function->set_arguments({coral::make_node(7)});
 
   ASSERT_TRUE((*function)());
   EXPECT_EQ(function->get<OutputOnly>().value, 7);
   EXPECT_EQ(function->output_hash(), coral::detail::hash<OutputOnly>());
+}
+
+TEST(OutputType, VoidAndExplicitOutputFunctionsHaveOnlySignatureKeys)
+{
+  coral::NodeObject::register_elementary_type<int>();
+  const std::function<void(const int &)> sink = templated_free_function;
+  coral::NodeObject::register_function(sink, {"signature_sink", "value"});
+  const std::function<int(const int &)> copy = metadata_output;
+  coral::NodeObject::register_function(copy,
+                                       {"signature_copy", "result", "value"});
+  const auto registry = coral::NodeObject::get_registry();
+  EXPECT_FALSE(registry.contains("signature_sink"));
+  EXPECT_FALSE(registry.contains("signature_copy"));
+  auto sink_node = coral::make_method_node("signature_sink", sink);
+  sink_node->set_arguments({coral::make_node(7)});
+  ASSERT_TRUE((*sink_node)());
+  auto copy_node = coral::make_method_node("signature_copy", copy);
+  copy_node->set_arguments({coral::make_node(0), coral::make_node(7)});
+  ASSERT_TRUE((*copy_node)());
+  EXPECT_EQ(copy_node->get_output(0)->get<int>(), 7);
+}
+
+TEST(OutputType, FreeFunctionOverloadsHaveOnlySignatureKeys)
+{
+  coral::NodeObject::register_elementary_type<int>();
+  const std::string operation = "overloaded_conversion";
+  auto              check     = [&](auto input) {
+    using T = decltype(input);
+    coral::NodeObject::register_elementary_type<T>();
+    const std::function<int(const T &)> callable = [](const T &value) {
+      return static_cast<int>(value);
+    };
+    coral::NodeObject::register_function(callable,
+                                                          {"value"},
+                                                          {operation, "Conversion"});
+    const auto key =
+      coral::detail::function_registry_key<std::function<int(const T &)>>(
+        operation);
+    const auto registry = coral::NodeObject::get_registry();
+    EXPECT_FALSE(registry.contains(operation));
+    ASSERT_TRUE(registry.contains(key));
+    auto function = coral::make_node(key);
+    function->set_arguments({coral::make_node(input)});
+    ASSERT_TRUE((*function)());
+    EXPECT_EQ(function->template get<int>(), static_cast<int>(input));
+  };
+  check(7);
+  check(8.0);
+  check(true);
+  check(9u);
+  check(10.0f);
+  const auto   registry = coral::NodeObject::get_registry();
+  unsigned int count    = 0;
+  for (const auto &[key, value] : registry.items())
+    if (key.find(operation + "::") == 0)
+      ++count;
+  EXPECT_EQ(count, 5u);
 }
 
 TEST(OutputType, PreservesOptionalRegistryMetadata)

@@ -75,7 +75,7 @@
         "outputs": [
           0
         ],
-        "type": "GridGenerator::generate_from_name_and_arguments<2>",
+        "type": "GridGenerator::generate_from_name_and_arguments<2>::std::function<void (dealii::Triangulation<2, 2> &, const std::string &, const std::string &)>",
         "is_valid": true,
         "position": {
           "x": 625.9912578937875,

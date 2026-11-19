@@ -1333,16 +1333,6 @@ namespace coral
         set_registry_metadata(initializer, metadata);
       };
 
-      // Keep old workflow JSON readable when an operation has only one
-      // registered signature.  New nodes always use registry_key directly.
-      const auto add_legacy_alias = [&]() {
-        auto alias = function_aliases.find(operation);
-        if (alias == function_aliases.end())
-          function_aliases.emplace(operation, registry_key);
-        else if (alias->second != registry_key)
-          function_aliases.erase(alias);
-      };
-
       const auto expected_arguments =
         (!return_is_void && !self_output) ? n_inputs + 1 : n_inputs;
       if (arg_names.size() != expected_arguments)
@@ -1357,7 +1347,6 @@ namespace coral
           initializer.node_type                    = NodeType::void_function;
           set_metadata(initializer);
           set_method_identity(initializer, operation);
-          add_legacy_alias();
 
           initializer.executor =
             [ptr, &initializer, operation](const NodeObjectPtr &,
@@ -1387,7 +1376,6 @@ namespace coral
             detail::hash<ReturnType>();
           set_metadata(initializer);
           set_method_identity(initializer, operation);
-          add_legacy_alias();
 
           initializer.executor =
             [ptr, &initializer, operation](const NodeObjectPtr &,
@@ -1419,7 +1407,6 @@ namespace coral
           initializer.node_type                    = NodeType::function;
           set_metadata(initializer);
           set_method_identity(initializer, operation);
-          add_legacy_alias();
           const bool output_is_elementary =
             is_registered_elementary_type<ReturnType>();
           if (output_is_elementary)
@@ -1683,10 +1670,6 @@ namespace coral
     // single-threaded init before concurrent use.
     static inline std::map<std::string, detail::NodeObjectInitializer>
       initializers;
-
-    // Compatibility aliases for workflow JSON written before function keys
-    // included their concrete signatures.  Ambiguous aliases are removed.
-    static inline std::unordered_map<std::string, std::string> function_aliases;
 
     /**
      * Hash string that identifies the Network node type.
