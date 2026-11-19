@@ -96,8 +96,9 @@ TEST(dealiiTypes, TriangulationHyperCube)
   (*obj)();
   auto &tria = obj->get<Triangulation<2>>();
 
-  NodeObjectPtr make_grid = make_node(
-    "GridGenerator::generate_from_name_and_arguments<2>::std::function<void (dealii::Triangulation<2, 2> &, const std::string &, const std::string &)>");
+  NodeObjectPtr make_grid =
+    make_method_node("GridGenerator::generate_from_name_and_arguments<2>",
+                     GridGenerator::generate_from_name_and_arguments<2, 2>);
 
   EXPECT_TRUE(registry.contains(make_grid->hash()));
   EXPECT_EQ(registry[make_grid->hash()]["type"], make_grid->hash());

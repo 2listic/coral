@@ -24,7 +24,7 @@ patch does not merge the tutorial branch into main or change the inheritance API
 - [x] CI aggregate targets in Debug and Release: core 26/26, backend 64/64,
   plugin 1/1 in each configuration.
 - [x] Publish the scoped patch as PR #75.
-- [ ] Remote CI after the shared-registry regression fix.
+- [ ] Remote CI after the shared-registry and compiler-spelling fixture fixes.
 - [ ] Main-branch integration (Pablo's responsibility).
 
 ## Validation notes
@@ -44,6 +44,14 @@ to remain unregistered. CTest's per-test processes hid this shared-registry
 interaction. The aggregate `run_coral_core_tests` target reproduces the failure.
 Use `long long` for the fifth overload instead; keep the unregistered-type oracle
 unchanged and validate the aggregate targets used by CI.
+
+The next CI run (`2a99f32`, run `44585512039`) passed core but failed the exact
+registry assertions in `dealiiTypes.TriangulationHyperCube`: its hardcoded Clang
+signature is not the GCC registry key. Canonical lookup and mesh execution still
+succeeded. Reproduced locally with an alternate compiler spelling, retaining
+both failing assertions. Build the node with `make_method_node(operation,
+callable)` instead, so the assertions compare the actual registered signature
+without changing production lookup or weakening the oracle.
 
 The independent SELF-output/main integration finding is tracked in #74 and is
 not included in this patch. No remote merge was performed.
