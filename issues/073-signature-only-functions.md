@@ -1,6 +1,7 @@
 # Issue #73: Signature-only free functions
 
-**Status:** Local implementation verified; publication and integration pending
+**Status:** Published in PR #75; CI follow-up in progress
+**PR:** https://github.com/2listic/coral/pull/75
 **Branch:** `fix/signature-only-functions`
 **Issue:** https://github.com/2listic/coral/issues/73
 **Base:** `dealiix-tutorial` at `08d0d1d`; integration into `main` belongs to Pablo
@@ -20,7 +21,10 @@ patch does not merge the tutorial branch into main or change the inheritance API
   explicit-output and SELF-output registration.
 - [x] Debug and Release core CTest: 26 passed in each configuration.
 - [x] Debug full CTest, sequential: 94 discovered, 92 passed, 2 MPI cases skipped.
-- [ ] Remote CI and publication (not authorized).
+- [x] CI aggregate targets in Debug and Release: core 26/26, backend 64/64,
+  plugin 1/1 in each configuration.
+- [x] Publish the scoped patch as PR #75.
+- [ ] Remote CI after the shared-registry regression fix.
 - [ ] Main-branch integration (Pablo's responsibility).
 
 ## Validation notes
@@ -34,5 +38,12 @@ A `-j 4` attempt failed two VTK cases which expect `grid-1.vtk`; their sequentia
 rerun passed. Shared-file interference is a hypothesis, not a diagnosed defect,
 and is not addressed here. The two skipped MPI tests are not MPI validation.
 
+PR #75's first CI run (`5ab8b45`, run `44578904322`) failed because the new
+five-overload test registered `float`, which `TrivialTypes.Unregistered` expects
+to remain unregistered. CTest's per-test processes hid this shared-registry
+interaction. The aggregate `run_coral_core_tests` target reproduces the failure.
+Use `long long` for the fifth overload instead; keep the unregistered-type oracle
+unchanged and validate the aggregate targets used by CI.
+
 The independent SELF-output/main integration finding is tracked in #74 and is
-not included in this patch. No push, PR creation or remote merge was performed.
+not included in this patch. No remote merge was performed.

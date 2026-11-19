@@ -172,7 +172,8 @@ TEST(OutputType, FreeFunctionOverloadsHaveOnlySignatureKeys)
   check(8.0);
   check(true);
   check(9u);
-  check(10.0f);
+  // The aggregate suite reserves float for TrivialTypes.Unregistered.
+  check(10ll);
   const auto   registry = coral::NodeObject::get_registry();
   unsigned int count    = 0;
   for (const auto &[key, value] : registry.items())
