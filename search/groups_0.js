@@ -17,6 +17,7 @@ var searchData=
   ['and_20relaxation_20operators_14',['Preconditioners and Relaxation Operators',['http://www.dealii.org/developer/doxygen/deal.II/group__Preconditioners.html',1,'']]],
   ['and_20symbolic_20differentiation_15',['Automatic and symbolic differentiation',['http://www.dealii.org/developer/doxygen/deal.II/group__auto__symb__diff.html',1,'']]],
   ['and_20triangulations_16',['Grids and Triangulations',['http://www.dealii.org/developer/doxygen/deal.II/group__grid.html',1,'']]],
-  ['assertions_17',['Exceptions and assertions',['http://www.dealii.org/developer/doxygen/deal.II/group__Exceptions.html',1,'']]],
-  ['automatic_20and_20symbolic_20differentiation_18',['Automatic and symbolic differentiation',['http://www.dealii.org/developer/doxygen/deal.II/group__auto__symb__diff.html',1,'']]]
+  ['assembly_20of_20finite_20element_20operators_17',['Assembly of finite element operators',['http://www.dealii.org/developer/doxygen/deal.II/group__assembly.html',1,'']]],
+  ['assertions_18',['Exceptions and assertions',['http://www.dealii.org/developer/doxygen/deal.II/group__Exceptions.html',1,'']]],
+  ['automatic_20and_20symbolic_20differentiation_19',['Automatic and symbolic differentiation',['http://www.dealii.org/developer/doxygen/deal.II/group__auto__symb__diff.html',1,'']]]
 ];

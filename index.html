@@ -161,6 +161,7 @@ Type Registration System</h1>
 <li><b>register_method</b>: For member functions (void/non-void, const/non-const)</li>
 <li><b>register_function</b>: For free functions</li>
 </ul>
+<p>Free functions are identified by their operation and concrete signature, such as <span class="tt">operation::std::function&lt;int (int)&gt;</span>. Use the registry's <span class="tt">type</span> when writing graph JSON, or <span class="tt">make_method_node(operation, callable)</span> in C++. Plain operation names are not registered as aliases; graphs using them must be updated to the signature key. Labels remain independent of these identifiers.</p>
 <h1 class="doxsection"><a class="anchor" id="autotoc_md10"></a>
 Repository Layout</h1>
 <p>The codebase is intentionally split so the <b>core graph library</b> can be built without any particular “backend” (e.g. deal.II), and UIs can be built without linking backend types. Backends provide types at runtime via a small plugin ABI and/or by dumping a <span class="tt">registry.json</span> for UI authoring.</p>
