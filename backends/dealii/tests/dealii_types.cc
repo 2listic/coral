@@ -98,7 +98,8 @@ TEST(dealiiTypes, TriangulationHyperCube)
   auto &tria = obj->get<Triangulation<2>>();
 
   NodeObjectPtr make_grid =
-    make_node("GridGenerator::generate_from_name_and_arguments<2>");
+    make_method_node("GridGenerator::generate_from_name_and_arguments<2>",
+                     GridGenerator::generate_from_name_and_arguments<2, 2>);
 
   EXPECT_TRUE(registry.contains(make_grid->hash()));
   EXPECT_EQ(registry[make_grid->hash()]["type"], make_grid->hash());
@@ -137,10 +138,14 @@ TEST(dealiiTypes, DerivedToBaseEdges)
   nodes["2"] = {{"type", "std::ofstream"}, {"qualified_id", "file"}};
   nodes["3"] = {{"type", "GridOut::write_vtk<2>"}, {"qualified_id", "vtk"}};
   // FE_Q -> FiniteElement (input 1), ofstream -> ostream (input 2)
-  j["workflow"]["edges"]["0"] = {
-    {"source", 0}, {"source_output", 0}, {"target", 1}, {"target_input", 1}};
-  j["workflow"]["edges"]["1"] = {
-    {"source", 2}, {"source_output", 0}, {"target", 3}, {"target_input", 2}};
+  j["workflow"]["edges"]["0"] = {{"source", 0},
+                                 {"source_output", 0},
+                                 {"target", 1},
+                                 {"target_input", 1}};
+  j["workflow"]["edges"]["1"] = {{"source", 2},
+                                 {"source_output", 0},
+                                 {"target", 3},
+                                 {"target_input", 2}};
 
   Network net;
   EXPECT_NO_THROW(net.from_json(j));
