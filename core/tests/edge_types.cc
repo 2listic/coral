@@ -77,7 +77,10 @@ namespace edge_types::chain
   {};
   struct C : B
   {
-    C() { v = 3; }
+    C()
+    {
+      v = 3;
+    }
   };
 } // namespace edge_types::chain
 
@@ -166,7 +169,7 @@ TEST(EdgeTypes, JsonLoadThrowsWithEdgeContext)
   NodeObject::register_type<A>();
   NodeObject::register_type<U>();
   const std::string name = "edge_types_json_load";
-  const auto consumer_type =
+  const auto        consumer_type =
     make_method_node(name, register_consumer<A>(name))->hash();
 
   json j;
@@ -174,10 +177,10 @@ TEST(EdgeTypes, JsonLoadThrowsWithEdgeContext)
   j["workflow"]["nodes"]["0"]["qualified_id"] = "src";
   j["workflow"]["nodes"]["1"]["type"]         = consumer_type;
   j["workflow"]["nodes"]["1"]["qualified_id"] = "dst";
-  j["workflow"]["edges"]["7"] = {{"source", 0},
-                                 {"source_output", 0},
-                                 {"target", 1},
-                                 {"target_input", 0}};
+  j["workflow"]["edges"]["7"]                 = {{"source", 0},
+                                                 {"source_output", 0},
+                                                 {"target", 1},
+                                                 {"target_input", 0}};
 
   Network net;
   try
@@ -425,7 +428,7 @@ TEST(EdgeTypes, RegisterBaseAfterNodeCreation)
 
   Network    net;
   const auto src = net.add_node(make_node<B>()); // entry copied here
-  NodeObject::register_base<B, A>();              // too late for `src`
+  NodeObject::register_base<B, A>();             // too late for `src`
   const auto dst = add_consumer<A>(net, "edge_types_late_base");
 
   // Load check and run-time cast agree: both refuse.
@@ -532,7 +535,10 @@ namespace edge_types::virtual_diamond
   {};
   struct D : B1, B2
   {
-    D() { v = 4; }
+    D()
+    {
+      v = 4;
+    }
   };
 } // namespace edge_types::virtual_diamond
 
@@ -557,7 +563,8 @@ TEST(EdgeTypes, VirtualDiamondRuns)
 
 // Edge type check (#64) across a pass-through argument:
 //
-//   [0: Derived] --e_up--> [1: setup(Base &)] --e_down--> [2: consume(const Derived &)]
+//   [0: Derived] --e_up--> [1: setup(Base &)] --e_down--> [2: consume(const
+//   Derived &)]
 //
 // setup's pass-through output is declared as Base but carries the Derived
 // object bound upstream, so e_down is valid (on main the graph runs and
@@ -614,16 +621,18 @@ namespace edge_types::passthrough
   {
     json j;
     j["workflow"]["nodes"]["0"]["type"] = detail::hash<Derived>();
-    j["workflow"]["nodes"]["1"]["type"] = "edge_types_pt_setup";
-    j["workflow"]["nodes"]["2"]["type"] = "edge_types_pt_consume";
-    j["workflow"]["edges"]["9"]         = {{"source", 0},
-                                           {"source_output", 0},
-                                           {"target", 1},
-                                           {"target_input", 0}};
-    j["workflow"]["edges"]["10"]        = {{"source", 1},
-                                           {"source_output", 0},
-                                           {"target", 2},
-                                           {"target_input", 0}};
+    j["workflow"]["nodes"]["1"]["type"] =
+      make_method_node("edge_types_pt_setup", setup)->hash();
+    j["workflow"]["nodes"]["2"]["type"] =
+      make_method_node("edge_types_pt_consume", consume)->hash();
+    j["workflow"]["edges"]["9"]  = {{"source", 0},
+                                    {"source_output", 0},
+                                    {"target", 1},
+                                    {"target_input", 0}};
+    j["workflow"]["edges"]["10"] = {{"source", 1},
+                                    {"source_output", 0},
+                                    {"target", 2},
+                                    {"target_input", 0}};
     return j;
   }
 
@@ -640,26 +649,29 @@ namespace edge_types::passthrough
   {
     json j;
     j["workflow"]["nodes"]["0"]["type"] = detail::hash<Derived>();
-    j["workflow"]["nodes"]["1"]["type"] = "edge_types_pt_increment";
-    j["workflow"]["nodes"]["2"]["type"] = "edge_types_pt_increment";
-    j["workflow"]["nodes"]["3"]["type"] = "edge_types_pt_increment";
-    j["workflow"]["nodes"]["4"]["type"] = "edge_types_pt_consume";
-    j["workflow"]["edges"]["9"]         = {{"source", 0},
-                                           {"source_output", 0},
-                                           {"target", 1},
-                                           {"target_input", 0}};
-    j["workflow"]["edges"]["8"]         = {{"source", 1},
-                                           {"source_output", 0},
-                                           {"target", 2},
-                                           {"target_input", 0}};
-    j["workflow"]["edges"]["11"]        = {{"source", 2},
-                                           {"source_output", 0},
-                                           {"target", 3},
-                                           {"target_input", 0}};
-    j["workflow"]["edges"]["10"]        = {{"source", 3},
-                                           {"source_output", 0},
-                                           {"target", 4},
-                                           {"target_input", 0}};
+    const auto increment_type =
+      make_method_node("edge_types_pt_increment", increment)->hash();
+    j["workflow"]["nodes"]["1"]["type"] = increment_type;
+    j["workflow"]["nodes"]["2"]["type"] = increment_type;
+    j["workflow"]["nodes"]["3"]["type"] = increment_type;
+    j["workflow"]["nodes"]["4"]["type"] =
+      make_method_node("edge_types_pt_consume", consume)->hash();
+    j["workflow"]["edges"]["9"]  = {{"source", 0},
+                                    {"source_output", 0},
+                                    {"target", 1},
+                                    {"target_input", 0}};
+    j["workflow"]["edges"]["8"]  = {{"source", 1},
+                                    {"source_output", 0},
+                                    {"target", 2},
+                                    {"target_input", 0}};
+    j["workflow"]["edges"]["11"] = {{"source", 2},
+                                    {"source_output", 0},
+                                    {"target", 3},
+                                    {"target_input", 0}};
+    j["workflow"]["edges"]["10"] = {{"source", 3},
+                                    {"source_output", 0},
+                                    {"target", 4},
+                                    {"target_input", 0}};
     return j;
   }
 } // namespace edge_types::passthrough
@@ -699,7 +711,7 @@ TEST(EdgeTypes, PassThroughJsonLoadEdgeKeyOrder)
   using namespace edge_types::passthrough;
   register_all();
   const json j = graph_json();
-  Network net;
+  Network    net;
   net.from_json(j);
   net.run();
   EXPECT_EQ(net.get_node(2)->get_output(0)->get<int>(), 42);
@@ -710,7 +722,7 @@ TEST(EdgeTypes, PassThroughChainUpstreamEdgesFirst)
   using namespace edge_types::passthrough;
   register_all();
   Network    net;
-  const auto d  = net.add_node(make_node<Derived>());
+  const auto d = net.add_node(make_node<Derived>());
   const auto i1 =
     net.add_node(make_method_node("edge_types_pt_increment", increment));
   const auto i2 =
@@ -732,7 +744,7 @@ TEST(EdgeTypes, PassThroughChainDownstreamEdgesFirst)
   using namespace edge_types::passthrough;
   register_all();
   Network    net;
-  const auto d  = net.add_node(make_node<Derived>());
+  const auto d = net.add_node(make_node<Derived>());
   const auto i1 =
     net.add_node(make_method_node("edge_types_pt_increment", increment));
   const auto i2 =

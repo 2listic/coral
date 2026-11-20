@@ -19,11 +19,25 @@ namespace coral
   CORAL_IMPL_INLINE
   NodeObject::NodeObject(const std::string &hash_str)
   {
-    try
+    auto initializer_it = initializers.find(hash_str);
+    if (initializer_it == initializers.end())
       {
-        initializer = initializers.at(hash_str);
+        const auto canonical_hash = detail::canonical_type_key(hash_str);
+        for (auto it = initializers.begin(); it != initializers.end(); ++it)
+          if (detail::canonical_type_key(it->first) == canonical_hash)
+            {
+              initializer_it = it;
+              break;
+            }
       }
-    catch (const std::out_of_range &)
+
+    if (initializer_it != initializers.end())
+      {
+        initializer = initializer_it->second;
+        if (initializer_it->first != hash_str)
+          initializer.json_serializer["type"] = hash_str;
+      }
+    else
       {
         // If we did not find the hash, this is actually an std::string
         // object-.
@@ -523,6 +537,12 @@ namespace coral
         const auto object_hash = detail::hash(object);
         const auto stored_hash =
           std::string(initializer.json_serializer.at("type"));
+        const auto node_type =
+          initializer.json_serializer.value("node_type", "");
+        if (node_type == "function" || node_type == "void_function" ||
+            node_type == "method" || node_type == "const_method" ||
+            node_type == "void_method" || node_type == "void_const_method")
+          return stored_hash;
         if (stored_hash.find(object_hash) != 0)
           throw std::runtime_error(
             "Object type does not match: we store " + stored_hash +
@@ -539,6 +559,25 @@ namespace coral
   NodeObject::is_compatible_with(const std::string &type) const
   {
     return hash() == type || initializer.ancestor_casters.count(type) > 0;
+  }
+
+
+
+  CORAL_IMPL_INLINE std::string
+                    NodeObject::output_hash() const
+  {
+    const auto &outputs = initializer.json_serializer["outputs"];
+    const bool  has_self_output =
+      std::any_of(outputs.begin(), outputs.end(), [](const auto &output) {
+        return output.template get<int>() == -1;
+      });
+    if (has_self_output && initializer.json_serializer.contains("output_type"))
+      {
+        if (ready())
+          return detail::hash(object);
+        return initializer.json_serializer["output_type"].get<std::string>();
+      }
+    return hash();
   }
 
 
@@ -586,7 +625,7 @@ namespace coral
 
 
   CORAL_IMPL_INLINE std::string
-  NodeObject::get_qualified_id() const
+                    NodeObject::get_qualified_id() const
   {
     const auto &j = initializer.json_serializer;
     return j.contains("qualified_id") ? j["qualified_id"].get<std::string>() :
@@ -631,17 +670,18 @@ namespace coral
 
 
   CORAL_IMPL_INLINE std::optional<std::string>
-  NodeObject::input_type_mismatch(const unsigned int index,
+                    NodeObject::input_type_mismatch(const unsigned int index,
                                   const NodeObject  &value) const
   {
     const auto &arg_entry =
       initializer.json_serializer.at("arguments")[input_indices[index]];
     const auto expected = arg_entry.at("type").get<std::string>();
-    if (value.is_compatible_with(expected))
+    const auto actual   = value.output_hash();
+    if (actual == expected || value.is_compatible_with(expected))
       return std::nullopt;
     return "Input " + std::to_string(index) + " '" +
            arg_entry.value("name", "") + "' of '" + hash() + "' expects '" +
-           expected + "', got '" + value.hash() + "'.";
+           expected + "', got '" + actual + "'.";
   }
 
 

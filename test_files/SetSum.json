@@ -11,7 +11,7 @@
         "qualified_id": "0"
       },
       "1": {
-        "type": "sum_set",
+        "type": "sum_set::std::function<unsigned int (const std::set<unsigned int> &)>",
         "position": {
           "x": 727.0019134920428,
           "y": 74.81589338742796

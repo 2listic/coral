@@ -3,6 +3,8 @@
 
 #include <nlohmann/json.hpp> // JSON library
 
+#include <algorithm>
+#include <cctype>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -14,6 +16,7 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "slog.h"
@@ -237,6 +240,82 @@ namespace coral
 
 
 
+    template <typename Function>
+    inline auto
+    function_registry_key(const std::string &operation) -> std::string
+    {
+      return operation + "::" + hash<Function>();
+    }
+
+
+
+    /** Normalize compiler-specific spellings in serialized function keys. */
+    inline auto
+    canonical_type_key(std::string value) -> std::string
+    {
+      for (std::size_t position = value.find("const");
+           position != std::string::npos;
+           position = value.find("const", position))
+        {
+          const auto is_identifier_character = [](const unsigned char c) {
+            return std::isalnum(c) || c == '_';
+          };
+          const bool starts_qualifier =
+            position == 0 || !is_identifier_character(
+                               static_cast<unsigned char>(value[position - 1]));
+          const auto next = position + 5;
+          const bool ends_qualifier =
+            next < value.size() &&
+            !is_identifier_character(static_cast<unsigned char>(value[next]));
+          if (starts_qualifier && ends_qualifier)
+            value.erase(position, 5);
+          else
+            position += 5;
+        }
+
+      value.erase(std::remove_if(value.begin(),
+                                 value.end(),
+                                 [](const unsigned char character) {
+                                   return std::isspace(character);
+                                 }),
+                  value.end());
+
+      for (const auto &abi_namespace : {"__cxx11::", "__1::"})
+        for (std::size_t position = value.find(abi_namespace);
+             position != std::string::npos;
+             position = value.find(abi_namespace))
+          value.erase(position, std::char_traits<char>::length(abi_namespace));
+
+      for (std::size_t position = value.find("basic_string<char");
+           position != std::string::npos;
+           position = value.find("basic_string<char", position))
+        {
+          const auto   template_start = value.find('<', position);
+          unsigned int depth          = 0;
+          auto         template_end   = template_start;
+          for (; template_end < value.size(); ++template_end)
+            if (value[template_end] == '<')
+              ++depth;
+            else if (value[template_end] == '>' && --depth == 0)
+              break;
+
+          if (template_end == value.size())
+            break;
+          value.replace(position, template_end - position + 1, "string");
+          position += 6;
+        }
+
+      const std::string monostate = ",std::monostate";
+      for (std::size_t position = value.find(monostate);
+           position != std::string::npos;
+           position = value.find(monostate))
+        value.erase(position, monostate.size());
+
+      return value;
+    }
+
+
+
     /** \endcond */
   } // namespace detail
 
@@ -274,9 +353,17 @@ namespace coral
     std::string hash = "";
     if constexpr (detail::is_callable<Arg>::value)
       {
-        // If Arg is callable, hash the std::function type
-        using FuncType = decltype(std::function{std::declval<Arg>()});
-        hash           = detail::hash<FuncType>(method_name);
+        // If Arg is callable, hash the std::function type.  Member function
+        // registrations retain their historical key, while free functions
+        // include the concrete signature so overloaded operations do not
+        // overwrite one another in the registry.
+        if constexpr (std::is_member_function_pointer_v<std::decay_t<Arg>>)
+          hash = detail::hash<Arg>(method_name);
+        else
+          {
+            using FuncType = decltype(std::function{std::declval<Arg>()});
+            hash = detail::function_registry_key<FuncType>(method_name);
+          }
       }
     else
       {
@@ -332,6 +419,12 @@ namespace coral
      * This is an abstract type. It will never be instantiated
      */
     abstract,
+
+    /**
+     * A type that may be stored in a NodeObject, but has no user-facing
+     * constructor. Such types are normally produced by operation outputs.
+     */
+    output_only,
 
     /**
      * Trivially copyable and constructible types
@@ -468,6 +561,85 @@ namespace coral
 
     /** \endcond */
   } // namespace detail
+
+  /** Optional registry metadata for a function or method operation. */
+  struct RegistryMetadata
+  {
+    RegistryMetadata() = default;
+
+    RegistryMetadata(std::string operation,
+                     std::string display_name = {},
+                     std::string variant_name = {},
+                     std::string description  = {},
+                     std::string class_name   = {},
+                     std::string method_name  = {})
+      : operation(std::move(operation))
+      , display_name(std::move(display_name))
+      , variant_name(std::move(variant_name))
+      , description(std::move(description))
+      , class_name(std::move(class_name))
+      , method_name(std::move(method_name))
+    {}
+
+    std::string operation;
+    std::string display_name;
+    std::string variant_name;
+    std::string description;
+    /** Canonical owning class for method-like function registrations. */
+    std::string class_name;
+    /** Canonical logical method name for method-like registrations. */
+    std::string method_name;
+  };
+
+  using FunctionMetadata = RegistryMetadata;
+
+  /** Serialize optional operation metadata on a registry initializer. */
+  inline void
+  set_registry_metadata(detail::NodeObjectInitializer &initializer,
+                        const RegistryMetadata        &metadata)
+  {
+    if (!metadata.operation.empty())
+      initializer.json_serializer["operation"] = metadata.operation;
+    if (!metadata.display_name.empty())
+      initializer.json_serializer["display_name"] = metadata.display_name;
+    if (!metadata.variant_name.empty())
+      initializer.json_serializer["variant_name"] = metadata.variant_name;
+    if (!metadata.description.empty())
+      initializer.json_serializer["description"] = metadata.description;
+    if (!metadata.class_name.empty())
+      initializer.json_serializer["class_name"] = metadata.class_name;
+    if (!metadata.method_name.empty())
+      initializer.json_serializer["method_name"] = metadata.method_name;
+  }
+
+  /** Remove template arguments from a registered method's owner name. */
+  inline std::string
+  canonical_method_class_name(const std::string &class_name)
+  {
+    const auto template_start = class_name.find('<');
+    return template_start == std::string::npos ?
+             class_name :
+             class_name.substr(0, template_start);
+  }
+
+  /** Add the canonical owner and member identity to a registered method. */
+  inline void
+  set_method_identity(detail::NodeObjectInitializer &initializer,
+                      const std::string             &method_name)
+  {
+    const auto separator = method_name.rfind("::");
+    if (separator == std::string::npos)
+      return;
+
+    if (!initializer.json_serializer.contains("operation"))
+      initializer.json_serializer["operation"] = method_name;
+    if (!initializer.json_serializer.contains("class_name"))
+      initializer.json_serializer["class_name"] =
+        canonical_method_class_name(method_name.substr(0, separator));
+    if (!initializer.json_serializer.contains("method_name"))
+      initializer.json_serializer["method_name"] =
+        method_name.substr(separator + 2);
+  }
 
   /**
    * Distinguish input arguments of a function from being input or input/output
@@ -620,6 +792,14 @@ namespace coral
     register_json_header(const std::vector<std::string> &arg_names,
                          const std::string              &suffix = "")
       -> detail::NodeObjectInitializer &;
+
+    /**
+     * Register a type only as a value that can be produced by an operation.
+     * No constructor node is added to the registry.
+     */
+    template <typename T>
+    static auto
+    register_output_type() -> detail::NodeObjectInitializer &;
 
     /**
      * Register a non-trivially constructible type T with constructor arguments.
@@ -810,7 +990,8 @@ namespace coral
     template <typename T, typename ReturnType, typename... Args>
     static void
     register_method(MethodPtr<T, ReturnType, Args...> ptr,
-                    std::vector<std::string>          arg_names)
+                    std::vector<std::string>          arg_names,
+                    RegistryMetadata                  metadata = {})
     {
       using ThisMethod              = MethodPtr<T, ReturnType, Args...>;
       constexpr bool return_is_void = std::is_same_v<ReturnType, void>;
@@ -824,6 +1005,8 @@ namespace coral
                                                            method_name);
           initializer.json_serializer["node_type"] = "void_method";
           initializer.node_type                    = NodeType::void_method;
+          set_registry_metadata(initializer, metadata);
+          set_method_identity(initializer, method_name);
 
           // Add the method to the initializer
           initializer.executor =
@@ -850,11 +1033,14 @@ namespace coral
         }
       else
         {
+          register_output_type<ReturnType>();
           auto &initializer =
             register_json_header<ThisMethod, T &, ReturnType &, Args...>(
               arg_names, method_name);
           initializer.json_serializer["node_type"] = "method";
           initializer.node_type                    = NodeType::method;
+          set_registry_metadata(initializer, metadata);
+          set_method_identity(initializer, method_name);
           const bool output_is_elementary =
             is_registered_elementary_type<ReturnType>();
           if (output_is_elementary)
@@ -893,6 +1079,108 @@ namespace coral
     }
 
     /**
+     * Register a method whose graph receiver is a shared pointer to its
+     * owning object.
+     *
+     * The receiver is serialized as std::shared_ptr<T> and is invoked by
+     * dereferencing the handle before calling the member function. This is
+     * the method form to use when a constructor returns a shared pointer.
+     */
+    template <typename T, typename ReturnType, typename... Args>
+    static void
+    register_shared_method(MethodPtr<T, ReturnType, Args...> ptr,
+                           std::vector<std::string>          arg_names,
+                           RegistryMetadata                  metadata = {})
+    {
+      using ThisMethod              = MethodPtr<T, ReturnType, Args...>;
+      constexpr bool return_is_void = std::is_same_v<ReturnType, void>;
+      auto           method_name    = arg_names[0];
+      arg_names.erase(arg_names.begin());
+
+      if constexpr (return_is_void)
+        {
+          auto &initializer =
+            register_json_header<ThisMethod, std::shared_ptr<T> &, Args...>(
+              arg_names, method_name);
+          initializer.json_serializer["node_type"] = "void_method";
+          initializer.node_type                    = NodeType::void_method;
+          set_registry_metadata(initializer, metadata);
+          set_method_identity(initializer, method_name);
+
+          initializer.executor =
+            [ptr, &initializer, method_name](const NodeObjectPtr &,
+                                             std::vector<NodeObjectPtr> args)
+            -> std::shared_ptr<entt::meta_any> {
+            if (args.size() != 1 + sizeof...(Args))
+              throw std::runtime_error("Wrong number of arguments.");
+            auto &handle = args[0]->get<std::shared_ptr<T>>();
+            if (!handle)
+              throw std::runtime_error(
+                "Cannot invoke a method on a null handle.");
+            args.erase(args.begin());
+
+            auto tuple = detail::cast_args<Args...>(args);
+            slog_debug("%s: %s",
+                       method_name.c_str(),
+                       initializer.type_name.c_str());
+            std::apply(
+              [&handle, ptr](auto &&...unpackedArgs) {
+                ((*handle).*ptr)(*unpackedArgs...);
+              },
+              tuple);
+            return std::make_shared<entt::meta_any>(
+              std::make_shared<ThisMethod>(ptr));
+          };
+        }
+      else
+        {
+          register_output_type<ReturnType>();
+          auto &initializer =
+            register_json_header<ThisMethod,
+                                 std::shared_ptr<T> &,
+                                 ReturnType &,
+                                 Args...>(arg_names, method_name);
+          initializer.json_serializer["node_type"] = "method";
+          initializer.node_type                    = NodeType::method;
+          set_registry_metadata(initializer, metadata);
+          set_method_identity(initializer, method_name);
+          const bool output_is_elementary =
+            is_registered_elementary_type<ReturnType>();
+          if (output_is_elementary)
+            set_output_only(initializer, 1);
+
+          initializer.executor =
+            [ptr, &initializer, method_name, output_is_elementary](
+              const NodeObjectPtr &, std::vector<NodeObjectPtr> args)
+            -> std::shared_ptr<entt::meta_any> {
+            if (args.size() != 2 + sizeof...(Args))
+              throw std::runtime_error("Wrong number of arguments.");
+            auto &handle = args[0]->get<std::shared_ptr<T>>();
+            if (!handle)
+              throw std::runtime_error(
+                "Cannot invoke a method on a null handle.");
+            if (output_is_elementary && !args[1]->ready())
+              (*args[1])();
+            auto &ret = args[1]->get<ReturnType>();
+
+            std::vector<NodeObjectPtr> function_args(args.begin() + 2,
+                                                     args.end());
+            slog_debug("%s: %s",
+                       method_name.c_str(),
+                       initializer.type_name.c_str());
+            auto tuple = detail::cast_args<Args...>(function_args);
+            ret        = std::apply(
+              [&handle, ptr](auto &&...unpackedArgs) {
+                return ((*handle).*ptr)(*unpackedArgs...);
+              },
+              tuple);
+            return std::make_shared<entt::meta_any>(
+              std::make_shared<ThisMethod>(ptr));
+          };
+        }
+    }
+
+    /**
      * Register a const method of a class. This node will have as arguments
      * the object of the class, possibly the output argument, and the
      * arguments of the method.
@@ -910,7 +1198,8 @@ namespace coral
     template <typename T, typename ReturnType, typename... Args>
     static void
     register_method(ConstMethodPtr<T, ReturnType, Args...> ptr,
-                    std::vector<std::string>               arg_names)
+                    std::vector<std::string>               arg_names,
+                    RegistryMetadata                       metadata = {})
     {
       using ThisMethod              = ConstMethodPtr<T, ReturnType, Args...>;
       constexpr bool return_is_void = std::is_same_v<ReturnType, void>;
@@ -924,6 +1213,8 @@ namespace coral
                                                                  method_name);
           initializer.json_serializer["node_type"] = "void_const_method";
           initializer.node_type = NodeType::void_const_method;
+          set_registry_metadata(initializer, metadata);
+          set_method_identity(initializer, method_name);
 
           // Add the method to the initializer
           initializer.executor =
@@ -948,11 +1239,14 @@ namespace coral
         }
       else
         {
+          register_output_type<ReturnType>();
           auto &initializer =
             register_json_header<ThisMethod, const T &, ReturnType &, Args...>(
               arg_names, method_name);
           initializer.json_serializer["node_type"] = "const_method";
           initializer.node_type                    = NodeType::const_method;
+          set_registry_metadata(initializer, metadata);
+          set_method_identity(initializer, method_name);
           const bool output_is_elementary =
             is_registered_elementary_type<ReturnType>();
           if (output_is_elementary)
@@ -985,53 +1279,82 @@ namespace coral
     }
 
     /**
-     * Register a free function. This node will have as arguments the
-     * output of the function, and the arguments of the method.
+     * Register a free function.
      *
-     * The function can be void or return a value, and can have any number of
-     * arguments.
-     *
-     * The first argument of the method is the return type of the class, and
-     * the
-     * @p arg_names must reflect this if non-void, i.e.,
-     * @p arg_names[0] is the name of the function, while @p arg_names[1] is the
-     * (optional) output node (if non-void) by which we store this
-     * function name, while the rest of the arguments are the names of the
-     * arguments of the method.
+     * Void functions use all entries after the operation name as inputs.
+     * Non-void functions may use the same historical
+     * {operation, output, input...} form, or the output-only
+     * {operation, input...} form.  The latter exposes the returned object as
+     * the function node's self output and does not create a dummy output node.
+     * When metadata.operation is set, arg_names contains only input names.
      */
     template <typename ReturnType, typename... Args>
     static void
     register_function(std::function<ReturnType(Args...)> ptr,
-                      std::vector<std::string>           arg_names)
+                      std::vector<std::string>           arg_names,
+                      RegistryMetadata                   metadata = {})
     {
       using ThisMethod              = decltype(ptr);
       constexpr bool return_is_void = std::is_same_v<ReturnType, void>;
       if (arg_names.empty())
         throw std::runtime_error("You must provide at least the name of the "
                                  "function as the first argument.");
-      auto method_name = arg_names[0];
-      arg_names.erase(arg_names.begin());
+
+      const bool has_metadata =
+        !metadata.operation.empty() || !metadata.display_name.empty();
+      const auto operation =
+        metadata.operation.empty() ? arg_names.front() : metadata.operation;
+      const auto registry_key =
+        detail::function_registry_key<ThisMethod>(operation);
+
+      // The historical form is {operation, output, input...}.  The
+      // output-only form is {operation, input...}, or just {input...} when
+      // metadata.operation supplies the operation name.
+      const auto n_inputs = sizeof...(Args);
+      if (has_metadata && arg_names.size() == n_inputs + 1)
+        arg_names.erase(arg_names.begin());
+      else if (!has_metadata)
+        arg_names.erase(arg_names.begin());
+
+      const bool has_legacy_output_name =
+        !has_metadata && arg_names.size() == n_inputs + 1;
+      const bool self_output =
+        !return_is_void && (has_metadata || !has_legacy_output_name ||
+                            !std::is_default_constructible_v<ReturnType>);
+
+      if (self_output && has_legacy_output_name)
+        arg_names.erase(arg_names.begin());
+
+      const auto set_metadata =
+        [&](detail::NodeObjectInitializer &initializer) {
+          set_registry_metadata(initializer, metadata);
+        };
+
+      const auto expected_arguments =
+        (!return_is_void && !self_output) ? n_inputs + 1 : n_inputs;
+      if (arg_names.size() != expected_arguments)
+        throw std::runtime_error("Wrong number of arguments for function '" +
+                                 operation + "'.");
 
       if constexpr (return_is_void)
         {
-          if (arg_names.size() != sizeof...(Args))
-            throw std::runtime_error("Wrong number of arguments.");
           auto &initializer =
-            register_json_header<ThisMethod, Args...>(arg_names, method_name);
+            register_json_header<ThisMethod, Args...>(arg_names, registry_key);
           initializer.json_serializer["node_type"] = "void_function";
           initializer.node_type                    = NodeType::void_function;
+          set_metadata(initializer);
+          set_method_identity(initializer, operation);
 
-          // Add the method to the initializer
           initializer.executor =
-            [ptr, &initializer, method_name](const NodeObjectPtr &,
-                                             std::vector<NodeObjectPtr> args)
+            [ptr, &initializer, operation](const NodeObjectPtr &,
+                                           std::vector<NodeObjectPtr> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != sizeof...(Args))
               throw std::runtime_error("Wrong number of arguments.");
 
             auto tuple = detail::cast_args<Args...>(args);
             slog_debug("void function: %s [%s]",
-                       method_name.c_str(),
+                       operation.c_str(),
                        initializer.type_name.c_str());
             std::apply([ptr](auto &&...unpackedArgs) { ptr(*unpackedArgs...); },
                        tuple);
@@ -1039,14 +1362,48 @@ namespace coral
               std::make_shared<ThisMethod>(ptr));
           };
         }
+      else if (self_output)
+        {
+          auto &initializer =
+            register_json_header<ThisMethod, Args...>(arg_names, registry_key);
+          initializer.json_serializer["node_type"] = "function";
+          initializer.node_type                    = NodeType::function;
+          initializer.json_serializer["outputs"].push_back(-1);
+          initializer.json_serializer["output_type"] =
+            detail::hash<ReturnType>();
+          set_metadata(initializer);
+          set_method_identity(initializer, operation);
+
+          initializer.executor =
+            [ptr, &initializer, operation](const NodeObjectPtr &,
+                                           std::vector<NodeObjectPtr> args)
+            -> std::shared_ptr<entt::meta_any> {
+            if (args.size() != sizeof...(Args))
+              throw std::runtime_error("Wrong number of arguments.");
+
+            auto tuple = detail::cast_args<Args...>(args);
+            slog_debug("non-void function: %s [%s]",
+                       operation.c_str(),
+                       initializer.type_name.c_str());
+            return std::apply(
+              [ptr](auto &&...unpackedArgs) {
+                return std::make_shared<entt::meta_any>(
+                  std::make_shared<ReturnType>(ptr(*unpackedArgs...)));
+              },
+              tuple);
+          };
+        }
       else
         {
+          register_output_type<ReturnType>();
           // Treat output sepearately, as it is the first argument
           auto &initializer =
             register_json_header<ThisMethod, ReturnType &, Args...>(
-              arg_names, method_name);
+              arg_names, registry_key);
           initializer.json_serializer["node_type"] = "function";
           initializer.node_type                    = NodeType::function;
+          set_metadata(initializer);
+          set_method_identity(initializer, operation);
           const bool output_is_elementary =
             is_registered_elementary_type<ReturnType>();
           if (output_is_elementary)
@@ -1054,7 +1411,7 @@ namespace coral
 
           // Add the method to the initializer
           initializer.executor =
-            [ptr, &initializer, method_name, output_is_elementary](
+            [ptr, &initializer, operation, output_is_elementary](
               const NodeObjectPtr &, std::vector<NodeObjectPtr> args)
             -> std::shared_ptr<entt::meta_any> {
             if (args.size() != 1 + sizeof...(Args))
@@ -1066,7 +1423,7 @@ namespace coral
 
             auto tuple = detail::cast_args<Args...>(args);
             slog_debug("non-void function: %s [%s]",
-                       method_name.c_str(),
+                       operation.c_str(),
                        initializer.type_name.c_str());
             ret = std::apply(
               [ptr](auto &&...unpackedArgs) { return ptr(*unpackedArgs...); },
@@ -1081,12 +1438,15 @@ namespace coral
     template <typename ReturnType, typename... Args>
     static void
     register_function(ReturnType (*ptr)(Args...),
-                      std::vector<std::string> arg_names);
+                      std::vector<std::string> arg_names,
+                      RegistryMetadata         metadata = {});
 
     // Helper to deduce template arguments automatically
     template <typename Lambda>
     static void
-    register_function(Lambda func, std::vector<std::string> arg_names);
+    register_function(Lambda                   func,
+                      std::vector<std::string> arg_names,
+                      RegistryMetadata         metadata = {});
 
     /**
      * Get a shared pointer of the stored object->
@@ -1216,6 +1576,10 @@ namespace coral
      */
     std::string
     hash() const;
+
+    /** Get the concrete type hash exposed by a selected output. */
+    std::string
+    output_hash() const;
 
     /**
      * Return true if this object can be passed where an object of type
@@ -1500,6 +1864,31 @@ namespace coral
 
 
 
+  template <typename T>
+  inline auto
+  NodeObject::register_output_type() -> detail::NodeObjectInitializer &
+  {
+    using PlainType     = std::remove_cv_t<std::remove_reference_t<T>>;
+    const auto hash_str = detail::hash<PlainType>();
+    const auto existing = initializers.find(hash_str);
+    if (existing != initializers.end())
+      {
+        if (existing->second.node_type == NodeType::none)
+          {
+            existing->second.json_serializer["node_type"] = "output_only";
+            existing->second.node_type = NodeType::output_only;
+          }
+        return existing->second;
+      }
+
+    auto &initializer = register_json_header<PlainType>();
+    initializer.json_serializer["node_type"] = "output_only";
+    initializer.node_type                    = NodeType::output_only;
+    return initializer;
+  }
+
+
+
   /**
    * json serialization of a Nodeobject->
    */
@@ -1672,20 +2061,23 @@ namespace coral
   template <typename ReturnType, typename... Args>
   inline void
   NodeObject::register_function(ReturnType (*ptr)(Args...),
-                                std::vector<std::string> arg_names)
+                                std::vector<std::string> arg_names,
+                                RegistryMetadata         metadata)
   {
     std::function<ReturnType(Args...)> func = ptr;
-    register_function(func, arg_names);
+    register_function(func, arg_names, metadata);
   }
 
 
 
   template <typename Lambda>
   inline void
-  NodeObject::register_function(Lambda func, std::vector<std::string> arg_names)
+  NodeObject::register_function(Lambda                   func,
+                                std::vector<std::string> arg_names,
+                                RegistryMetadata         metadata)
   {
     auto f = std::function{func};
-    register_function(f, arg_names);
+    register_function(f, arg_names, metadata);
   }
 
 
@@ -1699,7 +2091,7 @@ namespace coral
     using type = std::remove_cv_t<std::remove_reference_t<T>>;
     std::shared_ptr<type> ptr;
 
-    if (hash() != detail::hash<type>())
+    if (output_hash() != detail::hash<type>())
       {
         const auto it = initializer.ancestor_casters.find(detail::hash<type>());
         if (it == initializer.ancestor_casters.end())
@@ -1773,7 +2165,7 @@ namespace coral
       throw std::runtime_error("Object is not ready.");
     using type = std::remove_cv_t<std::remove_reference_t<T>>;
     std::shared_ptr<const type> ptr;
-    if (hash() != detail::hash<type>())
+    if (output_hash() != detail::hash<type>())
       {
         const auto it = initializer.ancestor_casters.find(detail::hash<type>());
         if (it == initializer.ancestor_casters.end())
