@@ -606,3 +606,18 @@ Of course `-h` or `--help` to get a usage guide.
 ## Author
 
 Luca Heltai <luca.heltai@unipi.it>
+
+## Container image
+
+The container workflow publishes the Coral CLI and shared-core CMake SDK to
+GitHub Container Registry for Linux AMD64 and ARM64. To use the Release CLI:
+
+```sh
+docker run --rm ghcr.io/2listic/coral:main --help
+```
+
+The image contains independent SDK prefixes at `/opt/dealiix/coral/Release`
+and `/opt/dealiix/coral/Debug`. Build a plugin against the matching prefix
+with `find_package(coral CONFIG REQUIRED)` and link it to `coral::core`.
+Use the CLI from that same prefix and use compatible compiler and dependency
+versions for the plugin.
