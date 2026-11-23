@@ -546,7 +546,8 @@ Author</h1>
 Container image</h1>
 <p>The container workflow publishes the Coral CLI and shared-core CMake SDK to GitHub Container Registry for Linux AMD64 and ARM64. To use the Release CLI:</p>
 <div class="fragment"><div class="line">docker run --rm ghcr.io/2listic/coral:main --help</div>
-</div><!-- fragment --><p>The image contains independent SDK prefixes at <span class="tt">/opt/dealiix/coral/Release</span> and <span class="tt">/opt/dealiix/coral/Debug</span>. Build a plugin against the matching prefix with <span class="tt">find_package(coral CONFIG REQUIRED)</span> and link it to <span class="tt">coral::core</span>. Use the CLI from that same prefix and use compatible compiler and dependency versions for the plugin. </p>
+</div><!-- fragment --><p>The image contains independent SDK prefixes at <span class="tt">/opt/dealiix/coral/Release</span> and <span class="tt">/opt/dealiix/coral/Debug</span>. Build a plugin against the matching prefix with <span class="tt">find_package(coral CONFIG REQUIRED)</span> and link it to <span class="tt">coral::core</span>. Use the CLI from that same prefix and use compatible compiler and dependency versions for the plugin.</p>
+<p>Pushing a stable Git tag such as <span class="tt">v1.2.3</span> on <span class="tt"><a class="elRef" href="http://www.dealii.org/developer/doxygen/deal.II/ALE__Finite__Strain__Plasticity_8h.html#a5054dfd6a3fb738ef2134b8b282e359c">main</a></span> promotes the tested image for that revision, building and testing it first when needed, before publishing <span class="tt">ghcr.io/2listic/coral:v1.2.3</span>. The <span class="tt">latest</span> tag follows the highest tested stable release published to GHCR. </p>
 </div></div><!-- PageDoc -->
 <a href="doxygen_crawl.html"></a>
 </div><!-- contents -->
