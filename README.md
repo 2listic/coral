@@ -621,3 +621,7 @@ and `/opt/dealiix/coral/Debug`. Build a plugin against the matching prefix
 with `find_package(coral CONFIG REQUIRED)` and link it to `coral::core`.
 Use the CLI from that same prefix and use compatible compiler and dependency
 versions for the plugin.
+
+Pushing a stable Git tag such as `v1.2.3` on `main` promotes the tested
+image for that revision, building and testing it first when needed, before publishing `ghcr.io/2listic/coral:v1.2.3`. The
+`latest` tag follows the highest tested stable release published to GHCR.

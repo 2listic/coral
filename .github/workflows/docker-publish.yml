@@ -13,6 +13,7 @@ on:
       - 'tools/container_smoke/**'
   push:
     branches: [main]
+    tags: ['v[0-9]*']
     paths:
       - 'Dockerfile'
       - '.dockerignore'
@@ -35,7 +36,30 @@ env:
   IMAGE: ghcr.io/2listic/coral
 
 jobs:
+  release_source:
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+    outputs:
+      digest: ${{ steps.release.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify release tag is on main
+        run: |
+          [[ "$GITHUB_REF_NAME" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
+          git merge-base --is-ancestor HEAD origin/main
+      - name: Look for the tested image from this exact revision
+        id: release
+        run: |
+          digest=$(bash scripts/find_tested_container.sh ghcr.io/2listic/coral "$(git rev-parse HEAD)")
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: release_source
+    if: >-
+      ${{ !cancelled() && (needs.release_source.result == 'skipped' ||
+      (needs.release_source.result == 'success' && needs.release_source.outputs.digest == '')) }}
     strategy:
       fail-fast: false
       matrix:
@@ -83,18 +107,22 @@ jobs:
               ' bash "$config"
           done
       - uses: docker/login-action@v3
-        if: github.repository == '2listic/coral' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: github.repository == '2listic/coral' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push tested architecture
-        if: github.repository == '2listic/coral' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: github.repository == '2listic/coral' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         run: docker push "$IMAGE:$TAG"
 
   publish:
-    if: github.repository == '2listic/coral' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: build
+    needs: [release_source, build]
+    if: >-
+      ${{ !cancelled() && github.repository == '2listic/coral' &&
+      github.event_name != 'pull_request' &&
+      (github.ref == 'refs/heads/main' || github.ref_type == 'tag') &&
+      (needs.build.result == 'success' || needs.release_source.outputs.digest != '') }}
     runs-on: ubuntu-24.04
     permissions:
       packages: write
@@ -106,9 +134,40 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish multi-architecture tags and verify public access
+        env:
+          RELEASE_DIGEST: ${{ needs.release_source.outputs.digest }}
         run: |
           digest_tag="$IMAGE:sha-$GITHUB_SHA"
-          docker buildx imagetools create --tag "$digest_tag" --tag "$IMAGE:main" \
-            "$digest_tag-amd64" "$digest_tag-arm64"
-          docker buildx imagetools inspect "$digest_tag"
-          DOCKER_CONFIG=$(mktemp -d) docker manifest inspect "$digest_tag" >/dev/null
+          tag=main
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then tag=$GITHUB_REF_NAME; fi
+          if [[ -n "$RELEASE_DIGEST" ]]; then
+            docker buildx imagetools create --tag "$IMAGE:$tag" "$IMAGE@$RELEASE_DIGEST"
+          else
+            docker buildx imagetools create --tag "$digest_tag" --tag "$IMAGE:$tag" \
+              "$digest_tag-amd64" "$digest_tag-arm64"
+          fi
+          docker buildx imagetools inspect "$IMAGE:$tag"
+          DOCKER_CONFIG=$(mktemp -d) docker manifest inspect "$IMAGE:$tag" >/dev/null
+
+  latest:
+    needs: publish
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: ghcr-release-latest
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Point latest at the highest published stable release
+        run: bash scripts/publish_latest_container.sh ghcr.io/2listic/coral
