@@ -13,6 +13,7 @@ on:
       - 'tools/container_smoke/**'
   push:
     branches: [main]
+    tags: ['v[0-9]*']
     paths:
       - 'Dockerfile'
       - '.dockerignore'
@@ -55,6 +56,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+          fetch-depth: ${{ github.ref_type == 'tag' && '0' || '1' }}
+      - name: Verify release tag is on main
+        if: github.ref_type == 'tag'
+        run: |
+          [[ "$GITHUB_REF_NAME" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]
+          git merge-base --is-ancestor HEAD origin/main
       - name: Reserve space for the deal.II SDK image
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache
@@ -83,17 +90,17 @@ jobs:
               ' bash "$config"
           done
       - uses: docker/login-action@v3
-        if: github.repository == '2listic/coral' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: github.repository == '2listic/coral' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push tested architecture
-        if: github.repository == '2listic/coral' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: github.repository == '2listic/coral' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         run: docker push "$IMAGE:$TAG"
 
   publish:
-    if: github.repository == '2listic/coral' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.repository == '2listic/coral' && github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     needs: build
     runs-on: ubuntu-24.04
     permissions:
@@ -108,7 +115,32 @@ jobs:
       - name: Publish multi-architecture tags and verify public access
         run: |
           digest_tag="$IMAGE:sha-$GITHUB_SHA"
-          docker buildx imagetools create --tag "$digest_tag" --tag "$IMAGE:main" \
+          tag=main
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then tag=$GITHUB_REF_NAME; fi
+          docker buildx imagetools create --tag "$digest_tag" --tag "$IMAGE:$tag" \
             "$digest_tag-amd64" "$digest_tag-arm64"
           docker buildx imagetools inspect "$digest_tag"
           DOCKER_CONFIG=$(mktemp -d) docker manifest inspect "$digest_tag" >/dev/null
+
+  latest:
+    needs: publish
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: ghcr-release-latest
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Point latest at the highest published stable release
+        run: bash scripts/publish_latest_container.sh ghcr.io/2listic/coral
