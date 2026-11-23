@@ -45,5 +45,6 @@ var index =
     ] ],
     [ "Example Usage", "index.html#autotoc_md36", null ],
     [ "Prectical Usage", "index.html#autotoc_md37", null ],
-    [ "Author", "index.html#autotoc_md38", null ]
+    [ "Author", "index.html#autotoc_md38", null ],
+    [ "Container image", "index.html#autotoc_md39", null ]
 ];

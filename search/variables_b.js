@@ -7,7 +7,7 @@ var searchData=
   ['kernel_5fsize_4',['kernel_size',['http://www.dealii.org/developer/doxygen/deal.II/classRelaxationBlock_1_1AdditionalData.html#aff8aa50b0eabb26191b96be6ac009efc',1,'RelaxationBlock::AdditionalData']]],
   ['key_5fpattern_5',['key_pattern',['http://www.dealii.org/developer/doxygen/deal.II/classPatterns_1_1Map.html#ac0966371bda728fb35c1f07f3dc17ad0',1,'Patterns::Map']]],
   ['key_5fvalue_5fseparator_6',['key_value_separator',['http://www.dealii.org/developer/doxygen/deal.II/classPatterns_1_1Map.html#af7e1e7fcf27e14abef21b138750f5b7d',1,'Patterns::Map']]],
-  ['kind_7',['kind',['http://www.dealii.org/developer/doxygen/deal.II/classReferenceCell.html#a58ae7fd1c084dd87f79954b813611478',1,'ReferenceCell']]],
+  ['kind_7',['kind',['http://www.dealii.org/developer/doxygen/deal.II/classReferenceCell.html#a58ae7fd1c084dd87f79954b813611478',1,'ReferenceCell::kind'],['http://www.dealii.org/developer/doxygen/deal.II/classRefinementChoice.html#a6125bea2e47276cb5f278b7a5154d57e',1,'RefinementChoice::kind']]],
   ['kinsol_8',['kinsol',['http://www.dealii.org/developer/doxygen/deal.II/classNonlinearSolverSelector_1_1AdditionalData.html#a458e4d6fb204a1aacf159665e4b7d810a40bdc8874ce09cd7d695cd621857e3e2',1,'NonlinearSolverSelector::AdditionalData']]],
   ['kinsol_5fctx_9',['kinsol_ctx',['http://www.dealii.org/developer/doxygen/deal.II/classSUNDIALS_1_1KINSOL.html#a6af5646fb9c5d198c9a93c60717401d4',1,'SUNDIALS::KINSOL']]],
   ['kinsol_5fmem_10',['kinsol_mem',['http://www.dealii.org/developer/doxygen/deal.II/classSUNDIALS_1_1KINSOL.html#af60479a46e6972eea3bd9381be07787b',1,'SUNDIALS::KINSOL']]],

@@ -541,7 +541,12 @@ Prectical Usage</h1>
 <p>Of course <span class="tt">-h</span> or <span class="tt">--help</span> to get a usage guide.</p>
 <h1 class="doxsection"><a class="anchor" id="autotoc_md38"></a>
 Author</h1>
-<p>Luca Heltai <a href="mai'+'lto:+'luc'+'a.'+'hel'+'ta'+'i@u'+'ni'+'pi.'+'it'">luca.<span class="obfuscator">.nosp@m.</span>helt<span class="obfuscator">.nosp@m.</span>ai@un<span class="obfuscator">.nosp@m.</span>ipi.<span class="obfuscator">.nosp@m.</span>it</a> </p>
+<p>Luca Heltai <a href="mai'+'lto:+'luc'+'a.'+'hel'+'ta'+'i@u'+'ni'+'pi.'+'it'">luca.<span class="obfuscator">.nosp@m.</span>helt<span class="obfuscator">.nosp@m.</span>ai@un<span class="obfuscator">.nosp@m.</span>ipi.<span class="obfuscator">.nosp@m.</span>it</a></p>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md39"></a>
+Container image</h1>
+<p>The container workflow publishes the Coral CLI and shared-core CMake SDK to GitHub Container Registry for Linux AMD64 and ARM64. To use the Release CLI:</p>
+<div class="fragment"><div class="line">docker run --rm ghcr.io/2listic/coral:main --help</div>
+</div><!-- fragment --><p>The image contains independent SDK prefixes at <span class="tt">/opt/dealiix/coral/Release</span> and <span class="tt">/opt/dealiix/coral/Debug</span>. Build a plugin against the matching prefix with <span class="tt">find_package(coral CONFIG REQUIRED)</span> and link it to <span class="tt">coral::core</span>. Use the CLI from that same prefix and use compatible compiler and dependency versions for the plugin. </p>
 </div></div><!-- PageDoc -->
 <a href="doxygen_crawl.html"></a>
 </div><!-- contents -->
