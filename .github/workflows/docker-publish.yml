@@ -24,6 +24,11 @@ on:
       - 'core/**'
       - 'tools/container_smoke/**'
   workflow_dispatch:
+    inputs:
+      update_latest:
+        description: Refresh latest from the published stable releases
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -58,7 +63,7 @@ jobs:
   build:
     needs: release_source
     if: >-
-      ${{ !cancelled() && (needs.release_source.result == 'skipped' ||
+      ${{ !cancelled() && !inputs.update_latest && (needs.release_source.result == 'skipped' ||
       (needs.release_source.result == 'success' && needs.release_source.outputs.digest == '')) }}
     strategy:
       fail-fast: false
@@ -151,7 +156,10 @@ jobs:
 
   latest:
     needs: publish
-    if: github.ref_type == 'tag'
+    if: >-
+      ${{ !cancelled() && github.repository == '2listic/coral' &&
+      ((github.ref_type == 'tag' && needs.publish.result == 'success') ||
+      (github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.update_latest)) }}
     runs-on: ubuntu-24.04
     concurrency:
       group: ghcr-release-latest
