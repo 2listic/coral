@@ -10,6 +10,7 @@ on:
       - 'CMakeLists.txt'
       - 'cmake/**'
       - 'core/**'
+      - 'backends/dealii/**'
       - 'tools/container_smoke/**'
   push:
     branches: [main]
@@ -22,11 +23,16 @@ on:
       - 'CMakeLists.txt'
       - 'cmake/**'
       - 'core/**'
+      - 'backends/dealii/**'
       - 'tools/container_smoke/**'
   workflow_dispatch:
     inputs:
       update_latest:
         description: Refresh latest from the published stable releases
+        type: boolean
+        default: false
+      retire_initial_v1_3_0:
+        description: Remove only the superseded v1.3.0 image without the deal.II backend
         type: boolean
         default: false
 
@@ -63,7 +69,7 @@ jobs:
   build:
     needs: release_source
     if: >-
-      ${{ !cancelled() && !inputs.update_latest && (needs.release_source.result == 'skipped' ||
+      ${{ !cancelled() && !inputs.update_latest && !inputs.retire_initial_v1_3_0 && (needs.release_source.result == 'skipped' ||
       (needs.release_source.result == 'success' && needs.release_source.outputs.digest == '')) }}
     strategy:
       fail-fast: false
@@ -98,6 +104,16 @@ jobs:
           build-args: VCS_REF=${{ github.sha }}
           cache-from: type=gha,scope=coral-sdk-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=coral-sdk-${{ matrix.arch }}
+      - name: Load the installed deal.II backend in each configuration
+        run: |
+          for config in Debug Release; do
+            docker run --rm --entrypoint bash "$IMAGE:$TAG" -euc '
+              prefix="/opt/dealiix/coral/$1"
+              "$prefix/bin/$1/coral" --plugin "$prefix/lib/$1/libcoral_backend_dealii.so" \
+                register --registry-path /tmp/dealii-registry.json
+              grep -Fq PoissonSolver /tmp/dealii-registry.json
+            ' bash "$config"
+          done
       - name: Load a plugin built against each installed SDK
         run: |
           for config in Debug Release; do
@@ -159,7 +175,7 @@ jobs:
     if: >-
       ${{ !cancelled() && github.repository == '2listic/coral' &&
       ((github.ref_type == 'tag' && needs.publish.result == 'success') ||
-      (github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.update_latest)) }}
+      (github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.update_latest && !inputs.retire_initial_v1_3_0)) }}
     runs-on: ubuntu-24.04
     concurrency:
       group: ghcr-release-latest
@@ -179,3 +195,40 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Point latest at the highest published stable release
         run: bash scripts/publish_latest_container.sh ghcr.io/2listic/coral
+
+  retire_initial_v1_3_0:
+    if: >-
+      github.repository == '2listic/coral' && github.ref == 'refs/heads/main' &&
+      github.event_name == 'workflow_dispatch' && inputs.retire_initial_v1_3_0
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Delete the obsolete release index after main has moved
+        run: |
+          if git ls-remote --exit-code --tags https://github.com/2listic/coral.git refs/tags/v1.3.0; then
+            echo 'Remove the obsolete Git tag before retiring the image.' >&2
+            exit 1
+          else
+            [[ "$?" == 2 ]]
+          fi
+          endpoint=orgs/2listic/packages/container/coral/versions
+          digest=sha256:2ae2e519fe5b46a8fa130b3f4732f416cccb13f8295a54e2a64dc5b3dc49dbcc
+          version=$(gh api --paginate "$endpoint?per_page=100" |
+            jq -cs --arg digest "$digest" '[.[][] | select(.name == $digest)]')
+          if [[ "$(jq length <<< "$version")" == 0 ]]; then
+            echo 'The obsolete image index is already absent.'
+            exit 0
+          fi
+          id=$(jq -er '
+            select(length == 1) | .[0] |
+            select(all(.metadata.container.tags[];
+              . == "v1.3.0" or . == "latest" or
+              . == "sha-c746cbe27547887e9e8e868a9334e6e43f6890ab")) |
+            .id | select(type == "number")
+          ' <<< "$version")
+          gh api --method DELETE "$endpoint/$id"
+          echo "Retired $digest."

@@ -625,3 +625,14 @@ versions for the plugin.
 Pushing a stable Git tag such as `v1.2.3` on `main` promotes the tested
 image for that revision, building and testing it first when needed, before publishing `ghcr.io/2listic/coral:v1.2.3`. The
 `latest` tag follows the highest tested stable release published to GHCR.
+
+The image includes the deal.II backend plugin in both SDK prefixes. For
+example, register the Release plugin's nodes from the installed CLI:
+
+```sh
+docker run --rm ghcr.io/2listic/coral:main \
+  --plugin /opt/dealiix/coral/Release/lib/Release/libcoral_backend_dealii.so register
+```
+
+Use `/opt/dealiix/coral/Debug/bin/Debug/coral` and the plugin under
+`/opt/dealiix/coral/Debug/lib/Debug` for a Debug run.

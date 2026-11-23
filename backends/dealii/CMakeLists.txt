@@ -24,6 +24,21 @@ target_link_libraries(coral_backend_dealii
 
 deal_ii_setup_target(coral_backend_dealii)
 
+if(CORAL_INSTALL)
+  set_target_properties(coral_backend_dealii PROPERTIES
+    INSTALL_RPATH_USE_LINK_PATH TRUE)
+  if(APPLE)
+    set_property(TARGET coral_backend_dealii APPEND PROPERTY
+      INSTALL_RPATH "@loader_path")
+  elseif(UNIX)
+    set_property(TARGET coral_backend_dealii APPEND PROPERTY
+      INSTALL_RPATH "$ORIGIN")
+  endif()
+  install(TARGETS coral_backend_dealii
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/$<CONFIG>
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/$<CONFIG>)
+endif()
+
 if(MSVC)
   target_compile_options(coral_backend_dealii PRIVATE /W0)
 else()
