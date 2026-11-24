@@ -7,6 +7,7 @@ endif()
 add_library(coral_core ${_coral_core_library_type}
   source/coral_implementation.cc
   source/coral_network_implementation.cc
+  source/mutex_pool.cc
   source/node_object.cc
   source/slog/slog.c)
 

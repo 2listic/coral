@@ -19,6 +19,7 @@
 #include "coral.h"
 #include "coral_network.h"
 #include "laplace.h"
+#include "parameters.h"
 #include "poisson.h"
 #include "utilities.h"
 
@@ -53,6 +54,13 @@ namespace coral
 {
   using namespace dealii;
 
+  /** Mutex serializing every node that touches the static ParameterAcceptor::prm. */
+  inline std::shared_ptr<std::recursive_mutex>
+  parameter_acceptor_mutex()
+  {
+    return mutex_pool::get("dealii::ParameterAcceptor");
+  }
+
   inline void
   register_non_dimensional_types()
   {
@@ -75,6 +83,19 @@ namespace coral
     NodeObject::register_elementary_type<std::set<types::boundary_id>>();
 
     NodeObject::register_type<GridOut>();
+
+    coral::detail::set_type_alias<ParameterAcceptor>(
+      "dealii::ParameterAcceptor");
+    NodeObject::register_abstract_type<ParameterAcceptor>();
+
+    RegistryMetadata initialize_parameters_metadata;
+    initialize_parameters_metadata.mutex = parameter_acceptor_mutex();
+    NodeObject::register_function(initialize_parameters,
+                                  {"Initialize parameters",
+                                   "parameter_1",
+                                   "parameter_2",
+                                   "parameter_file"},
+                                  initialize_parameters_metadata);
 
     NodeObject::register_type<std::ofstream, std::string>("file_name");
     NodeObject::register_base<std::ofstream, std::ostream>();
@@ -108,6 +129,11 @@ namespace coral
           "dealii::DoFHandler<" + dims_full + ">");
         coral::detail::set_type_alias<PoissonSolver<dim, spacedim>>(
           "PoissonSolver<" + dims_full + ">");
+        coral::detail::set_type_alias<DomainParameters<dim, spacedim>>(
+          "DomainParameters<" + dims_full + ">");
+        coral::detail::set_type_alias<
+          FiniteElementSpaceParameters<dim, spacedim>>(
+          "FiniteElementSpaceParameters<" + dims_full + ">");
       }
 
     NodeObject::register_type<Triangulation<dim, spacedim>>();
@@ -209,6 +235,17 @@ namespace coral
        "rhs",
        "preconditioner_name",
        "output_dir"});
+
+    NodeObject::register_type<DomainParameters<dim, spacedim>,
+                              const std::string &>("subsection")
+      .mutex = parameter_acceptor_mutex();
+    NodeObject::register_base<DomainParameters<dim, spacedim>,
+                              ParameterAcceptor>();
+    NodeObject::register_type<FiniteElementSpaceParameters<dim, spacedim>,
+                              const std::string &>("subsection")
+      .mutex = parameter_acceptor_mutex();
+    NodeObject::register_base<FiniteElementSpaceParameters<dim, spacedim>,
+                              ParameterAcceptor>();
   }
 
 

@@ -200,7 +200,12 @@ namespace coral
         throw std::runtime_error(
           "NodeObject execution requires shared ownership.");
       }
-    object = initializer.executor(self, arguments);
+    {
+      std::unique_lock<std::recursive_mutex> lock;
+      if (initializer.mutex)
+        lock = std::unique_lock<std::recursive_mutex>(*initializer.mutex);
+      object = initializer.executor(self, arguments);
+    }
     // Check if we have to copy back the original value
     if (initializer.json_serializer.contains("value") &&
         initializer.parse_string)
