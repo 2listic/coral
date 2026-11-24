@@ -19,6 +19,7 @@
 #include "coral.h"
 #include "coral_network.h"
 #include "laplace.h"
+#include "parameters.h"
 #include "poisson.h"
 #include "utilities.h"
 
@@ -76,6 +77,16 @@ namespace coral
 
     NodeObject::register_type<GridOut>();
 
+    coral::detail::set_type_alias<ParameterAcceptor>(
+      "dealii::ParameterAcceptor");
+    NodeObject::register_abstract_type<ParameterAcceptor>();
+
+    NodeObject::register_function(initialize_parameters,
+                                  {"Initialize parameters",
+                                   "parameter_1",
+                                   "parameter_2",
+                                   "parameter_file"});
+
     NodeObject::register_type<std::ofstream, std::string>("file_name");
     NodeObject::register_base<std::ofstream, std::ostream>();
     Network::register_node();
@@ -108,6 +119,11 @@ namespace coral
           "dealii::DoFHandler<" + dims_full + ">");
         coral::detail::set_type_alias<PoissonSolver<dim, spacedim>>(
           "PoissonSolver<" + dims_full + ">");
+        coral::detail::set_type_alias<DomainParameters<dim, spacedim>>(
+          "DomainParameters<" + dims_full + ">");
+        coral::detail::set_type_alias<
+          FiniteElementSpaceParameters<dim, spacedim>>(
+          "FiniteElementSpaceParameters<" + dims_full + ">");
       }
 
     NodeObject::register_type<Triangulation<dim, spacedim>>();
@@ -209,6 +225,15 @@ namespace coral
        "rhs",
        "preconditioner_name",
        "output_dir"});
+
+    NodeObject::register_type<DomainParameters<dim, spacedim>,
+                              const std::string &>("subsection");
+    NodeObject::register_base<DomainParameters<dim, spacedim>,
+                              ParameterAcceptor>();
+    NodeObject::register_type<FiniteElementSpaceParameters<dim, spacedim>,
+                              const std::string &>("subsection");
+    NodeObject::register_base<FiniteElementSpaceParameters<dim, spacedim>,
+                              ParameterAcceptor>();
   }
 
 

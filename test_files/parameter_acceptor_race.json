@@ -1,0 +1,22 @@
+{
+  "plugin": {"MPI": {"enabled": false, "max_num_threads": 2}},
+  "workflow": {
+    "nodes": {
+      "0": {"type": "std::string", "value": "/Domain/"},
+      "1": {"type": "DomainParameters<2, 2>"},
+      "2": {"type": "std::string", "value": "/Space/"},
+      "3": {"type": "FiniteElementSpaceParameters<2, 2>"},
+      "4": {"type": "std::string", "value": "PLACEHOLDER.prm"},
+      "5": {"type": "Initialize parameters::std::function<void (dealii::ParameterAcceptor &, dealii::ParameterAcceptor &, const std::string &)>"}
+    },
+    "edges": {
+      "0": {"source": 0, "source_output": 0, "target": 1, "target_input": 0},
+      "1": {"source": 2, "source_output": 0, "target": 3, "target_input": 0},
+      "2": {"source": 1, "source_output": 0, "target": 5, "target_input": 0},
+      "3": {"source": 3, "source_output": 0, "target": 5, "target_input": 1},
+      "4": {"source": 4, "source_output": 0, "target": 5, "target_input": 2}
+    }
+  },
+  "version": 1,
+  "author": "Coral"
+}
