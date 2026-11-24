@@ -49,6 +49,18 @@ namespace coral
 
   using NodeObjectPtr = std::shared_ptr<NodeObject>;
 
+  namespace mutex_pool
+  {
+    /**
+     * Process-wide recursive mutex for `key`, created on first use. Defined
+     * in coral_core, so there is one mutex per process regardless of how
+     * plugins are linked. Callers share ownership, so the mutex outlives
+     * every node that uses it.
+     */
+    std::shared_ptr<std::recursive_mutex>
+    get(const std::string &key);
+  } // namespace mutex_pool
+
   /**
    * Exception thrown when an edge connects an output to an input of an
    * incompatible type.
@@ -536,6 +548,12 @@ namespace coral
        * JSON serialization template for this node type.
        */
       mutable json json_serializer;
+
+      /**
+       * Optional mutex locked around this node's execution. Not serialized
+       * (not part of json_serializer), so the registry is unchanged.
+       */
+      std::shared_ptr<std::recursive_mutex> mutex;
     };
 
     /**
@@ -589,6 +607,8 @@ namespace coral
     std::string class_name;
     /** Canonical logical method name for method-like registrations. */
     std::string method_name;
+    /** Optional mutex that serializes execution of this operation. */
+    std::shared_ptr<std::recursive_mutex> mutex;
   };
 
   using FunctionMetadata = RegistryMetadata;
@@ -610,6 +630,7 @@ namespace coral
       initializer.json_serializer["class_name"] = metadata.class_name;
     if (!metadata.method_name.empty())
       initializer.json_serializer["method_name"] = metadata.method_name;
+    initializer.mutex = metadata.mutex;
   }
 
   /** Remove template arguments from a registered method's owner name. */

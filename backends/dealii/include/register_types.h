@@ -54,6 +54,13 @@ namespace coral
 {
   using namespace dealii;
 
+  /** Mutex serializing every node that touches the static ParameterAcceptor::prm. */
+  inline std::shared_ptr<std::recursive_mutex>
+  parameter_acceptor_mutex()
+  {
+    return mutex_pool::get("dealii::ParameterAcceptor");
+  }
+
   inline void
   register_non_dimensional_types()
   {
@@ -81,11 +88,14 @@ namespace coral
       "dealii::ParameterAcceptor");
     NodeObject::register_abstract_type<ParameterAcceptor>();
 
+    RegistryMetadata initialize_parameters_metadata;
+    initialize_parameters_metadata.mutex = parameter_acceptor_mutex();
     NodeObject::register_function(initialize_parameters,
                                   {"Initialize parameters",
                                    "parameter_1",
                                    "parameter_2",
-                                   "parameter_file"});
+                                   "parameter_file"},
+                                  initialize_parameters_metadata);
 
     NodeObject::register_type<std::ofstream, std::string>("file_name");
     NodeObject::register_base<std::ofstream, std::ostream>();
@@ -227,11 +237,13 @@ namespace coral
        "output_dir"});
 
     NodeObject::register_type<DomainParameters<dim, spacedim>,
-                              const std::string &>("subsection");
+                              const std::string &>("subsection")
+      .mutex = parameter_acceptor_mutex();
     NodeObject::register_base<DomainParameters<dim, spacedim>,
                               ParameterAcceptor>();
     NodeObject::register_type<FiniteElementSpaceParameters<dim, spacedim>,
-                              const std::string &>("subsection");
+                              const std::string &>("subsection")
+      .mutex = parameter_acceptor_mutex();
     NodeObject::register_base<FiniteElementSpaceParameters<dim, spacedim>,
                               ParameterAcceptor>();
   }
